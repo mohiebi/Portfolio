@@ -1,0 +1,15 @@
+@import './main.css';
+@import './iconoir.css';
+@import './style.css';
+@import './components.css';
+@import './bootstrap-tagsinput.css';
+@import './bootstrap-timepicker.min.css';
+@import './daterangepicker.css';
+@import './select2.min.css';
+@import './selectric.css';
+@import './summernote-bs4.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
