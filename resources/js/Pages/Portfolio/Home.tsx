@@ -426,7 +426,7 @@ export default function HomePage() {
               Pragmatic fullstack developer with a Web3 edge
             </h2>
             <p className="mt-5 text-muted-foreground">
-              Highly motivated developer with 2+ years of professional experience, specialized in
+              Highly motivated developer with 3+ years of professional experience, specialized in
               <span className="text-foreground"> PHP</span>, <span className="text-foreground">JavaScript</span>,
               and Node.js frameworks (Vue.js, Symfony, Laravel, NestJS). I also build on Ethereum with
               <span className="text-foreground"> Solidity</span> â€” wallet integrations, on-chain watchers, and
@@ -434,8 +434,8 @@ export default function HomePage() {
             </p>
             <p className="mt-3 text-muted-foreground">
               I care about clean architecture, unit testing, and shipping reliable features.
-              At ABC Hosting I delivered 90+ tasks (50+ features, 40+ bug fixes) across 1300+ commits,
-              raised JS test coverage by 30%, and engineered a Node.js Web3 gateway with Metamask &
+              At ABC Hosting I delivered 150+ tasks (80+ features, 50+ bug fixes) across 2000+ commits,
+              raised JS test coverage by 87%, and engineered a Node.js Web3 gateway with Metamask &
               Solflare across multiple networks.
             </p>
 
@@ -472,12 +472,12 @@ export default function HomePage() {
                   <h4 className="font-display text-base font-semibold">Experience</h4>
                 </div>
                 <p className="mt-2 text-sm">
-                  <span className="text-foreground font-medium">PHP/JS Developer</span> Â/ ABC Hosting Ltd.
-                  <span className="block text-xs text-muted-foreground">Jun 2024 â€” Present Â/ Remote</span>
+                  <span className="text-foreground font-medium">PHP/JS Developer</span> ï¿½/ ABC Hosting Ltd.
+                  <span className="block text-xs text-muted-foreground">Jun 2024 â€” Present ï¿½/ Remote</span>
                 </p>
                 <p className="mt-2 text-sm">
-                  <span className="text-foreground font-medium">Web Developer</span> Â/ Health Tourism Center
-                  <span className="block text-xs text-muted-foreground">2021 Â/ Tehran</span>
+                  <span className="text-foreground font-medium">Web Developer</span> ï¿½/ Health Tourism Center
+                  <span className="block text-xs text-muted-foreground">2021 ï¿½/ Tehran</span>
                 </p>
               </motion.div>
 
@@ -488,11 +488,11 @@ export default function HomePage() {
                 </div>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">MBA â€” Marketing</span>
-                  <span className="block text-xs text-muted-foreground">Khorasgan University Â/ 2022 â€” Present</span>
+                  <span className="block text-xs text-muted-foreground">Khorasgan University ï¿½/ 2022 â€” Present</span>
                 </p>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">B.Sc. Mechanical Eng.</span>
-                  <span className="block text-xs text-muted-foreground">University of Kashan Â/ 2015 â€” 2019</span>
+                  <span className="block text-xs text-muted-foreground">University of Kashan ï¿½/ 2015 â€” 2019</span>
                 </p>
               </motion.div>
             </div>
