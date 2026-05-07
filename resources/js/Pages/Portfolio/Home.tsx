@@ -201,7 +201,7 @@ export default function HomePage() {
     <SiteShell>
       <Head>
         <title>Mohi - Fullstack and Solidity Developer</title>
-        <meta name="description" content="Fullstack Developer with 2+ years building PHP, Laravel, Symfony, Vue, NestJS apps and Solidity smart contracts. Selected case studies and contact." />
+        <meta name="description" content="Fullstack Developer with 3+ years building PHP, Laravel, Symfony, Vue, NestJS apps and Solidity smart contracts. Selected case studies and contact." />
         <meta property="og:title" content="Mohi - Fullstack Developer" />
         <meta property="og:description" content="PHP, JS, Laravel, Symfony, Vue, NestJS, Solidity, and Web3." />
       </Head>
@@ -251,7 +251,7 @@ export default function HomePage() {
 
             <motion.p variants={fadeUp} className="mt-5 max-w-xl text-lg text-muted-foreground">
               Hi, I'm <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> — a fullstack developer with
-              2+ years shipping production systems in <span className="text-foreground">Symfony</span>,{" "}
+              3+ years shipping production systems in <span className="text-foreground">Symfony</span>,{" "}
               <span className="text-foreground">Laravel</span>, <span className="text-foreground">Vue</span>, and{" "}
               <span className="text-foreground">NestJS</span>, plus Web3 gateways and smart contracts in Solidity.
             </motion.p>
@@ -269,9 +269,9 @@ export default function HomePage() {
             </motion.div>
 
             <motion.dl variants={fadeUp} className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 max-w-md">
-              <div><dt className="text-xs uppercase text-muted-foreground">Commits</dt><dd className="mt-1 font-display text-2xl">1300+</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">90+</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+30%</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Exprience</dt><dd className="mt-1 font-display text-2xl">3+ yrs</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">150+</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+87%</dd></div>
             </motion.dl>
           </motion.div>
 
