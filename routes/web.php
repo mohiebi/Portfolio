@@ -12,14 +12,15 @@ use App\Http\Controllers\Projects\JobBoard\myJobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\MyJobController;
 use App\Http\Controllers\TaskmanagerController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 
 Route::get('/', function () {
-    return view('front.portfolio');
+    return Inertia::render('Portfolio/Home');
 })->name('portfolio');
 
 Route::get('/dashboard', function () {
-    return view('admin.dashboard');
+    return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified' , 'admin'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -64,7 +65,9 @@ Route::middleware('auth')->group(function(){
 });
 
 
-Route::put('taskmanager/{task}/toggle-complete', [TaskmanagerController::class ,'togglecomplete'])->name('taskmanager-toggle');
+Route::put('taskmanager/{task}/toggle-complete', [TaskmanagerController::class ,'togglecomplete'])
+    ->middleware('auth')
+    ->name('taskmanager-toggle');
 
 Route::post('sendmail', [ContactController::class ,'contact'] )
 ->name('contact');
