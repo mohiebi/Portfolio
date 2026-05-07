@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects\JobBoard;
 use App\Http\Controllers\Controller;
 use App\Models\Employer;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class EmployerController extends Controller
 {
@@ -15,7 +16,7 @@ class EmployerController extends Controller
 
     public function create()
     {
-        return view('employer.create');
+        return Inertia::render('Employer/Create');
     }
 
     public function store(Request $request)

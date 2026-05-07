@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,13 +14,14 @@ class admin
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next ): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        $user= Auth::user();
-        if(!$user->role==7)
+        $user = Auth::user();
+
+        if (! $user || (int) $user->role !== 7) {
             return redirect(route('portfolio'));
+        }
+
         return $next($request);
     }
-
-    
 }

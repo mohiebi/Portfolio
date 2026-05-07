@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects\JobBoard;
 use App\Http\Controllers\Controller;
 use App\Models\Job;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class JobApplicationController extends Controller
 {
@@ -22,7 +23,7 @@ class JobApplicationController extends Controller
     public function create(Job $job)
     {
         $this->authorize('apply' , $job);
-        return view('job_application.create' , ['job' => $job]);
+        return Inertia::render('Jobs/Apply', ['job' => $job->load('employer')]);
     }
 
     /**

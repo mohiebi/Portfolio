@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects\BookReview;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
@@ -26,7 +27,7 @@ class ReviewController extends Controller
      */
     public function create(Book $book)
     {
-        return view('Projects.BookReview.books.reviews.create', ['book' => $book]);
+        return Inertia::render('Books/Reviews/Create', ['book' => $book]);
     }
 
     /**

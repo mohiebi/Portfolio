@@ -6,21 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\JobRequest;
 use App\Models\Job;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class MyJobController extends Controller
 {
     public function index()
     {
         $this->authorize('viewAnyEmployer', Job::class);
-        return view(
-            'my_job.index',
-            [
-                'jobs' => auth()->user()->employer
-                    ->jobs()
-                    ->with(['employer', 'jobApplications', 'jobApplications.user'])
-                    ->get()
-            ]
-        );
+        return Inertia::render('MyJobs/Index', [
+            'jobs' => auth()->user()->employer
+                ->jobs()
+                ->with('employer')
+                ->withCount('jobApplications')
+                ->get(),
+        ]);
     }
 
     /**
@@ -29,7 +28,12 @@ class MyJobController extends Controller
     public function create()
     {
         $this->authorize('create', Job::class);
-        return view('my_job.create');
+        return Inertia::render('MyJobs/Create', [
+            'options' => [
+                'categories' => Job::$category,
+                'experiences' => Job::$experience,
+            ],
+        ]);
     }
 
     /**
@@ -48,7 +52,13 @@ class MyJobController extends Controller
     public function edit(Job $myJob)
     {
         $this->authorize('update', $myJob);
-        return view('my_job.edit', ['job' => $myJob]);
+        return Inertia::render('MyJobs/Edit', [
+            'job' => $myJob,
+            'options' => [
+                'categories' => Job::$category,
+                'experiences' => Job::$experience,
+            ],
+        ]);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Taskrequest;
 use App\Models\Task;
 use App\Models\User;
+use Inertia\Inertia;
 
 class TaskmanagerController extends Controller
 {
@@ -14,10 +15,9 @@ class TaskmanagerController extends Controller
     public function index()
     {
 
-        // Fetch the authenticated user's tasks and paginate them
-        $tasks = auth()->user()->tasks()->latest()->paginate(10);
+        $tasks = auth()->user()->tasks()->latest()->get();
     
-        return view('Projects.Taskmanager.tasks', [
+        return Inertia::render('Taskmanager/Index', [
             'tasks' => $tasks,
         ]);
     }
@@ -27,7 +27,7 @@ class TaskmanagerController extends Controller
      */
     public function create()
     {
-       return view('Projects.Taskmanager.create');
+       return Inertia::render('Taskmanager/Create');
     }
     /**
      * Store a newly created resource in storage.
@@ -44,7 +44,7 @@ class TaskmanagerController extends Controller
      */
     public function show(Task $taskmanager)
     {
-        return view('Projects.Taskmanager.show', [
+        return Inertia::render('Taskmanager/Show', [
             'task'=> $taskmanager
         ]);
     }
@@ -54,7 +54,7 @@ class TaskmanagerController extends Controller
      */
     public function edit(Task $taskmanager )
     {
-        return view('Projects.Taskmanager.edit', [
+        return Inertia::render('Taskmanager/Edit', [
             'task'=> $taskmanager
         ]);
     }

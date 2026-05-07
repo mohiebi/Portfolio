@@ -23,8 +23,7 @@ class ContactController extends Controller
             'email' => $validatedData['email'],
             'services' => json_encode($validatedData['options']) ,
         ]);
-        flash()->success('Your request has been sent!');
         //mail('e.mohamadhosein@gmail.com' , 'contact' , implode(',' ,$validatedData['options']));
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Your request has been sent!');
         }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects\JobBoard;
 use App\Http\Controllers\Controller;
 use App\Models\Job;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class JobController extends Controller
 {
@@ -21,19 +22,27 @@ class JobController extends Controller
             'experience',
             'category'
         );
-        return view(
-            'job.index',
-            ['jobs' => Job::with('employer')->latest()->filter($filters)->get()]
-        );
+        return Inertia::render('Jobs/Index', [
+            'jobs' => Job::with('employer')->latest()->filter($filters)->get(),
+            'filters' => $filters,
+            'options' => [
+                'categories' => Job::$category,
+                'experiences' => Job::$experience,
+            ],
+        ]);
     }
 
-    public function show(Job $job)
+    public function show(Request $request, Job $job)
     {
         //$this->authorize('view', $job);
-        return view(
-            'job.show',
-            ['job' => $job->load('employer.jobs')]
-        );
+        $job->load('employer.jobs')->loadCount('jobApplications');
+
+        return Inertia::render('Jobs/Show', [
+            'job' => $job->setAttribute(
+                'has_applied',
+                $request->user() ? $job->hasUserApplied($request->user()) : false
+            ),
+        ]);
         
     }    
 

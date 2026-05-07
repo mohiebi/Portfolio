@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Projects\BookReview;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class BookController extends Controller
 {
@@ -24,12 +25,18 @@ class BookController extends Controller
             'popular_last_month' => $books->popularLastMonth(),
             'popular_last_6_months' => $books->popularLast6Months(),
             'highest_rated_last_month' => $books->highestRatedLastMonth(),
-            'highest_rated_last_6_monthS' => $books->highestRatedLast6Months(),
+            'highest_rated_last_6_months' => $books->highestRatedLast6Months(),
             default => $books->latest()->withAvgRating()->withReviewCount()
         };
 
         $books= $books->get();
-        return view('Projects.BookReview.books.index',['books'=>$books ]);
+        return Inertia::render('Books/Index', [
+            'books' => $books,
+            'filters' => [
+                'title' => $title,
+                'filter' => $filter,
+            ],
+        ]);
 
 
 
@@ -60,9 +67,7 @@ class BookController extends Controller
             [
                 'reviews' => fn($query)=>$query->latest()
             ])->withAvgRating()->withReviewCount()->findOrFail($id);
-        return view(
-            'Projects.BookReview.books.show' ,[ 'book' => $book]
-            );
+        return Inertia::render('Books/Show', ['book' => $book]);
     }
 
     /**

@@ -7,18 +7,17 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProfileController extends Controller
 {
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): Response
     {
-        return view('admin.dashboard.profile', [
-            'user' => $request->user(),
-        ]);
+        return Inertia::render('Profile/Edit');
     }
 
     /**
@@ -33,8 +32,9 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
-        flash()->success('Your profile has been updated.');
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')
+            ->with('status', 'profile-updated')
+            ->with('success', 'Your profile has been updated.');
     }
 
     /**
