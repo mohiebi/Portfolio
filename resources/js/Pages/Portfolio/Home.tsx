@@ -352,7 +352,11 @@ export default function HomePage() {
                 whileHover={{ y: -4 }}
                 className="group relative grid gap-0 overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-colors hover:border-primary/40 lg:grid-cols-[1.1fr_0.9fr]"
               >
-                <div className={`relative order-last min-h-[260px] overflow-hidden border-t border-border lg:order-${idx % 2 === 0 ? "last" : "first"} lg:border-l lg:border-t-0`}>
+                <Link
+                  href={p.href}
+                  aria-label={`View ${p.name} project`}
+                  className={`relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:order-${idx % 2 === 0 ? "last" : "first"} lg:border-l lg:border-t-0`}
+                >
                   <div className={`absolute inset-0 bg-gradient-to-br ${p.accent}`} />
                   <div className="absolute inset-0 bg-grid opacity-30" />
                   <div className="relative flex h-full items-center justify-center p-8">
@@ -373,7 +377,7 @@ export default function HomePage() {
                       })()}
                     </motion.div>
                   </div>
-                </div>
+                </Link>
 
                 <div className="relative flex flex-col p-7 sm:p-9">
                   <div className="flex items-center justify-between">
