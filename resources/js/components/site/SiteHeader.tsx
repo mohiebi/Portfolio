@@ -63,12 +63,29 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", handler);
   }, [onPortfolioHome]);
 
+  const isRouteActive = (item: NavItem) => {
+    if (!item.to) return false;
+    if (item.exact) return pathname === item.to;
+
+    if (item.to === "/jobs") {
+      return (
+        pathname.startsWith("/jobs") ||
+        pathname.startsWith("/job/") ||
+        pathname.startsWith("/my-jobs") ||
+        pathname.startsWith("/my-job-applications") ||
+        pathname.startsWith("/employer")
+      );
+    }
+
+    return pathname === item.to || pathname.startsWith(`${item.to}/`);
+  };
+
   const renderItem = (item: NavItem, onClick?: () => void) => {
     const baseCls =
-      "rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground";
-    const activeCls = "text-foreground bg-accent";
+      "rounded-md px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-foreground";
+    const activeCls = "bg-accent text-foreground shadow-card";
     if (item.to && !(onPortfolioHome && item.sectionId)) {
-      const isActive = onPortfolioHome && item.sectionId === "top" && activeSection === "top";
+      const isActive = isRouteActive(item);
       return (
           <Link
             key={item.label}
