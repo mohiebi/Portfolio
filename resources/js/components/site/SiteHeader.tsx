@@ -15,8 +15,8 @@ const portfolioNav: NavItem[] = [
 
 const projectsNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true },
-  { label: "Tasks Manager", to: "/taskmanager" },
   { label: "Book Review", to: "/books" },
+  { label: "Tasks Manager", to: "/taskmanager" },
   { label: "Job Board", to: "/jobs" },
   { label: "Contact Me", href: "/#contact" },
 ];
