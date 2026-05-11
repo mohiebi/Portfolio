@@ -264,7 +264,7 @@ export default function HomePage() {
                 <a href="#projects">View projects</a>
               </Button>
               <Button asChild size="lg" variant="ghost">
-                <a href="/CV/MHEbrahimi_CV.pdf"><FileDown className="mr-2 h-4 w-4" /> Download CV</a>
+                <a href="/CV/mohi-cv.pdf"><FileDown className="mr-2 h-4 w-4" /> Download CV</a>
               </Button>
             </motion.div>
 
@@ -445,7 +445,7 @@ export default function HomePage() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild variant="outline">
-                <a href="/CV/MHEbrahimi_CV.pdf"><FileDown className="mr-2 h-4 w-4" /> Download CV</a>
+                <a href="/CV/mohi-cv.pdf"><FileDown className="mr-2 h-4 w-4" /> Download CV</a>
               </Button>
               <Button asChild variant="ghost"><a href="#contact">Get in touch</a></Button>
             </div>
@@ -646,7 +646,7 @@ export default function HomePage() {
               </a>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="/CV/MHEbrahimi_CV.pdf">
+              <a href="/CV/mohi-cv.pdf">
                 <FileDown className="mr-2 h-4 w-4" /> Download CV
               </a>
             </Button>

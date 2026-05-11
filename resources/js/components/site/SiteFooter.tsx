@@ -11,7 +11,7 @@ export function SiteFooter() {
             Web developer crafting Laravel and NestJS backends with Vue frontends. Available for freelance and full-time work.
           </p>
           <a
-            href="/CV/MHEbrahimi_CV.pdf"
+            href="/CV/mohi-cv.pdf"
             className="mt-4 inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-foreground hover:bg-accent"
           >
             <FileDown className="h-4 w-4" /> Download CV

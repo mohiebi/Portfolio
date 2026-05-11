@@ -2,7 +2,7 @@ import { Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoUrl from "@/assets/logo.png";
+import logoUrl from "@/assets/mohi-logo.svg";
 
 type NavItem = { label: string; to?: string; href?: string; exact?: boolean; sectionId?: string };
 
@@ -113,9 +113,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 font-display text-base font-semibold">
-          <img src={logoUrl} alt="Mohi logo" className="h-9 w-9 rounded-md bg-white p-1 object-contain" />
-          <span>Mohi</span>
+        <Link href="/" aria-label="Mohi home" className="flex items-center">
+          <img src={logoUrl} alt="Mohi logo" className="h-12 w-12 rounded-md bg-white p-1.5 object-contain" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
