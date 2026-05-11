@@ -114,7 +114,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="Mohi home" className="flex items-center">
-          <img src={logoUrl} alt="Mohi logo" className="h-12 w-12 rounded-md bg-white p-1.5 object-contain" />
+          <img src={logoUrl} alt="Mohi logo" className="h-8 w-auto object-contain" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
