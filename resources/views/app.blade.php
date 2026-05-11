@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Mohi portfolio and Laravel project demos.">
     <meta name="author" content="Mohi">
-    <link rel="icon" type="image/x-icon" href="/img/M.H.Ebrahimi-white.webp">
+    <link rel="icon" type="image/svg+xml" href="/img/mohi-logo.svg">
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.tsx'])
     @inertiaHead
