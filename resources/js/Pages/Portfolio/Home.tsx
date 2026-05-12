@@ -1,9 +1,9 @@
 import { Head, Link } from "@inertiajs/react";
 import {
-  ArrowRight, Mail, Linkedin, Send, FileDown, Sparkles, Database, Code2,
+  ArrowRight, Mail, Linkedin, FileDown, Sparkles, Database, Code2,
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
   Building2, Phone, Globe, Copy, MessageCircle, GraduationCap, Briefcase,
-  Cpu, GitBranch,
+  Cpu, GitBranch, Github,
 } from "lucide-react";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
@@ -261,7 +261,9 @@ export default function HomePage() {
                 <a href="#contact">Get in touch <ArrowRight className="ml-2 h-4 w-4" /></a>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a href="#projects">View projects</a>
+                <a href="https://github.com/mohiebi" target="_blank" rel="noreferrer">
+                  <Github className="mr-2 h-4 w-4" /> GitHub
+                </a>
               </Button>
               <Button asChild size="lg" variant="ghost">
                 <a href="/CV/mohi-cv.pdf"><FileDown className="mr-2 h-4 w-4" /> Download CV</a>
@@ -447,7 +449,11 @@ export default function HomePage() {
               <Button asChild variant="outline">
                 <a href="/CV/mohi-cv.pdf"><FileDown className="mr-2 h-4 w-4" /> Download CV</a>
               </Button>
-              <Button asChild variant="ghost"><a href="#contact">Get in touch</a></Button>
+              <Button asChild variant="ghost">
+                <a href="https://github.com/mohiebi" target="_blank" rel="noreferrer">
+                  <Github className="mr-2 h-4 w-4" /> GitHub
+                </a>
+              </Button>
             </div>
           </motion.div>
 
@@ -561,13 +567,13 @@ export default function HomePage() {
                 accent: "from-sky-500/30 via-sky-500/10 to-transparent",
               },
               {
-                key: "telegram",
-                icon: Send,
-                label: "Telegram",
-                value: "@emohamadhosein",
-                href: "https://t.me/emohamadhosein",
-                cta: "Start a chat",
-                accent: "from-cyan-400/30 via-cyan-400/10 to-transparent",
+                key: "github",
+                icon: Github,
+                label: "GitHub",
+                value: "github.com/mohiebi",
+                href: "https://github.com/mohiebi",
+                cta: "View my code",
+                accent: "from-zinc-500/30 via-zinc-500/10 to-transparent",
               },
             ].map((c) => (
               <motion.a

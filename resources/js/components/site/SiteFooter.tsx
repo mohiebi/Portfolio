@@ -1,5 +1,5 @@
 import { Link } from "@inertiajs/react";
-import { Mail, Linkedin, Send, FileDown } from "lucide-react";
+import { Mail, Linkedin, FileDown, Github } from "lucide-react";
 
 export function SiteFooter() {
   return (
@@ -32,7 +32,7 @@ export function SiteFooter() {
           <ul className="mt-3 space-y-2 text-sm">
             <li><a href="mailto:e.mohamadhosein@gmail.com" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Mail className="h-4 w-4" />Email</a></li>
             <li><a href="https://www.linkedin.com/in/mohiebi" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Linkedin className="h-4 w-4" />LinkedIn</a></li>
-            <li><a href="https://t.me/emohamadhosein" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Send className="h-4 w-4" />Telegram</a></li>
+            <li><a href="https://github.com/mohiebi" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Github className="h-4 w-4" />GitHub</a></li>
           </ul>
         </div>
       </div>
