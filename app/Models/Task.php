@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\Auth;
 class Task extends Model
 {
     use HasFactory;
-    protected $fillable=['title','description','long_description'];
+    protected $fillable = ['title', 'description', 'long_description', 'complete'];
 
-    public function toggleComplete(){
-        $this->complete= !$this->complete;
-        $this->save();    
+    protected $casts = [
+        'complete' => 'boolean',
+    ];
+
+    public function toggleComplete(): void
+    {
+        $this->complete = ! $this->complete;
+        $this->save();
     }
 
     public static function boot()
@@ -25,11 +30,8 @@ class Task extends Model
             $task->user_id = Auth::id();
         });
     }
-    public function user() : BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 }
-
-
-

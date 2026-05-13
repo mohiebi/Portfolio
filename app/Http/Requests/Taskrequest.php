@@ -22,9 +22,10 @@ class Taskrequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'=> 'required|max:255',
-            'description'=>'required',
-            'long_description'=>'nullable'
-           ];
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'long_description' => ['nullable', 'string'],
+            'complete' => ['sometimes', 'boolean'],
+        ];
     }
 }
