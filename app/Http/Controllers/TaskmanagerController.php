@@ -13,10 +13,13 @@ class TaskmanagerController extends Controller
      */
     public function index()
     {
-        $tasks = auth()->user()->tasks()->latest()->get();
+        $tasks = auth()->check()
+            ? auth()->user()->tasks()->latest()->get()
+            : $this->demoTasks();
 
         return Inertia::render('Taskmanager/Index', [
             'tasks' => $tasks,
+            'demoMode' => auth()->guest(),
         ]);
     }
 
@@ -105,5 +108,56 @@ class TaskmanagerController extends Controller
     private function ownedTask(Task $task): Task
     {
         return auth()->user()->tasks()->whereKey($task->id)->firstOrFail();
+    }
+
+    private function demoTasks(): array
+    {
+        return [
+            [
+                'id' => 1,
+                'title' => 'Polish portfolio hero copy',
+                'description' => 'Tighten the headline and CTA wording.',
+                'long_description' => 'Iterate on the headline, subheading, and call-to-action so the first screen explains the portfolio clearly.',
+                'complete' => false,
+                'created_at' => '2 days ago',
+                'updated_at' => '2 days ago',
+            ],
+            [
+                'id' => 2,
+                'title' => 'Refactor BookController filters',
+                'description' => 'Extract filter scopes from controller into the model.',
+                'long_description' => 'Move popular and highest-rated filters into reusable Eloquent scopes.',
+                'complete' => true,
+                'created_at' => '5 days ago',
+                'updated_at' => '5 days ago',
+            ],
+            [
+                'id' => 3,
+                'title' => 'Write README for Job Board',
+                'description' => 'Document purpose, sample data, and project behavior.',
+                'long_description' => 'Explain the project as a portfolio sample without local setup instructions.',
+                'complete' => false,
+                'created_at' => '1 week ago',
+                'updated_at' => '1 week ago',
+            ],
+            [
+                'id' => 4,
+                'title' => 'Add Pest tests for Auth',
+                'description' => 'Cover login, register, and password reset.',
+                'long_description' => '',
+                'complete' => false,
+                'created_at' => '1 week ago',
+                'updated_at' => '1 week ago',
+            ],
+            [
+                'id' => 5,
+                'title' => 'Review task manager demo flow',
+                'description' => 'Make sure guests can explore without saving data.',
+                'long_description' => 'Guest interactions should feel real, but only authenticated users can persist their own tasks.',
+                'complete' => true,
+                'created_at' => 'Today',
+                'updated_at' => 'Today',
+            ],
+        ];
     }
 }

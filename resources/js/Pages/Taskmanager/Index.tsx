@@ -8,36 +8,59 @@ import type { Task } from "@/types";
 
 type Props = {
   tasks: Task[];
+  demoMode?: boolean;
 };
 
-export default function TasksIndex({ tasks }: Props) {
+export default function TasksIndex({ tasks, demoMode = false }: Props) {
   const toggle = useForm({});
   const [tab, setTab] = useState<"all" | "open" | "done">("all");
+  const [demoTasks, setDemoTasks] = useState(tasks);
+  const visibleTasks = demoMode ? demoTasks : tasks;
+  const newTaskHref = demoMode ? "/login?redirect=/taskmanager/create" : "/taskmanager/create";
 
-  const open = tasks.filter((task) => !task.complete).length;
-  const done = tasks.filter((task) => task.complete).length;
+  const open = visibleTasks.filter((task) => !task.complete).length;
+  const done = visibleTasks.filter((task) => task.complete).length;
   const filtered = useMemo(
     () =>
-      tasks.filter((task) => {
+      visibleTasks.filter((task) => {
         if (tab === "open") return !task.complete;
         if (tab === "done") return task.complete;
 
         return true;
       }),
-    [tasks, tab],
+    [visibleTasks, tab],
   );
+
+  const handleToggle = (task: Task) => {
+    if (demoMode) {
+      setDemoTasks((current) =>
+        current.map((item) =>
+          item.id === task.id ? { ...item, complete: !item.complete } : item,
+        ),
+      );
+
+      return;
+    }
+
+    toggle.put(`/taskmanager/${task.id}/toggle-complete`, { preserveScroll: true });
+  };
 
   return (
     <SiteShell>
       <Head title="TaskManager" />
       <PageHeader eyebrow="Project · TaskManager" title="Your tasks" description="A focused dashboard for what's on your plate.">
-        <Button asChild><Link href="/taskmanager/create"><Plus className="mr-2 h-4 w-4" /> New task</Link></Button>
+        <Button asChild><Link href={newTaskHref}><Plus className="mr-2 h-4 w-4" /> New task</Link></Button>
       </PageHeader>
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <StatusMessage />
+        {demoMode && (
+          <div className="mt-6 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+            You are viewing a demo. You can toggle these sample tasks here, but changes are not saved. Log in or register to create and manage your own tasks.
+          </div>
+        )}
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Stat label="Total" value={tasks.length} />
+          <Stat label="Total" value={visibleTasks.length} />
           <Stat label="Open" value={open} accent="text-warning" />
           <Stat label="Completed" value={done} accent="text-success" />
         </div>
@@ -64,8 +87,8 @@ export default function TasksIndex({ tasks }: Props) {
             <EmptyState
               icon={ListChecks}
               title="No tasks here"
-              description={tasks.length === 0 ? "Create your first task to get started." : "No tasks match this view."}
-              action={<Button asChild><Link href="/taskmanager/create"><Plus className="mr-2 h-4 w-4" />Create task</Link></Button>}
+              description={visibleTasks.length === 0 ? "Create your first task to get started." : "No tasks match this view."}
+              action={<Button asChild><Link href={newTaskHref}><Plus className="mr-2 h-4 w-4" />Create task</Link></Button>}
             />
           </div>
         ) : (
@@ -75,24 +98,35 @@ export default function TasksIndex({ tasks }: Props) {
                 <button
                   type="button"
                   disabled={toggle.processing}
-                  onClick={() => toggle.put(`/taskmanager/${task.id}/toggle-complete`, { preserveScroll: true })}
+                  onClick={() => handleToggle(task)}
                   className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors ${task.complete ? "border-success bg-success text-success-foreground" : "border-border hover:border-primary"}`}
                   aria-label="Toggle complete"
                 >
                   {task.complete ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5 opacity-0" />}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <Link href={`/taskmanager/${task.id}`} className="block">
-                    <p className={`font-medium ${task.complete ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
-                    <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{task.description}</p>
-                  </Link>
+                  {demoMode ? (
+                    <div>
+                      <p className={`font-medium ${task.complete ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
+                      <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{task.description}</p>
+                    </div>
+                  ) : (
+                    <Link href={`/taskmanager/${task.id}`} className="block">
+                      <p className={`font-medium ${task.complete ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
+                      <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">{task.description}</p>
+                    </Link>
+                  )}
                   <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                     <Clock className="h-3 w-3" /> {formatTaskDate(task.created_at)}
                     {task.complete && <span className="rounded-full bg-success/15 px-2 py-0.5 text-success">Completed</span>}
                   </div>
                 </div>
                 <div className="hidden gap-1 sm:flex">
-                  <Button asChild size="sm" variant="ghost"><Link href={`/taskmanager/${task.id}/edit`}>Edit</Link></Button>
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href={demoMode ? "/login?redirect=/taskmanager/create" : `/taskmanager/${task.id}/edit`}>
+                      Edit
+                    </Link>
+                  </Button>
                 </div>
               </li>
             ))}

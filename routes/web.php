@@ -63,9 +63,12 @@ Route::middleware('auth')->group(function(){
         ->resource('my-jobs', MyJobController::class);
 });
 Route::middleware('auth')->group(function(){
-    Route::resource('taskmanager', TaskmanagerController::class) ;
+    Route::resource('taskmanager', TaskmanagerController::class)
+        ->except(['index']);
 });
 
+Route::resource('taskmanager', TaskmanagerController::class)
+    ->only(['index']);
 
 Route::put('taskmanager/{task}/toggle-complete', [TaskmanagerController::class ,'togglecomplete'])
     ->middleware('auth')
