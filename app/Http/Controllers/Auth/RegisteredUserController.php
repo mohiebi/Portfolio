@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Auth\Concerns\StoresIntendedRedirect;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -15,11 +16,15 @@ use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
+    use StoresIntendedRedirect;
+
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $this->storeIntendedRedirect($request);
+
         return Inertia::render('Auth/Register');
     }
 
@@ -30,6 +35,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->storeIntendedRedirect($request);
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -45,9 +52,9 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
-        
-        return redirect(route('verification.notice', absolute: false));
-        
-        
+
+        $request->session()->regenerate();
+
+        return redirect()->intended($this->intendedFallback($request));
     }
 }

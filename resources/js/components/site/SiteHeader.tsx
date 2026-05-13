@@ -42,6 +42,7 @@ export function SiteHeader() {
   const onProjects = isProjectsRoute(pathname);
   const nav = onProjects ? projectsNav : portfolioNav;
   const onPortfolioHome = pathname === "/";
+  const authUrl = (path: "/login" | "/register") => `${path}?redirect=${encodeURIComponent(page.url)}`;
   const [activeSection, setActiveSection] = useState<string>("top");
 
   useEffect(() => {
@@ -138,10 +139,10 @@ export function SiteHeader() {
             ) : (
               <>
                 <Button asChild variant="ghost" size="sm">
-                  <Link href="/login">Log in</Link>
+                  <Link href={authUrl("/login")}>Log in</Link>
                 </Button>
                 <Button asChild size="sm">
-                  <Link href="/register">Sign up</Link>
+                  <Link href={authUrl("/register")}>Sign up</Link>
                 </Button>
               </>
             )}
@@ -179,8 +180,8 @@ export function SiteHeader() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
-                    <Button asChild variant="outline" size="sm"><Link href="/login">Log in</Link></Button>
-                    <Button asChild size="sm"><Link href="/register">Sign up</Link></Button>
+                    <Button asChild variant="outline" size="sm"><Link href={authUrl("/login")}>Log in</Link></Button>
+                    <Button asChild size="sm"><Link href={authUrl("/register")}>Sign up</Link></Button>
                   </div>
                 )}
               </div>

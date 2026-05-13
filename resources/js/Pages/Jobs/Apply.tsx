@@ -30,7 +30,7 @@ export default function ApplyForm({ job }: Props) {
         <div className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
           <p className="text-sm text-muted-foreground">Applying to</p>
           <h1 className="font-display text-2xl font-semibold">{job.title} / {job.employer?.company_name ?? "Company"}</h1>
-          <form encType="multipart/form-data" className="mt-6 grid gap-5" onSubmit={(event) => { event.preventDefault(); form.post(`/job/${job.id}/application`); }}>
+          <form encType="multipart/form-data" className="mt-6 grid gap-5" onSubmit={(event) => { event.preventDefault(); form.post(`/jobs/${job.id}/apply`); }}>
             <div className="grid gap-1.5">
               <Label htmlFor="expected_salary">Expected salary</Label>
               <Input id="expected_salary" value={form.data.expected_salary} onChange={(event) => form.setData("expected_salary", event.target.value)} type="number" required />

@@ -21,7 +21,7 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified' , 'admin'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -48,8 +48,10 @@ Route::resource('jobs', JobController::class)
     ->only(['index' , 'show']);
 
 Route::middleware('auth')->group(function(){
-    Route::resource('job.application' , JobApplicationController::class)
-    ->only(['store' , 'create']);
+    Route::get('jobs/{job}/apply', [JobApplicationController::class, 'create'])
+        ->name('jobs.apply');
+    Route::post('jobs/{job}/apply', [JobApplicationController::class, 'store'])
+        ->name('jobs.apply.store');
 
     Route::resource('my-job-applications', myJobApplicationController::class)
         ->only(['index', 'destroy']);

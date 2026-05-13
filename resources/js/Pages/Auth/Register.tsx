@@ -1,4 +1,4 @@
-import { Head, Link, useForm } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import { AuthShell } from "@/components/site/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,10 @@ function GoogleIcon() {
 }
 
 export default function RegisterPage() {
+  const page = usePage();
+  const redirect = new URLSearchParams(page.url.split("?")[1] ?? "").get("redirect");
+  const authUrl = (path: "/login" | "/register" | "/google/auth") =>
+    redirect ? `${path}?redirect=${encodeURIComponent(redirect)}` : path;
   const form = useForm({
     name: "",
     email: "",
@@ -24,16 +28,16 @@ export default function RegisterPage() {
   });
 
   return (
-    <AuthShell title="Create your account" subtitle="It only takes a minute." footer={<>Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link></>}>
+    <AuthShell title="Create your account" subtitle="It only takes a minute." footer={<>Already have an account? <Link href={authUrl("/login")} className="text-primary hover:underline">Log in</Link></>}>
       <Head title="Create account" />
-      <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); form.post("/register"); }}>
+      <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); form.post(authUrl("/register")); }}>
         <Field label="Name" error={form.errors.name}><Input value={form.data.name} onChange={(event) => form.setData("name", event.target.value)} required /></Field>
         <Field label="Email" error={form.errors.email}><Input type="email" value={form.data.email} onChange={(event) => form.setData("email", event.target.value)} required /></Field>
         <Field label="Password" error={form.errors.password}><Input type="password" value={form.data.password} onChange={(event) => form.setData("password", event.target.value)} required /></Field>
         <Field label="Confirm password" error={form.errors.password_confirmation}><Input type="password" value={form.data.password_confirmation} onChange={(event) => form.setData("password_confirmation", event.target.value)} required /></Field>
         <Button disabled={form.processing}>Create account</Button>
         <Button asChild variant="outline" type="button">
-          <a href="/google/auth" className="gap-2">
+          <a href={authUrl("/google/auth")} className="gap-2">
             <GoogleIcon />
             Continue with Google
           </a>

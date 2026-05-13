@@ -26,6 +26,22 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('verification.notice', absolute: false));
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
+
+    public function test_registration_redirect_parameter_returns_user_to_previous_page(): void
+    {
+        $this->get('/register?redirect=/jobs?category=IT')
+            ->assertOk();
+
+        $response = $this->post('/register?redirect=/jobs?category=IT', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/jobs?category=IT');
     }
 }

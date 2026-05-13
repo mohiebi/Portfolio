@@ -10,7 +10,9 @@ type Props = {
 };
 
 export default function JobShow({ job }: Props) {
-  const user = usePage<PageProps>().props.auth.user;
+  const page = usePage<PageProps>();
+  const user = page.props.auth.user;
+  const loginUrl = `/login?redirect=${encodeURIComponent(page.url)}`;
 
   return (
     <SiteShell>
@@ -40,7 +42,7 @@ export default function JobShow({ job }: Props) {
                   <Button asChild><Link href={`/jobs/${job.id}/apply`}>Apply now</Link></Button>
                 )
               ) : (
-                <Button asChild><Link href="/login">Log in to apply</Link></Button>
+                <Button asChild><Link href={loginUrl}>Log in to apply</Link></Button>
               )}
             </div>
             <div className="prose prose-invert mt-8 max-w-none text-foreground/90">

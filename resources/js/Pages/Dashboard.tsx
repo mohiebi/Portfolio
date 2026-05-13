@@ -9,7 +9,7 @@ export default function Dashboard() {
   return (
     <SiteShell>
       <Head title="Dashboard" />
-      <PageHeader eyebrow="Admin" title={`Welcome, ${user?.name ?? "Mohi"}`} description="Jump into the Laravel project demos and account tools." />
+      <PageHeader eyebrow="Dashboard" title={`Welcome, ${user?.name ?? "Mohi"}`} description="Jump into the Laravel project demos and account tools." />
       <section className="mx-auto grid max-w-5xl gap-4 px-4 py-8 sm:px-6 md:grid-cols-2 lg:px-8">
         <Tile href="/books" icon={BookOpen} title="BookReview" description="Browse books and reviews." />
         <Tile href="/taskmanager" icon={ListChecks} title="TaskManager" description="Manage authenticated tasks." />
