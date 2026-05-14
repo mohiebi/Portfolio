@@ -36,10 +36,16 @@ class TaskmanagerController extends Controller
      */
     public function store(Taskrequest $request)
     {
+        $returnToIndex = $request->boolean('return_to_index');
         $data = $request->validated();
         $data['description'] ??= '';
 
         $taskmanager = Task::create($data);
+
+        if ($returnToIndex) {
+            return redirect()->route('taskmanager.index')
+                ->with('success', 'Task created.');
+        }
 
         return redirect()->route('taskmanager.show', ['taskmanager' => $taskmanager->id])
             ->with('success', 'Task created.');
@@ -116,7 +122,7 @@ class TaskmanagerController extends Controller
             [
                 'id' => 1,
                 'title' => 'Polish portfolio hero copy',
-                'description' => 'Tighten the headline and CTA wording.',
+                'description' => '',
                 'long_description' => 'Iterate on the headline, subheading, and call-to-action so the first screen explains the portfolio clearly.',
                 'complete' => false,
                 'created_at' => '2 days ago',
@@ -125,7 +131,7 @@ class TaskmanagerController extends Controller
             [
                 'id' => 2,
                 'title' => 'Refactor BookController filters',
-                'description' => 'Extract filter scopes from controller into the model.',
+                'description' => '',
                 'long_description' => 'Move popular and highest-rated filters into reusable Eloquent scopes.',
                 'complete' => true,
                 'created_at' => '5 days ago',
@@ -134,7 +140,7 @@ class TaskmanagerController extends Controller
             [
                 'id' => 3,
                 'title' => 'Write README for Job Board',
-                'description' => 'Document purpose, sample data, and project behavior.',
+                'description' => '',
                 'long_description' => 'Explain the project as a portfolio sample without local setup instructions.',
                 'complete' => false,
                 'created_at' => '1 week ago',
@@ -143,7 +149,7 @@ class TaskmanagerController extends Controller
             [
                 'id' => 4,
                 'title' => 'Add Pest tests for Auth',
-                'description' => 'Cover login, register, and password reset.',
+                'description' => '',
                 'long_description' => '',
                 'complete' => false,
                 'created_at' => '1 week ago',
@@ -152,7 +158,7 @@ class TaskmanagerController extends Controller
             [
                 'id' => 5,
                 'title' => 'Review task manager demo flow',
-                'description' => 'Make sure guests can explore without saving data.',
+                'description' => '',
                 'long_description' => 'Guest interactions should feel real, but only authenticated users can persist their own tasks.',
                 'complete' => true,
                 'created_at' => 'Today',

@@ -30,7 +30,6 @@ export default function TaskShow({ task }: Props) {
                 {task.complete ? "Completed" : "In progress"}
               </span>
               <h1 className="mt-3 font-display text-3xl font-semibold">{task.title}</h1>
-              {task.description && <p className="mt-2 text-muted-foreground">{task.description}</p>}
             </div>
           </div>
 

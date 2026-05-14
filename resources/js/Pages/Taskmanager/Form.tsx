@@ -15,7 +15,6 @@ export default function TaskForm({ task }: Props) {
   const editing = Boolean(task);
   const form = useForm({
     title: task?.title ?? "",
-    description: task?.description ?? "",
     long_description: task?.long_description ?? "",
     complete: task?.complete ?? false,
   });
@@ -44,11 +43,6 @@ export default function TaskForm({ task }: Props) {
               <Label htmlFor="title">Title</Label>
               <Input id="title" value={form.data.title} onChange={(event) => form.setData("title", event.target.value)} required placeholder="Ship release notes" />
               {form.errors.title && <p className="text-sm text-destructive">{form.errors.title}</p>}
-            </div>
-            <div className="grid gap-1.5">
-              <Label htmlFor="description">Short description</Label>
-              <Input id="description" value={form.data.description} onChange={(event) => form.setData("description", event.target.value)} placeholder="One-line summary" />
-              {form.errors.description && <p className="text-sm text-destructive">{form.errors.description}</p>}
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="long_description">Details</Label>

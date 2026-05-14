@@ -58,7 +58,7 @@ export type Job = {
 export type Task = {
   id: number;
   title: string;
-  description: string;
+  description?: string | null;
   long_description?: string | null;
   complete: boolean;
   created_at?: string;
