@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Taskrequest;
 use App\Models\Task;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class TaskmanagerController extends Controller
@@ -41,6 +42,13 @@ class TaskmanagerController extends Controller
         $data['description'] ??= '';
 
         $taskmanager = Task::create($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'task' => $taskmanager,
+                'message' => 'Task created.',
+            ], 201);
+        }
 
         if ($returnToIndex) {
             return redirect()->route('taskmanager.index')
@@ -93,19 +101,34 @@ class TaskmanagerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Task $taskmanager)
+    public function destroy(Task $taskmanager, Request $request)
     {
         $taskmanager = $this->ownedTask($taskmanager);
+        $deletedTaskId = $taskmanager->id;
         $taskmanager->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $deletedTaskId,
+                'message' => 'Task deleted.',
+            ]);
+        }
 
         return redirect()->route('taskmanager.index')
             ->with('success', 'Task deleted.');
     }
 
-    public function togglecomplete(Task $task)
+    public function togglecomplete(Task $task, Request $request)
     {
         $task = $this->ownedTask($task);
         $task->toggleComplete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'task' => $task,
+                'message' => 'Task updated.',
+            ]);
+        }
 
         return redirect()->back()
             ->with('success', 'Task updated.');

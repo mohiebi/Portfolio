@@ -1,5 +1,5 @@
-import { Head, Link, router, useForm } from "@inertiajs/react";
-import { useMemo, useState } from "react";
+import { Head, Link, router } from "@inertiajs/react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { Check, Circle, Clock, ListChecks, Plus, Trash2 } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
@@ -13,31 +13,45 @@ type Props = {
 };
 
 export default function TasksIndex({ tasks, demoMode = false }: Props) {
-  const toggle = useForm({});
-  const destroy = useForm({});
-  const quickAdd = useForm({
-    title: "",
-    return_to_index: true,
-  });
   const [tab, setTab] = useState<"all" | "open" | "done">("all");
+  const [savedTasks, setSavedTasks] = useState(tasks);
   const [demoTasks, setDemoTasks] = useState(tasks);
-  const visibleTasks = demoMode ? demoTasks : tasks;
+  const [quickTitle, setQuickTitle] = useState("");
+  const [quickTitleError, setQuickTitleError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [quickAddProcessing, setQuickAddProcessing] = useState(false);
+  const [workingTaskIds, setWorkingTaskIds] = useState<number[]>([]);
   const newTaskHref = demoMode ? "/login?redirect=/taskmanager/create" : "/taskmanager/create";
 
-  const open = visibleTasks.filter((task) => !task.complete).length;
-  const done = visibleTasks.filter((task) => task.complete).length;
+  useEffect(() => {
+    setSavedTasks(tasks);
+    setDemoTasks(tasks);
+  }, [tasks]);
+
+  const displayedTasks = demoMode ? demoTasks : savedTasks;
+
+  const open = displayedTasks.filter((task) => !task.complete).length;
+  const done = displayedTasks.filter((task) => task.complete).length;
   const filtered = useMemo(
     () =>
-      visibleTasks.filter((task) => {
+      displayedTasks.filter((task) => {
         if (tab === "open") return !task.complete;
         if (tab === "done") return task.complete;
 
         return true;
       }),
-    [visibleTasks, tab],
+    [displayedTasks, tab],
   );
 
-  const handleToggle = (task: Task) => {
+  const setTaskWorking = (taskId: number, working: boolean) => {
+    setWorkingTaskIds((current) =>
+      working
+        ? Array.from(new Set([...current, taskId]))
+        : current.filter((id) => id !== taskId),
+    );
+  };
+
+  const handleToggle = async (task: Task) => {
     if (demoMode) {
       setDemoTasks((current) =>
         current.map((item) =>
@@ -48,13 +62,38 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
       return;
     }
 
-    toggle.put(`/taskmanager/${task.id}/toggle-complete`, { preserveScroll: true });
+    setActionError(null);
+    setTaskWorking(task.id, true);
+    setSavedTasks((current) =>
+      current.map((item) =>
+        item.id === task.id ? { ...item, complete: !item.complete } : item,
+      ),
+    );
+
+    try {
+      const { task: updatedTask } = await taskRequest<TaskResponse>(
+        `/taskmanager/${task.id}/toggle-complete`,
+        { method: "PUT" },
+      );
+
+      setSavedTasks((current) =>
+        current.map((item) => (item.id === updatedTask.id ? updatedTask : item)),
+      );
+    } catch (error) {
+      setSavedTasks((current) =>
+        current.map((item) => (item.id === task.id ? task : item)),
+      );
+      setActionError(getMessage(error));
+    } finally {
+      setTaskWorking(task.id, false);
+    }
   };
 
-  const handleQuickAdd = (event: React.FormEvent) => {
+  const handleQuickAdd = async (event: FormEvent) => {
     event.preventDefault();
+    const title = quickTitle.trim();
 
-    if (!quickAdd.data.title.trim()) return;
+    if (!title) return;
 
     if (demoMode) {
       router.visit("/login?redirect=/taskmanager/create");
@@ -62,10 +101,47 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
       return;
     }
 
-    quickAdd.post("/taskmanager", {
-      preserveScroll: true,
-      onSuccess: () => quickAdd.reset("title"),
-    });
+    setActionError(null);
+    setQuickTitleError(null);
+    setQuickAddProcessing(true);
+
+    try {
+      const { task } = await taskRequest<TaskResponse>("/taskmanager", {
+        method: "POST",
+        body: {
+          title,
+          return_to_index: true,
+        },
+      });
+
+      setSavedTasks((current) => [task, ...current]);
+      setQuickTitle("");
+    } catch (error) {
+      if (error instanceof TaskRequestError && error.errors.title) {
+        setQuickTitleError(firstError(error.errors.title));
+      } else {
+        setActionError(getMessage(error));
+      }
+    } finally {
+      setQuickAddProcessing(false);
+    }
+  };
+
+  const handleDelete = async (task: Task) => {
+    setActionError(null);
+    setTaskWorking(task.id, true);
+
+    try {
+      await taskRequest<DeleteResponse>(`/taskmanager/${task.id}`, {
+        method: "DELETE",
+      });
+
+      setSavedTasks((current) => current.filter((item) => item.id !== task.id));
+    } catch (error) {
+      setActionError(getMessage(error));
+    } finally {
+      setTaskWorking(task.id, false);
+    }
   };
 
   return (
@@ -76,6 +152,11 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
       </PageHeader>
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         <StatusMessage />
+        {actionError && (
+          <div className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            {actionError}
+          </div>
+        )}
         {demoMode && (
           <div className="mt-6 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
             You are viewing a demo. You can toggle these sample tasks here, but changes are not saved. Log in or register to create and manage your own tasks.
@@ -83,7 +164,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
         )}
 
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Stat label="Total" value={visibleTasks.length} />
+          <Stat label="Total" value={displayedTasks.length} />
           <Stat label="Open" value={open} accent="text-warning" />
           <Stat label="Completed" value={done} accent="text-success" />
         </div>
@@ -110,21 +191,24 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
             <div className="flex gap-2">
               <Input
                 aria-label="New task title"
-                value={quickAdd.data.title}
-                onChange={(event) => quickAdd.setData("title", event.target.value)}
+                value={quickTitle}
+                onChange={(event) => {
+                  setQuickTitle(event.target.value);
+                  setQuickTitleError(null);
+                }}
                 placeholder={demoMode ? "Log in to add your own task" : "Add a task title"}
-                disabled={quickAdd.processing}
+                disabled={quickAddProcessing}
               />
               <Button
                 type="submit"
                 className="shrink-0 px-3"
-                disabled={!quickAdd.data.title.trim() || quickAdd.processing}
+                disabled={!quickTitle.trim() || quickAddProcessing}
                 aria-label={demoMode ? "Log in to add task" : "Add task"}
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            {quickAdd.errors.title && <p className="mt-1 text-xs text-destructive">{quickAdd.errors.title}</p>}
+            {quickTitleError && <p className="mt-1 text-xs text-destructive">{quickTitleError}</p>}
           </form>
         </div>
 
@@ -133,7 +217,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
             <EmptyState
               icon={ListChecks}
               title="No tasks here"
-              description={visibleTasks.length === 0 ? "Create your first task to get started." : "No tasks match this view."}
+              description={displayedTasks.length === 0 ? "Create your first task to get started." : "No tasks match this view."}
               action={<Button asChild><Link href={newTaskHref}><Plus className="mr-2 h-4 w-4" />Create task</Link></Button>}
             />
           </div>
@@ -143,7 +227,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
               <li key={task.id} className="flex items-start gap-3 p-4 sm:p-5">
                 <button
                   type="button"
-                  disabled={toggle.processing}
+                  disabled={workingTaskIds.includes(task.id)}
                   onClick={() => handleToggle(task)}
                   className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors ${task.complete ? "border-success bg-success text-success-foreground" : "border-border hover:border-primary"}`}
                   aria-label="Toggle complete"
@@ -177,8 +261,8 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      disabled={destroy.processing}
-                      onClick={() => destroy.delete(`/taskmanager/${task.id}`, { preserveScroll: true })}
+                      disabled={workingTaskIds.includes(task.id)}
+                      onClick={() => handleDelete(task)}
                       aria-label={`Delete ${task.title}`}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -201,6 +285,84 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
       <p className={`mt-1 font-display text-2xl ${accent ?? ""}`}>{value}</p>
     </div>
   );
+}
+
+type RequestMethod = "POST" | "PUT" | "DELETE";
+
+type RequestOptions = {
+  method: RequestMethod;
+  body?: Record<string, unknown>;
+};
+
+type TaskResponse = {
+  task: Task;
+  message?: string;
+};
+
+type DeleteResponse = {
+  id: number;
+  message?: string;
+};
+
+type ValidationValue = string | string[];
+
+class TaskRequestError extends Error {
+  errors: Record<string, ValidationValue>;
+
+  constructor(message: string, errors: Record<string, ValidationValue> = {}) {
+    super(message);
+    this.name = "TaskRequestError";
+    this.errors = errors;
+  }
+}
+
+async function taskRequest<T>(url: string, options: RequestOptions): Promise<T> {
+  const response = await fetch(url, {
+    method: options.method,
+    credentials: "same-origin",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-CSRF-TOKEN": getCsrfToken(),
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  const payload = await parseJson(response);
+
+  if (!response.ok) {
+    throw new TaskRequestError(
+      payload.message ?? "The task could not be updated. Please try again.",
+      payload.errors ?? {},
+    );
+  }
+
+  return payload as T;
+}
+
+function getCsrfToken() {
+  return document
+    .querySelector<HTMLMetaElement>('meta[name="csrf-token"]')
+    ?.content ?? "";
+}
+
+async function parseJson(response: Response): Promise<Record<string, any>> {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
+function firstError(value: ValidationValue) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getMessage(error: unknown) {
+  if (error instanceof Error && error.message) return error.message;
+
+  return "The task could not be updated. Please try again.";
 }
 
 function formatTaskDate(value?: string) {
