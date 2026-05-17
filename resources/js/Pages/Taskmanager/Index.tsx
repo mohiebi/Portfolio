@@ -224,7 +224,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
           </div>
         )}
 
-        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="grid grid-cols-3 gap-3 sm:w-fit">
             <Stat label="Total" value={displayedTasks.length} />
             <Stat label="Active" value={active} accent="text-warning" />
@@ -232,7 +232,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
           </div>
 
           <form className="w-full lg:max-w-xl" onSubmit={handleQuickAdd}>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Input
                 aria-label="New task title"
                 value={quickTitle}
@@ -514,7 +514,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
   return (
     <div className="min-w-28 rounded-xl border border-border bg-card px-4 py-3 sm:min-w-36">
       <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-xl ${accent ?? ""}`}>{value}</p>
+      <p className={`mt-1 text-center font-display text-xl ${accent ?? ""}`}>{value}</p>
     </div>
   );
 }
