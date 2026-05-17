@@ -40,6 +40,10 @@ class TaskmanagerController extends Controller
         $returnToIndex = $request->boolean('return_to_index');
         $data = $request->validated();
         $data['description'] ??= '';
+        $data['status'] = ($data['complete'] ?? false)
+            ? Task::STATUS_DONE
+            : ($data['status'] ?? Task::STATUS_OPEN);
+        $data['complete'] = $data['status'] === Task::STATUS_DONE;
 
         $taskmanager = Task::create($data);
 
@@ -92,6 +96,12 @@ class TaskmanagerController extends Controller
         $data = $request->validated();
         $data['description'] ??= '';
 
+        if (array_key_exists('complete', $data)) {
+            $data['status'] = $data['complete'] ? Task::STATUS_DONE : Task::STATUS_OPEN;
+        } elseif (array_key_exists('status', $data)) {
+            $data['complete'] = $data['status'] === Task::STATUS_DONE;
+        }
+
         $taskmanager->update($data);
 
         return redirect()->route('taskmanager.show', ['taskmanager' => $taskmanager->id])
@@ -134,6 +144,30 @@ class TaskmanagerController extends Controller
             ->with('success', 'Task updated.');
     }
 
+    public function updateStatus(Task $task, Request $request)
+    {
+        $task = $this->ownedTask($task);
+        $data = $request->validate([
+            'status' => ['required', 'in:'.implode(',', [
+                Task::STATUS_OPEN,
+                Task::STATUS_IN_PROGRESS,
+                Task::STATUS_DONE,
+            ])],
+        ]);
+
+        $task->moveToStatus($data['status']);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'task' => $task,
+                'message' => 'Task updated.',
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Task updated.');
+    }
+
     private function ownedTask(Task $task): Task
     {
         return auth()->user()->tasks()->whereKey($task->id)->firstOrFail();
@@ -148,6 +182,7 @@ class TaskmanagerController extends Controller
                 'description' => '',
                 'long_description' => 'Iterate on the headline, subheading, and call-to-action so the first screen explains the portfolio clearly.',
                 'complete' => false,
+                'status' => Task::STATUS_OPEN,
                 'created_at' => '2 days ago',
                 'updated_at' => '2 days ago',
             ],
@@ -157,6 +192,7 @@ class TaskmanagerController extends Controller
                 'description' => '',
                 'long_description' => 'Move popular and highest-rated filters into reusable Eloquent scopes.',
                 'complete' => true,
+                'status' => Task::STATUS_DONE,
                 'created_at' => '5 days ago',
                 'updated_at' => '5 days ago',
             ],
@@ -166,6 +202,7 @@ class TaskmanagerController extends Controller
                 'description' => '',
                 'long_description' => 'Explain the project as a portfolio sample without local setup instructions.',
                 'complete' => false,
+                'status' => Task::STATUS_IN_PROGRESS,
                 'created_at' => '1 week ago',
                 'updated_at' => '1 week ago',
             ],
@@ -175,6 +212,7 @@ class TaskmanagerController extends Controller
                 'description' => '',
                 'long_description' => '',
                 'complete' => false,
+                'status' => Task::STATUS_OPEN,
                 'created_at' => '1 week ago',
                 'updated_at' => '1 week ago',
             ],
@@ -184,6 +222,7 @@ class TaskmanagerController extends Controller
                 'description' => '',
                 'long_description' => 'Guest interactions should feel real, but only authenticated users can persist their own tasks.',
                 'complete' => true,
+                'status' => Task::STATUS_DONE,
                 'created_at' => 'Today',
                 'updated_at' => 'Today',
             ],

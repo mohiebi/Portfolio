@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Task;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Nette\Utils\Random;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Task>
@@ -18,11 +17,14 @@ class TaskFactory extends Factory
      */
     public function definition(): array
     {
+        $complete = fake()->boolean;
+
         return [
             'title' => fake()->sentence(),
             'description' => fake()->paragraph,
             'long_description' => fake()->paragraph(5,true),
-            'complete' => fake()->boolean
+            'complete' => $complete,
+            'status' => $complete ? Task::STATUS_DONE : Task::STATUS_OPEN,
         ];
     }
 }

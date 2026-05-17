@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Task;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class Taskrequest extends FormRequest
 {
@@ -26,6 +28,11 @@ class Taskrequest extends FormRequest
             'description' => ['nullable', 'string'],
             'long_description' => ['nullable', 'string'],
             'complete' => ['sometimes', 'boolean'],
+            'status' => ['sometimes', Rule::in([
+                Task::STATUS_OPEN,
+                Task::STATUS_IN_PROGRESS,
+                Task::STATUS_DONE,
+            ])],
         ];
     }
 }
