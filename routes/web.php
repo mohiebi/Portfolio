@@ -74,5 +74,9 @@ Route::put('taskmanager/{task}/toggle-complete', [TaskmanagerController::class ,
     ->middleware('auth')
     ->name('taskmanager-toggle');
 
+Route::patch('taskmanager/{task}/status', [TaskmanagerController::class, 'updateStatus'])
+    ->middleware('auth')
+    ->name('taskmanager-status');
+
 Route::post('sendmail', [ContactController::class ,'contact'] )
 ->name('contact');
