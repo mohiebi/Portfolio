@@ -10,7 +10,12 @@ use Illuminate\Support\Facades\Auth;
 class Task extends Model
 {
     use HasFactory;
-    protected $fillable = ['title', 'description', 'long_description', 'complete'];
+
+    public const STATUS_OPEN = 'open';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_DONE = 'done';
+
+    protected $fillable = ['title', 'description', 'long_description', 'complete', 'status'];
 
     protected $casts = [
         'complete' => 'boolean',
@@ -19,6 +24,14 @@ class Task extends Model
     public function toggleComplete(): void
     {
         $this->complete = ! $this->complete;
+        $this->status = $this->complete ? self::STATUS_DONE : self::STATUS_OPEN;
+        $this->save();
+    }
+
+    public function moveToStatus(string $status): void
+    {
+        $this->status = $status;
+        $this->complete = $status === self::STATUS_DONE;
         $this->save();
     }
 
