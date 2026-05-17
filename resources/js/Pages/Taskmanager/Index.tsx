@@ -308,8 +308,28 @@ function TaskBoard({
   onToggle: (task: Task) => void;
 }) {
   return (
-    <div className="mt-6 w-full overflow-x-auto">
-      <table className="w-full min-w-[960px] table-fixed overflow-hidden rounded-[1.4rem] border border-[#243551] bg-[#111a2f]/95 shadow-card">
+    <>
+      <div className="mt-6 overflow-hidden rounded-[1.4rem] border border-[#243551] bg-[#111a2f]/95 shadow-card md:hidden">
+        {STATUS_COLUMNS.map((column) => (
+          <MobileTaskLane
+            key={column.status}
+            column={column}
+            demoMode={demoMode}
+            dragging={dragOverStatus === column.status}
+            tasks={groupedTasks[column.status]}
+            workingTaskIds={workingTaskIds}
+            onDelete={onDelete}
+            onDragEnd={onDragEnd}
+            onDragOver={onDragOver}
+            onDragStart={onDragStart}
+            onDrop={onDrop}
+            onToggle={onToggle}
+          />
+        ))}
+      </div>
+
+      <div className="mt-6 hidden w-full overflow-x-auto md:block">
+        <table className="w-full min-w-[960px] table-fixed overflow-hidden rounded-[1.4rem] border border-[#243551] bg-[#111a2f]/95 shadow-card">
         <thead>
           <tr className="border-b border-[#243551]">
             {STATUS_COLUMNS.map((column, index) => (
@@ -353,8 +373,75 @@ function TaskBoard({
             ))}
           </tr>
         </tbody>
-      </table>
-    </div>
+        </table>
+      </div>
+    </>
+  );
+}
+
+function MobileTaskLane({
+  column,
+  demoMode,
+  dragging,
+  tasks,
+  workingTaskIds,
+  onDelete,
+  onDragEnd,
+  onDragOver,
+  onDragStart,
+  onDrop,
+  onToggle,
+}: {
+  column: StatusColumn;
+  demoMode: boolean;
+  dragging: boolean;
+  tasks: Task[];
+  workingTaskIds: number[];
+  onDelete: (task: Task) => void;
+  onDragEnd: () => void;
+  onDragOver: (event: DragEvent, status: TaskStatus) => void;
+  onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
+  onDrop: (event: DragEvent, status: TaskStatus) => void;
+  onToggle: (task: Task) => void;
+}) {
+  return (
+    <section
+      onDragOver={(event) => onDragOver(event, column.status)}
+      onDrop={(event) => onDrop(event, column.status)}
+      className={`border-b border-[#243551] p-3 transition-colors last:border-b-0 ${
+        dragging ? "bg-primary/10" : ""
+      }`}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3 border-b border-[#243551] px-1 pb-3">
+        <h2 className={`font-sans text-xs font-bold uppercase tracking-normal ${column.accent}`}>
+          {column.title}
+        </h2>
+        <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#233250]/85 px-2 text-xs font-semibold text-[#9fb3d9]">
+          {tasks.length}
+        </span>
+      </div>
+
+      <div className="grid gap-2">
+        {tasks.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[#263855] px-4 py-8 text-center text-sm text-[#7f94bc]">
+            Drop tasks here
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              demoMode={demoMode}
+              task={task}
+              working={workingTaskIds.includes(task.id)}
+              onDelete={onDelete}
+              onDragEnd={onDragEnd}
+              onDragStart={onDragStart}
+              onToggle={onToggle}
+            />
+          ))
+        )}
+      </div>
+    </section>
   );
 }
 
