@@ -61,6 +61,7 @@ export type Task = {
   description?: string | null;
   long_description?: string | null;
   complete: boolean;
+  status?: "open" | "in_progress" | "done";
   created_at?: string;
   updated_at?: string;
 };

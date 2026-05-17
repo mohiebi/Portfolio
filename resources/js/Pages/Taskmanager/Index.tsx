@@ -1,5 +1,5 @@
 import { Head, Link, router } from "@inertiajs/react";
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { Check, Circle, Clock, ListChecks, Plus, Trash2 } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,33 @@ type Props = {
   demoMode?: boolean;
 };
 
+type TaskStatus = "open" | "in_progress" | "done";
+
+type StatusColumn = {
+  status: TaskStatus;
+  title: string;
+  accent: string;
+};
+
+const STATUS_COLUMNS: StatusColumn[] = [
+  {
+    status: "open",
+    title: "Open",
+    accent: "text-warning",
+  },
+  {
+    status: "in_progress",
+    title: "In progress",
+    accent: "text-primary",
+  },
+  {
+    status: "done",
+    title: "Done",
+    accent: "text-success",
+  },
+];
+
 export default function TasksIndex({ tasks, demoMode = false }: Props) {
-  const [tab, setTab] = useState<"all" | "open" | "done">("all");
   const [savedTasks, setSavedTasks] = useState(tasks);
   const [demoTasks, setDemoTasks] = useState(tasks);
   const [quickTitle, setQuickTitle] = useState("");
@@ -21,6 +46,8 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [quickAddProcessing, setQuickAddProcessing] = useState(false);
   const [workingTaskIds, setWorkingTaskIds] = useState<number[]>([]);
+  const [draggingTaskId, setDraggingTaskId] = useState<number | null>(null);
+  const [dragOverStatus, setDragOverStatus] = useState<TaskStatus | null>(null);
   const newTaskHref = demoMode ? "/login?redirect=/taskmanager/create" : "/taskmanager/create";
 
   useEffect(() => {
@@ -29,19 +56,9 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
   }, [tasks]);
 
   const displayedTasks = demoMode ? demoTasks : savedTasks;
-
-  const open = displayedTasks.filter((task) => !task.complete).length;
-  const done = displayedTasks.filter((task) => task.complete).length;
-  const filtered = useMemo(
-    () =>
-      displayedTasks.filter((task) => {
-        if (tab === "open") return !task.complete;
-        if (tab === "done") return task.complete;
-
-        return true;
-      }),
-    [displayedTasks, tab],
-  );
+  const groupedTasks = useMemo(() => groupTasks(displayedTasks), [displayedTasks]);
+  const done = groupedTasks.done.length;
+  const active = groupedTasks.open.length + groupedTasks.in_progress.length;
 
   const setTaskWorking = (taskId: number, working: boolean) => {
     setWorkingTaskIds((current) =>
@@ -51,42 +68,85 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
     );
   };
 
-  const handleToggle = async (task: Task) => {
+  const updateLocalTask = (taskId: number, update: (task: Task) => Task) => {
     if (demoMode) {
-      setDemoTasks((current) =>
-        current.map((item) =>
-          item.id === task.id ? { ...item, complete: !item.complete } : item,
-        ),
-      );
+      setDemoTasks((current) => current.map((task) => (task.id === taskId ? update(task) : task)));
+
+      return;
+    }
+
+    setSavedTasks((current) => current.map((task) => (task.id === taskId ? update(task) : task)));
+  };
+
+  const moveTaskToStatus = async (task: Task, status: TaskStatus) => {
+    const currentStatus = getTaskStatus(task);
+
+    if (currentStatus === status) return;
+
+    if (demoMode) {
+      updateLocalTask(task.id, (current) => withStatus(current, status));
 
       return;
     }
 
     setActionError(null);
     setTaskWorking(task.id, true);
-    setSavedTasks((current) =>
-      current.map((item) =>
-        item.id === task.id ? { ...item, complete: !item.complete } : item,
-      ),
-    );
+    updateLocalTask(task.id, (current) => withStatus(current, status));
 
     try {
       const { task: updatedTask } = await taskRequest<TaskResponse>(
-        `/taskmanager/${task.id}/toggle-complete`,
-        { method: "PUT" },
+        `/taskmanager/${task.id}/status`,
+        {
+          method: "PATCH",
+          body: { status },
+        },
       );
 
       setSavedTasks((current) =>
         current.map((item) => (item.id === updatedTask.id ? updatedTask : item)),
       );
     } catch (error) {
-      setSavedTasks((current) =>
-        current.map((item) => (item.id === task.id ? task : item)),
-      );
+      setSavedTasks((current) => current.map((item) => (item.id === task.id ? task : item)));
       setActionError(getMessage(error));
     } finally {
       setTaskWorking(task.id, false);
     }
+  };
+
+  const handleToggle = (task: Task) => {
+    const targetStatus = getTaskStatus(task) === "done" ? "open" : "done";
+
+    void moveTaskToStatus(task, targetStatus);
+  };
+
+  const handleDragStart = (event: DragEvent<HTMLDivElement>, task: Task) => {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(task.id));
+    setDraggingTaskId(task.id);
+  };
+
+  const handleDragOver = (event: DragEvent, status: TaskStatus) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setDragOverStatus(status);
+  };
+
+  const handleDrop = (event: DragEvent, status: TaskStatus) => {
+    event.preventDefault();
+    const droppedTaskId = Number(event.dataTransfer.getData("text/plain") || draggingTaskId);
+    const task = displayedTasks.find((item) => item.id === droppedTaskId);
+
+    setDragOverStatus(null);
+    setDraggingTaskId(null);
+
+    if (!task) return;
+
+    void moveTaskToStatus(task, status);
+  };
+
+  const handleDragEnd = () => {
+    setDragOverStatus(null);
+    setDraggingTaskId(null);
   };
 
   const handleQuickAdd = async (event: FormEvent) => {
@@ -110,6 +170,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
         method: "POST",
         body: {
           title,
+          status: "open",
           return_to_index: true,
         },
       });
@@ -150,7 +211,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
       <PageHeader eyebrow="Project / TaskManager" title="Your tasks" description="A focused dashboard for what's on your plate.">
         <Button asChild><Link href={newTaskHref}><Plus className="mr-2 h-4 w-4" /> New task</Link></Button>
       </PageHeader>
-      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <StatusMessage />
         {actionError && (
           <div className="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -159,35 +220,18 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
         )}
         {demoMode && (
           <div className="mt-6 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
-            You are viewing a demo. You can toggle these sample tasks here, but changes are not saved. Log in or register to create and manage your own tasks.
+            You are viewing a demo. You can move these sample tasks here, but changes are not saved. Log in or register to create and manage your own tasks.
           </div>
         )}
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Stat label="Total" value={displayedTasks.length} />
-          <Stat label="Open" value={open} accent="text-warning" />
-          <Stat label="Completed" value={done} accent="text-success" />
-        </div>
-
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="inline-flex w-fit rounded-lg border border-border bg-card p-1 text-sm">
-            {(["all", "open", "done"] as const).map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => setTab(filter)}
-                className={`rounded-md px-3 py-1.5 capitalize transition-colors ${
-                  tab === filter
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
+        <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="grid grid-cols-3 gap-3 sm:w-fit">
+            <Stat label="Total" value={displayedTasks.length} />
+            <Stat label="Active" value={active} accent="text-warning" />
+            <Stat label="Completed" value={done} accent="text-success" />
           </div>
 
-          <form className="w-full sm:max-w-sm" onSubmit={handleQuickAdd}>
+          <form className="w-full lg:max-w-xl" onSubmit={handleQuickAdd}>
             <div className="flex gap-2">
               <Input
                 aria-label="New task title"
@@ -196,7 +240,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
                   setQuickTitle(event.target.value);
                   setQuickTitleError(null);
                 }}
-                placeholder={demoMode ? "Log in to add your own task" : "Add a task title"}
+                placeholder={demoMode ? "Log in to add your own task" : "Add an open task"}
                 disabled={quickAddProcessing}
               />
               <Button
@@ -212,82 +256,304 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
           </form>
         </div>
 
-        {filtered.length === 0 ? (
+        {displayedTasks.length === 0 ? (
           <div className="mt-8">
             <EmptyState
               icon={ListChecks}
               title="No tasks here"
-              description={displayedTasks.length === 0 ? "Create your first task to get started." : "No tasks match this view."}
+              description="Create your first task to get started."
               action={<Button asChild><Link href={newTaskHref}><Plus className="mr-2 h-4 w-4" />Create task</Link></Button>}
             />
           </div>
         ) : (
-          <ul className="mt-6 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
-            {filtered.map((task) => (
-              <li key={task.id} className="flex items-start gap-3 p-4 sm:p-5">
-                <button
-                  type="button"
-                  disabled={workingTaskIds.includes(task.id)}
-                  onClick={() => handleToggle(task)}
-                  className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors ${task.complete ? "border-success bg-success text-success-foreground" : "border-border hover:border-primary"}`}
-                  aria-label="Toggle complete"
-                >
-                  {task.complete ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5 opacity-0" />}
-                </button>
-                <div className="min-w-0 flex-1">
-                  {demoMode ? (
-                    <div>
-                      <p className={`font-medium ${task.complete ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
-                    </div>
-                  ) : (
-                    <Link href={`/taskmanager/${task.id}`} className="block">
-                      <p className={`font-medium ${task.complete ? "text-muted-foreground line-through" : "text-foreground"}`}>{task.title}</p>
-                    </Link>
-                  )}
-                  <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" /> {formatTaskDate(task.created_at)}
-                    {task.complete && <span className="rounded-full bg-success/15 px-2 py-0.5 text-success">Completed</span>}
-                  </div>
-                </div>
-                <div className="hidden items-center gap-1 sm:flex">
-                  <Button asChild size="sm" variant="ghost">
-                    <Link href={demoMode ? "/login?redirect=/taskmanager/create" : `/taskmanager/${task.id}/edit`}>
-                      Edit
-                    </Link>
-                  </Button>
-                  {!demoMode && (
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      disabled={workingTaskIds.includes(task.id)}
-                      onClick={() => handleDelete(task)}
-                      aria-label={`Delete ${task.title}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+          <TaskBoard
+            demoMode={demoMode}
+            dragOverStatus={dragOverStatus}
+            groupedTasks={groupedTasks}
+            workingTaskIds={workingTaskIds}
+            onDelete={handleDelete}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDragStart={handleDragStart}
+            onDrop={handleDrop}
+            onToggle={handleToggle}
+          />
         )}
       </section>
     </SiteShell>
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: number; accent?: string }) {
+function TaskBoard({
+  demoMode,
+  dragOverStatus,
+  groupedTasks,
+  workingTaskIds,
+  onDelete,
+  onDragEnd,
+  onDragOver,
+  onDragStart,
+  onDrop,
+  onToggle,
+}: {
+  demoMode: boolean;
+  dragOverStatus: TaskStatus | null;
+  groupedTasks: Record<TaskStatus, Task[]>;
+  workingTaskIds: number[];
+  onDelete: (task: Task) => void;
+  onDragEnd: () => void;
+  onDragOver: (event: DragEvent, status: TaskStatus) => void;
+  onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
+  onDrop: (event: DragEvent, status: TaskStatus) => void;
+  onToggle: (task: Task) => void;
+}) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`mt-1 font-display text-2xl ${accent ?? ""}`}>{value}</p>
+    <div className="mt-6 w-full overflow-x-auto">
+      <table className="w-full min-w-[960px] table-fixed overflow-hidden rounded-[1.4rem] border border-[#243551] bg-[#111a2f]/95 shadow-card">
+        <thead>
+          <tr className="border-b border-[#243551]">
+            {STATUS_COLUMNS.map((column, index) => (
+              <th
+                key={column.status}
+                scope="col"
+                className={`h-11 px-4 text-left align-middle ${
+                  index < STATUS_COLUMNS.length - 1 ? "border-r border-[#243551]" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className={`font-sans text-xs font-bold uppercase tracking-normal ${column.accent}`}>
+                    {column.title}
+                  </span>
+                  <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#233250]/85 px-2 text-xs font-semibold text-[#9fb3d9]">
+                    {groupedTasks[column.status].length}
+                  </span>
+                </div>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            {STATUS_COLUMNS.map((column, index) => (
+              <TaskLaneCell
+                key={column.status}
+                column={column}
+                demoMode={demoMode}
+                dragging={dragOverStatus === column.status}
+                hasDivider={index < STATUS_COLUMNS.length - 1}
+                tasks={groupedTasks[column.status]}
+                workingTaskIds={workingTaskIds}
+                onDelete={onDelete}
+                onDragEnd={onDragEnd}
+                onDragOver={onDragOver}
+                onDragStart={onDragStart}
+                onDrop={onDrop}
+                onToggle={onToggle}
+              />
+            ))}
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
 
-type RequestMethod = "POST" | "PUT" | "DELETE";
+function TaskLaneCell({
+  column,
+  demoMode,
+  dragging,
+  hasDivider,
+  tasks,
+  workingTaskIds,
+  onDelete,
+  onDragEnd,
+  onDragOver,
+  onDragStart,
+  onDrop,
+  onToggle,
+}: {
+  column: StatusColumn;
+  demoMode: boolean;
+  dragging: boolean;
+  hasDivider: boolean;
+  tasks: Task[];
+  workingTaskIds: number[];
+  onDelete: (task: Task) => void;
+  onDragEnd: () => void;
+  onDragOver: (event: DragEvent, status: TaskStatus) => void;
+  onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
+  onDrop: (event: DragEvent, status: TaskStatus) => void;
+  onToggle: (task: Task) => void;
+}) {
+  return (
+    <td
+      onDragOver={(event) => onDragOver(event, column.status)}
+      onDrop={(event) => onDrop(event, column.status)}
+      className={`h-52 px-3 pb-3 pt-3 align-top transition-colors ${
+        hasDivider ? "border-r border-[#243551]" : ""
+      } ${dragging ? "bg-primary/10" : ""}`}
+    >
+      <div className="grid gap-2">
+        {tasks.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-[#263855] px-4 py-10 text-center text-sm text-[#7f94bc]">
+            Drop tasks here
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              demoMode={demoMode}
+              task={task}
+              working={workingTaskIds.includes(task.id)}
+              onDelete={onDelete}
+              onDragEnd={onDragEnd}
+              onDragStart={onDragStart}
+              onToggle={onToggle}
+            />
+          ))
+        )}
+      </div>
+    </td>
+  );
+}
+
+function TaskCard({
+  demoMode,
+  task,
+  working,
+  onDelete,
+  onDragEnd,
+  onDragStart,
+  onToggle,
+}: {
+  demoMode: boolean;
+  task: Task;
+  working: boolean;
+  onDelete: (task: Task) => void;
+  onDragEnd: () => void;
+  onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
+  onToggle: (task: Task) => void;
+}) {
+  const status = getTaskStatus(task);
+  const focusing = status === "in_progress";
+
+  return (
+    <div
+      draggable={!working}
+      onDragStart={(event) => onDragStart(event, task)}
+      onDragEnd={onDragEnd}
+      className={`group relative grid grid-cols-[1rem_1.5rem_minmax(0,1fr)_3.5rem] items-center gap-2 overflow-hidden rounded-2xl border px-3 py-3 ${
+        focusing
+          ? "border-primary/70 bg-primary/10 shadow-[0_0_0_1px_oklch(0.72_0.16_158_/_0.18),0_16px_38px_-24px_oklch(0.72_0.16_158_/_0.85)]"
+          : "border-[#1e2b45] bg-[#071224]"
+      }`}
+    >
+      <div className={`grid h-7 w-3 cursor-grab grid-cols-2 place-content-center gap-x-0.5 gap-y-0.5 self-center opacity-65 transition-opacity group-hover:opacity-100 ${focusing ? "text-primary" : "text-[#7c8eaa]"}`}>
+        {Array.from({ length: 8 }).map((_, index) => (
+          <span key={index} className="h-0.5 w-0.5 rounded-full bg-current" />
+        ))}
+      </div>
+      <button
+        type="button"
+        disabled={working}
+        onClick={() => onToggle(task)}
+        className={`grid h-6 w-6 place-items-center self-start rounded-full border transition-colors ${
+          status === "done"
+            ? "border-success bg-success text-success-foreground"
+            : focusing
+              ? "border-primary/70 bg-primary/10 hover:border-primary"
+              : "border-[#21304a] bg-[#071224] hover:border-primary"
+        }`}
+        aria-label={status === "done" ? "Move task to open" : "Move task to done"}
+      >
+        {status === "done" ? <Check className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5 opacity-0" />}
+      </button>
+      <div className="min-w-0">
+        {demoMode ? (
+          <p className={`truncate text-sm font-semibold leading-5 ${status === "done" ? "text-[#8090ad] line-through" : focusing ? "text-primary" : "text-white"}`}>{task.title}</p>
+        ) : (
+          <Link href={`/taskmanager/${task.id}`} className="block">
+            <p className={`truncate text-sm font-semibold leading-5 ${status === "done" ? "text-[#8090ad] line-through" : focusing ? "text-primary" : "text-white"}`}>{task.title}</p>
+          </Link>
+        )}
+        {getTaskSummary(task) && (
+          <p className={`line-clamp-2 text-[13px] leading-5 ${focusing ? "text-[#b8f3dc]" : "text-[#9bc4dc]"}`}>
+            {getTaskSummary(task)}
+          </p>
+        )}
+        <div className="mt-2 flex items-center gap-1.5 text-xs leading-none text-[#9bb1ce]">
+          <Clock className="h-3 w-3" /> {formatTaskDate(task.created_at)}
+        </div>
+      </div>
+      {!demoMode && (
+        <div className="flex items-center justify-end gap-1">
+          <Link
+            href={`/taskmanager/${task.id}/edit`}
+            className="text-xs font-medium text-foreground transition-colors hover:text-primary"
+          >
+            Edit
+          </Link>
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 cursor-pointer text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive"
+            disabled={working}
+            onClick={() => onDelete(task)}
+            aria-label={`Delete ${task.title}`}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value, accent }: { label: string; value: number; accent?: string }) {
+  return (
+    <div className="min-w-28 rounded-xl border border-border bg-card px-4 py-3 sm:min-w-36">
+      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={`mt-1 font-display text-xl ${accent ?? ""}`}>{value}</p>
+    </div>
+  );
+}
+
+function groupTasks(tasks: Task[]): Record<TaskStatus, Task[]> {
+  return tasks.reduce<Record<TaskStatus, Task[]>>(
+    (groups, task) => {
+      groups[getTaskStatus(task)].push(task);
+
+      return groups;
+    },
+    {
+      open: [],
+      in_progress: [],
+      done: [],
+    },
+  );
+}
+
+function getTaskStatus(task: Task): TaskStatus {
+  if (task.complete) return "done";
+  if (task.status === "in_progress") return "in_progress";
+
+  return "open";
+}
+
+function withStatus(task: Task, status: TaskStatus): Task {
+  return {
+    ...task,
+    status,
+    complete: status === "done",
+  };
+}
+
+function getTaskSummary(task: Task) {
+  return task.description || task.long_description || "";
+}
+
+type RequestMethod = "POST" | "PUT" | "PATCH" | "DELETE";
 
 type RequestOptions = {
   method: RequestMethod;
