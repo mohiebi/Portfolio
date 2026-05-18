@@ -8,7 +8,7 @@ import {
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
-import portraitUrl from "@/assets/portrait.png";
+import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
 
 const skills = [
