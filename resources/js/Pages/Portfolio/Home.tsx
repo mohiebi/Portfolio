@@ -562,9 +562,9 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
         </section>
       )}
 
-      <CaseStudiesSection caseStudies={caseStudies} />
-
       <ProjectsSection />
+
+      <CaseStudiesSection caseStudies={caseStudies} />
 
       {/* CONTACT */}
       <section id="contact" className="relative overflow-hidden border-t border-border/60 bg-surface/40">
@@ -756,7 +756,7 @@ function CaseStudiesSection({ caseStudies }: { caseStudies: CaseStudy[] }) {
           </motion.div>
         </motion.div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+        <div className="mt-12 grid gap-6">
           {caseStudies.slice(0, 4).map((caseStudy, index) => (
             <CaseStudyCard key={caseStudy.id} caseStudy={caseStudy} index={index} />
           ))}

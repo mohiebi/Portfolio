@@ -53,7 +53,7 @@ export default function PublicCaseStudiesIndex({ caseStudies }: Props) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-8">
           {caseStudies.map((caseStudy, index) => (
             <CaseCard key={caseStudy.id} caseStudy={caseStudy} index={index} />
           ))}

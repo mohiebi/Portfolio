@@ -10,8 +10,8 @@ const portfolioNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true, sectionId: "top" },
   { label: "About", href: "/#about", sectionId: "about" },
   { label: "Recommendations", href: "/#recommendations", sectionId: "recommendations" },
-  { label: "Case Studies", href: "/#case-studies", sectionId: "case-studies" },
   { label: "Projects", href: "/#projects", sectionId: "projects" },
+  { label: "Case Studies", href: "/#case-studies", sectionId: "case-studies" },
   { label: "Contact", href: "/#contact", sectionId: "contact" },
 ];
 
@@ -64,7 +64,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (!onPortfolioHome) return;
-    const ids = ["about", "recommendations", "case-studies", "projects", "contact"];
+    const ids = ["about", "recommendations", "projects", "case-studies", "contact"];
     const handler = () => {
       const scrollY = window.scrollY;
       let current = "top";
