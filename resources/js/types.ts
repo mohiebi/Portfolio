@@ -84,6 +84,34 @@ export type Recommendation = {
   updated_at?: string;
 };
 
+export type CaseStudyImpact = {
+  label: string;
+  value: string;
+};
+
+export type CaseStudy = {
+  id: number;
+  slug: string;
+  title: string;
+  company?: string | null;
+  role?: string | null;
+  period?: string | null;
+  location?: string | null;
+  tag?: string | null;
+  summary: string;
+  accent: string;
+  cover: "web3" | "modernize" | "ai" | "web";
+  problem?: string | null;
+  approach?: string[] | null;
+  impact?: CaseStudyImpact[] | null;
+  stack?: string[] | null;
+  highlights?: string[] | null;
+  is_published: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type JobApplication = {
   id: number;
   expected_salary: number;

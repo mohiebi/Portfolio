@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuth;
+use App\Http\Controllers\CaseStudyController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Projects\BookReview\BookController;
 use App\Http\Controllers\ProfileController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Projects\JobBoard\myJobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\MyJobController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\TaskmanagerController;
+use App\Models\CaseStudy;
 use App\Models\Recommendation;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -19,9 +21,15 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Portfolio/Home', [
+        'caseStudies' => CaseStudy::published()->ordered()->get(),
         'recommendations' => Recommendation::published()->ordered()->get(),
     ]);
 })->name('portfolio');
+
+Route::get('/case-studies', [CaseStudyController::class, 'publicIndex'])
+    ->name('case-studies.public.index');
+Route::get('/case-studies/{caseStudy:slug}', [CaseStudyController::class, 'publicShow'])
+    ->name('case-studies.public.show');
 
 Route::get('/recommendations/all', function () {
     return Inertia::render('Recommendations/PublicIndex', [
@@ -39,8 +47,16 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'admin'])->resource('recommendations', RecommendationController::class)
-    ->except(['show']);
+Route::redirect('/recommendations', '/dashboard/recommendations');
+Route::redirect('/recommendations/create', '/dashboard/recommendations/create');
+
+Route::middleware(['auth', 'admin'])->prefix('dashboard')->name('dashboard.')->group(function () {
+    Route::resource('recommendations', RecommendationController::class)
+        ->except(['show']);
+    Route::resource('case-studies', CaseStudyController::class)
+        ->except(['show'])
+        ->parameters(['case-studies' => 'caseStudy']);
+});
 
 require __DIR__.'/auth.php';
 

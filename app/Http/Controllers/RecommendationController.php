@@ -37,7 +37,7 @@ class RecommendationController extends Controller
 
         Recommendation::create($data);
 
-        return redirect()->route('recommendations.index')
+        return redirect()->route('dashboard.recommendations.index')
             ->with('success', 'Recommendation added.');
     }
 
@@ -62,7 +62,7 @@ class RecommendationController extends Controller
 
         $recommendation->update($data);
 
-        return redirect()->route('recommendations.index')
+        return redirect()->route('dashboard.recommendations.index')
             ->with('success', 'Recommendation updated.');
     }
 
@@ -71,7 +71,7 @@ class RecommendationController extends Controller
         $this->deleteImage($recommendation);
         $recommendation->delete();
 
-        return redirect()->route('recommendations.index')
+        return redirect()->route('dashboard.recommendations.index')
             ->with('success', 'Recommendation deleted.');
     }
 

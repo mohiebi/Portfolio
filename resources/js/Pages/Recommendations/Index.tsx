@@ -13,7 +13,7 @@ export default function RecommendationsIndex({ recommendations }: Props) {
   const destroy = (recommendation: Recommendation) => {
     if (! window.confirm(`Delete ${recommendation.name}'s recommendation?`)) return;
 
-    router.delete(`/recommendations/${recommendation.id}`);
+    router.delete(`/dashboard/recommendations/${recommendation.id}`);
   };
 
   return (
@@ -25,7 +25,7 @@ export default function RecommendationsIndex({ recommendations }: Props) {
         description="Manage real LinkedIn recommendations, recommender profiles, images, and the projects behind them."
       >
         <Button asChild>
-          <Link href="/recommendations/create">
+          <Link href="/dashboard/recommendations/create">
             <Plus className="mr-2 h-4 w-4" /> Add recommendation
           </Link>
         </Button>
@@ -42,7 +42,7 @@ export default function RecommendationsIndex({ recommendations }: Props) {
               description="Add your first LinkedIn recommendation and it will appear on your public portfolio."
               action={
                 <Button asChild>
-                  <Link href="/recommendations/create">
+                  <Link href="/dashboard/recommendations/create">
                     <Plus className="mr-2 h-4 w-4" /> Add recommendation
                   </Link>
                 </Button>
@@ -93,7 +93,7 @@ export default function RecommendationsIndex({ recommendations }: Props) {
                     </Button>
                   )}
                   <Button asChild variant="ghost">
-                    <Link href={`/recommendations/${recommendation.id}/edit`}>
+                    <Link href={`/dashboard/recommendations/${recommendation.id}/edit`}>
                       <Pencil className="mr-2 h-4 w-4" /> Edit
                     </Link>
                   </Button>

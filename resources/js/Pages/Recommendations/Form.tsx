@@ -57,7 +57,7 @@ export default function RecommendationFormPage({ recommendation }: Props) {
 
     if (recommendation) {
       form.transform(() => ({ ...payload, _method: "put" }));
-      form.post(`/recommendations/${recommendation.id}`, {
+      form.post(`/dashboard/recommendations/${recommendation.id}`, {
         forceFormData: true,
         onFinish: () => form.transform((data) => data),
       });
@@ -66,7 +66,7 @@ export default function RecommendationFormPage({ recommendation }: Props) {
     }
 
     form.transform(() => payload);
-    form.post("/recommendations", {
+    form.post("/dashboard/recommendations", {
       forceFormData: true,
       onFinish: () => form.transform((data) => data),
     });
@@ -76,7 +76,7 @@ export default function RecommendationFormPage({ recommendation }: Props) {
     <SiteShell>
       <Head title={title} />
       <section className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <Link href="/recommendations" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <Link href="/dashboard/recommendations" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to recommendations
         </Link>
 
@@ -259,7 +259,7 @@ export default function RecommendationFormPage({ recommendation }: Props) {
 
             <div className="flex justify-end gap-2 border-t border-border pt-6">
               <Button asChild variant="ghost">
-                <Link href="/recommendations">Cancel</Link>
+                <Link href="/dashboard/recommendations">Cancel</Link>
               </Button>
               <Button type="submit" disabled={form.processing}>
                 <Save className="mr-2 h-4 w-4" /> {editing ? "Save changes" : "Add recommendation"}

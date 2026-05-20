@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from "@inertiajs/react";
-import { BookOpen, Briefcase, ListChecks, User } from "lucide-react";
+import { BookOpen, Briefcase, FileText, ListChecks, MessageSquareQuote, User } from "lucide-react";
 import { SiteShell, PageHeader } from "@/components/site/SiteShell";
 import type { PageProps } from "@/types";
 
@@ -15,6 +15,12 @@ export default function Dashboard() {
         <Tile href="/taskmanager" icon={ListChecks} title="TaskManager" description="Manage authenticated tasks." />
         <Tile href="/jobs" icon={Briefcase} title="Job Board" description="Explore jobs and applications." />
         <Tile href="/profile" icon={User} title="Profile" description="Update account settings." />
+        {user?.is_admin && (
+          <>
+            <Tile href="/dashboard/recommendations" icon={MessageSquareQuote} title="Recommendations" description="Manage public LinkedIn recommendations." />
+            <Tile href="/dashboard/case-studies" icon={FileText} title="Case Studies" description="Create, edit, publish, and order case studies." />
+          </>
+        )}
       </section>
     </SiteShell>
   );

@@ -10,7 +10,7 @@ import { useRef, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
-import type { Recommendation } from "@/types";
+import type { CaseStudy, Recommendation } from "@/types";
 
 const skills = [
   { name: "PHP", icon: Server },
@@ -192,10 +192,11 @@ const stagger: Variants = {
 };
 
 type Props = {
+  caseStudies?: CaseStudy[];
   recommendations?: Recommendation[];
 };
 
-export default function HomePage({ recommendations = [] }: Props) {
+export default function HomePage({ caseStudies = [], recommendations = [] }: Props) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -561,6 +562,8 @@ export default function HomePage({ recommendations = [] }: Props) {
         </section>
       )}
 
+      <CaseStudiesSection caseStudies={caseStudies} />
+
       <ProjectsSection />
 
       {/* CONTACT */}
@@ -717,6 +720,101 @@ export default function HomePage({ recommendations = [] }: Props) {
   );
 }
 
+const caseStudyIcons = {
+  web3: Cpu,
+  modernize: Layers,
+  ai: Sparkles,
+  web: Globe,
+} as const;
+
+function CaseStudiesSection({ caseStudies }: { caseStudies: CaseStudy[] }) {
+  if (caseStudies.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="case-studies" className="scroll-mt-20 border-t border-border/60">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={stagger}
+          className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+        >
+          <motion.div variants={fadeUp}>
+            <p className="font-mono text-xs uppercase tracking-wider text-primary">// Case Studies</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Real engineering work, end-to-end</h2>
+            <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+              A closer look at production work across Web3, backend architecture, AI features, and modernization.
+            </p>
+          </motion.div>
+          <motion.div variants={fadeUp}>
+            <Button asChild variant="outline">
+              <Link href="/case-studies">All case studies <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+          {caseStudies.slice(0, 4).map((caseStudy, index) => (
+            <CaseStudyCard key={caseStudy.id} caseStudy={caseStudy} index={index} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: number }) {
+  const Icon = caseStudyIcons[caseStudy.cover] ?? Globe;
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="group relative flex min-h-[24rem] flex-col overflow-hidden rounded-3xl border border-border bg-card/70 shadow-card backdrop-blur transition-colors hover:border-primary/60"
+    >
+      <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${caseStudy.accent}`}>
+        <div className="absolute inset-0 bg-grid opacity-30" />
+        <div className="relative flex h-full items-center justify-between p-6">
+          <div>
+            {caseStudy.tag && <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{caseStudy.tag}</p>}
+            {caseStudy.company && <p className="mt-1 font-display text-lg font-semibold">{caseStudy.company}</p>}
+          </div>
+          <div className="grid h-14 w-14 place-items-center rounded-2xl border border-border bg-background/70 text-primary backdrop-blur">
+            <Icon className="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-7">
+        <h3 className="font-display text-2xl font-semibold leading-tight">{caseStudy.title}</h3>
+        <p className="mt-3 text-sm text-muted-foreground">{caseStudy.summary}</p>
+
+        <div className="mt-5 flex flex-wrap gap-1.5">
+          {(caseStudy.stack ?? []).slice(0, 6).map((item) => (
+            <span key={item} className="rounded-md border border-border bg-background/40 px-2 py-0.5 text-xs font-mono text-muted-foreground">
+              {item}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-auto pt-7">
+          <Button asChild variant="outline" className="group/btn">
+            <Link href={`/case-studies/${caseStudy.slug}`}>
+              Read case study
+              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
 function ProjectsSection() {
   return (
     <section id="projects" className="scroll-mt-20 border-t border-border/60 bg-surface/30">
@@ -730,7 +828,7 @@ function ProjectsSection() {
         >
           <motion.div variants={fadeUp}>
             <p className="font-mono text-xs uppercase tracking-wider text-primary">// Projects</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Selected case studies</h2>
+            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Runnable Laravel demos</h2>
             <p className="mt-3 max-w-xl text-sm text-muted-foreground">
               Three runnable full-stack demos. TaskManager leads the set, followed by BookReview and the Job Board.
             </p>
