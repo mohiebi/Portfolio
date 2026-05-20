@@ -3,40 +3,37 @@ import {
   ArrowRight, Mail, Linkedin, FileDown, Sparkles, Database, Code2,
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
   Building2, Phone, Globe, Copy, MessageCircle, GraduationCap, Briefcase,
-  Cpu, GitBranch, Github,
+  Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
+import type { Recommendation } from "@/types";
 
 const skills = [
-  { name: "PHP / Symfony", icon: Server },
+  { name: "PHP", icon: Server },
+  { name: "JavaScript / TypeScript", icon: Code2 },
   { name: "Laravel", icon: Server },
+  { name: "Symfony", icon: Server },
+  { name: "NestJS / Node.js", icon: Cpu },
   { name: "Vue.js", icon: Code2 },
-  { name: "NestJS", icon: Server },
-  { name: "TypeScript", icon: Code2 },
-  { name: "Solidity / Web3", icon: Shield },
-  { name: "Node.js", icon: Cpu },
-  { name: "MySQL / PostgreSQL", icon: Database },
+  { name: "Inertia.js / Livewire", icon: Layers },
+  { name: "Tailwind CSS / Bootstrap", icon: Sparkles },
   { name: "REST APIs", icon: Layers },
-  { name: "Tailwind CSS", icon: Sparkles },
-  { name: "Docker / CI-CD", icon: GitBranch },
-  { name: "Unit Testing", icon: Zap },
+  { name: "AI Integration", icon: Sparkles },
+  { name: "MySQL / PostgreSQL", icon: Database },
+  { name: "Docker / Git / CI-CD", icon: GitBranch },
+  { name: "Unit / E2E Testing", icon: Zap },
+  { name: "Solidity / Web3", icon: Shield },
+  { name: "Smart Contracts", icon: Shield },
+  { name: "Wallet Integration", icon: Shield },
+  { name: "OOP / MVC / DDD", icon: Layers },
+  { name: "Clean Architecture", icon: Sparkles },
 ];
 
 const projects = [
-  {
-    name: "BookReview",
-    href: "/books",
-    tag: "Discovery & ratings",
-    blurb: "A book discovery app with search, smart filters, average ratings and threaded reviews.",
-    features: ["Filter by popularity & rating", "Star ratings & review counts", "Detail page with reviews"],
-    tech: ["Laravel", "Eloquent", "Blade", "Tailwind"],
-    accent: "from-amber-400/30 to-orange-500/10",
-    preview: "books" as const,
-  },
   {
     name: "TaskManager",
     href: "/taskmanager",
@@ -46,6 +43,16 @@ const projects = [
     tech: ["Laravel", "Auth", "Form requests", "Tailwind"],
     accent: "from-emerald-400/25 to-teal-500/10",
     preview: "tasks" as const,
+  },
+  {
+    name: "BookReview",
+    href: "/books",
+    tag: "Discovery & ratings",
+    blurb: "A book discovery app with search, smart filters, average ratings and threaded reviews.",
+    features: ["Filter by popularity & rating", "Star ratings & review counts", "Detail page with reviews"],
+    tech: ["Laravel", "Eloquent", "Blade", "Tailwind"],
+    accent: "from-amber-400/30 to-orange-500/10",
+    preview: "books" as const,
   },
   {
     name: "Job Board",
@@ -184,13 +191,30 @@ const stagger: Variants = {
   show: { transition: { staggerChildren: 0.08 } },
 };
 
-export default function HomePage() {
+type Props = {
+  recommendations?: Recommendation[];
+};
+
+export default function HomePage({ recommendations = [] }: Props) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.4]);
 
   const [copied, setCopied] = useState<string | null>(null);
+  const [activeRecommendationIndex, setActiveRecommendationIndex] = useState(0);
+  const activeRecommendation = recommendations[activeRecommendationIndex] ?? recommendations[0];
+  const showRecommendationControls = recommendations.length > 1;
+  const recommendationTotal = recommendations.length;
+
+  const showPreviousRecommendation = () => {
+    setActiveRecommendationIndex((index) => (index - 1 + recommendations.length) % recommendations.length);
+  };
+
+  const showNextRecommendation = () => {
+    setActiveRecommendationIndex((index) => (index + 1) % recommendations.length);
+  };
+
   const copy = (val: string, key: string) => {
     navigator.clipboard.writeText(val);
     setCopied(key);
@@ -271,7 +295,7 @@ export default function HomePage() {
             </motion.div>
 
             <motion.dl variants={fadeUp} className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 max-w-md">
-              <div><dt className="text-xs uppercase text-muted-foreground">Exprience</dt><dd className="mt-1 font-display text-2xl">3+ yrs</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Experience</dt><dd className="mt-1 font-display text-2xl">3+ yrs</dd></div>
               <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">150+</dd></div>
               <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+87%</dd></div>
             </motion.dl>
@@ -312,111 +336,6 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* PROJECTS */}
-      <section id="projects" className="scroll-mt-20 border-t border-border/60 bg-surface/30">
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <motion.div
-            initial="hidden" whileInView="show" viewport={{ once: true, margin: "-80px" }}
-            variants={stagger}
-            className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
-          >
-            <motion.div variants={fadeUp}>
-              <p className="font-mono text-xs uppercase tracking-wider text-primary">// Projects</p>
-              <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Selected case studies</h2>
-              <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-                Three runnable full-stack demos. Each project ships with auth, validation, policies and a clean UI — built to mirror real production work.
-              </p>
-            </motion.div>
-            <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
-              {["All", "Backend", "Full-stack", "Marketplace"].map((chip, i) => (
-                <span
-                  key={chip}
-                  className={`rounded-full border px-3 py-1 text-xs font-mono uppercase tracking-wider ${
-                    i === 0
-                      ? "border-primary/50 bg-primary/10 text-primary"
-                      : "border-border bg-background/40 text-muted-foreground"
-                  }`}
-                >
-                  {chip}
-                </span>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          <div className="mt-12 space-y-10">
-            {projects.map((p, idx) => (
-              <motion.article
-                key={p.name}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-                whileHover={{ y: -4 }}
-                className="group relative grid gap-0 overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-colors hover:border-primary/40 lg:grid-cols-[1.1fr_0.9fr]"
-              >
-                <Link
-                  href={p.href}
-                  aria-label={`View ${p.name} project`}
-                  className={`relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:order-${idx % 2 === 0 ? "last" : "first"} lg:border-l lg:border-t-0`}
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${p.accent}`} />
-                  <div className="absolute inset-0 bg-grid opacity-30" />
-                  <div className="relative flex h-full items-center justify-center p-8">
-                    <motion.div
-                      whileHover={{ scale: 1.02, rotate: 0.5 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                      className="w-full max-w-sm overflow-hidden rounded-xl border border-border bg-background/95 shadow-2xl backdrop-blur"
-                    >
-                      <div className="flex items-center gap-1.5 border-b border-border px-3 py-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
-                        <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-                        <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-                        <span className="ml-3 font-mono text-[10px] text-muted-foreground">{p.href}</span>
-                      </div>
-                      {(() => {
-                        const Preview = previewMap[p.preview];
-                        return <Preview />;
-                      })()}
-                    </motion.div>
-                  </div>
-                </Link>
-
-                <div className="relative flex flex-col p-7 sm:p-9">
-                  <div className="flex items-center justify-between">
-                    <p className="font-mono text-xs uppercase tracking-wider text-primary">{p.tag}</p>
-                    <span className="font-mono text-xs text-muted-foreground">0{idx + 1} / 0{projects.length}</span>
-                  </div>
-                  <h3 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{p.name}</h3>
-                  <p className="mt-3 text-sm text-muted-foreground sm:text-base">{p.blurb}</p>
-
-                  <ul className="mt-6 grid gap-2 sm:grid-cols-2">
-                    {p.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" /> {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-6 flex flex-wrap gap-1.5">
-                    {p.tech.map((t) => (
-                      <span key={t} className="rounded-md border border-border bg-background/40 px-2 py-0.5 text-xs font-mono text-muted-foreground">{t}</span>
-                    ))}
-                  </div>
-
-                  <div className="mt-8 flex flex-wrap items-center gap-3">
-                    <Button asChild>
-                      <Link href={p.href}>View Project <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                    </Button>
-                    <Button asChild variant="ghost">
-                      <a href="#contact">Discuss this project</a>
-                    </Button>
-                  </div>
-                </div>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ABOUT */}
       <section id="about" className="border-t border-border/60">
@@ -429,20 +348,35 @@ export default function HomePage() {
           >
             <p className="font-mono text-xs uppercase tracking-wider text-primary">// About</p>
             <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
-              Pragmatic fullstack developer with a Web3 edge
+              Back-end focused full-stack engineer building scalable web and Web3 systems
             </h2>
             <p className="mt-5 text-muted-foreground">
+              Back-end / full-stack engineer with 3+ years of experience building scalable applications with
+              <span className="text-foreground"> PHP</span>, <span className="text-foreground">Node.js</span>,
+              <span className="text-foreground"> Symfony</span>, <span className="text-foreground">Laravel</span>,
+              <span className="text-foreground"> NestJS</span>, and <span className="text-foreground">Vue.js</span>.
+              I focus on API development, backend architecture, secure maintainable systems, and production features
+              that hold up after launch.
+            </p>
+            <p className="mt-3 text-muted-foreground">
+              I bring strong problem-solving, clean architecture, and testing habits to legacy and modern codebases.
+              Recently I modernized PHP architecture with Docker, migrated legacy UI work to Vue.js, delivered 90+
+              Symfony/Vue tasks on Mintme.com, and built blockchain data pipelines plus Web3 wallet flows for
+              MetaMask, Solflare, and multiple networks.
+            </p>
+            <p className="hidden">
               Highly motivated developer with 3+ years of professional experience, specialized in
               <span className="text-foreground"> PHP</span>, <span className="text-foreground">JavaScript</span>,
               and Node.js frameworks (Vue.js, Symfony, Laravel, NestJS). I also build on Ethereum with
               <span className="text-foreground"> Solidity</span> — wallet integrations, on-chain watchers, and
               smart contracts (lottery, fundraising) using Chainlink helpers.
             </p>
-            <p className="mt-3 text-muted-foreground">
+            <p className="hidden">
               I care about clean architecture, unit testing, and shipping reliable features.
-              At ABC Hosting I delivered 150+ tasks (80+ features, 50+ bug fixes) across 2000+ commits,
-              raised JS test coverage by 87%, and engineered a Node.js Web3 gateway with Metamask &
-              Solflare across multiple networks.
+              At ABC Hosting I modernized legacy PHP architecture, containerized the environment with Docker,
+              migrated the frontend to Vue.js, and added multilingual, multi-currency support. On Mintme.com I
+              delivered 90+ Symfony/Vue tasks, contributed 1500+ GitLab commits, and built Node.js Web3 data
+              pipelines plus wallet integrations for MetaMask and Solflare.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
@@ -482,12 +416,20 @@ export default function HomePage() {
                   <h4 className="font-display text-base font-semibold">Experience</h4>
                 </div>
                 <p className="mt-2 text-sm">
-                  <span className="text-foreground font-medium">PHP/JS Developer</span> �/ ABC Hosting Ltd.
-                  <span className="block text-xs text-muted-foreground">Jun 2024 — Present �/ Remote</span>
+                  <span className="text-foreground font-medium">Full-Stack Developer</span> / ABC Hosting Ltd.
+                  <span className="block text-xs text-muted-foreground">Nov 2025 - Present / Belize City, Belize</span>
                 </p>
                 <p className="mt-2 text-sm">
-                  <span className="text-foreground font-medium">Web Developer</span> �/ Health Tourism Center
-                  <span className="block text-xs text-muted-foreground">2021 �/ Tehran</span>
+                  <span className="text-foreground font-medium">Full-Stack Developer</span> / Mintme.com
+                  <span className="block text-xs text-muted-foreground">Jun 2024 - Dec 2025 / Belize City, Belize</span>
+                </p>
+                <p className="mt-2 text-sm">
+                  <span className="text-foreground font-medium">AI Integration Developer</span> / ProAce CRM Project
+                  <span className="block text-xs text-muted-foreground">Jun 2025 - Mar 2026 / Canada, Remote</span>
+                </p>
+                <p className="mt-2 text-sm">
+                  <span className="text-foreground font-medium">Web Developer</span> / Health Tourism Development Center (HTDC)
+                  <span className="block text-xs text-muted-foreground">May 2022 - Sep 2023 / Muscat, Oman</span>
                 </p>
               </motion.div>
 
@@ -497,18 +439,129 @@ export default function HomePage() {
                   <h4 className="font-display text-base font-semibold">Education</h4>
                 </div>
                 <p className="mt-2 text-sm">
-                  <span className="text-foreground font-medium">MBA — Marketing</span>
-                  <span className="block text-xs text-muted-foreground">Khorasgan University �/ 2022 — Present</span>
+                  <span className="text-foreground font-medium">MBA - Marketing</span>
+                  <span className="block text-xs text-muted-foreground">Khorasgan University / 2022 - Present</span>
                 </p>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">B.Sc. Mechanical Eng.</span>
-                  <span className="block text-xs text-muted-foreground">University of Kashan �/ 2015 — 2019</span>
+                  <span className="block text-xs text-muted-foreground">University of Kashan / 2015 - 2019</span>
                 </p>
               </motion.div>
             </div>
           </motion.div>
         </div>
       </section>
+
+      {activeRecommendation && (
+        <section id="recommendations" className="relative scroll-mt-20 overflow-hidden border-t border-border/60">
+          <motion.div
+            aria-hidden
+            className="absolute -top-24 left-1/3 h-72 w-72 rounded-full bg-primary/15 blur-3xl"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+            >
+              <div>
+                <p className="font-mono text-xs uppercase tracking-wider text-primary">// Recommendations</p>
+                <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
+                  Kind words from <span className="text-primary">LinkedIn</span>
+                </h2>
+                <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+                  Real recommendations from teammates and senior engineers I've worked with.
+                </p>
+              </div>
+              <a
+                href="https://www.linkedin.com/in/mohiebi/details/recommendations/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+              >
+                <Linkedin className="h-3.5 w-3.5" /> View on LinkedIn
+              </a>
+            </motion.div>
+
+            <div className="relative mt-10">
+              <div className="relative mx-auto h-[540px] max-w-3xl sm:h-[480px]">
+                {recommendations.map((recommendation, index) => {
+                  const offset = (index - activeRecommendationIndex + recommendationTotal) % recommendationTotal;
+                  const isCenter = offset === 0;
+                  const isRight = offset === 1;
+                  const isLeft = offset === recommendationTotal - 1 && recommendationTotal > 2;
+                  const role = isCenter ? "center" : isRight ? "right" : isLeft ? "left" : "hidden";
+                  const variants: Record<string, { x: string; y: number; scale: number; rotate: number; opacity: number; zIndex: number; filter: string }> = {
+                    center: { x: "0%", y: 0, scale: 1, rotate: 0, opacity: 1, zIndex: 30, filter: "blur(0px)" },
+                    right: { x: "18%", y: 32, scale: 0.88, rotate: 4, opacity: 0.32, zIndex: 20, filter: "blur(2px)" },
+                    left: { x: "-18%", y: 32, scale: 0.88, rotate: -4, opacity: 0.32, zIndex: 20, filter: "blur(2px)" },
+                    hidden: { x: "0%", y: 60, scale: 0.75, rotate: 0, opacity: 0, zIndex: 10, filter: "blur(2px)" },
+                  };
+
+                  return (
+                    <motion.div
+                      key={recommendation.id}
+                      animate={variants[role]}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      onClick={() => !isCenter && setActiveRecommendationIndex(index)}
+                      className={`absolute inset-0 ${isCenter ? "" : "cursor-pointer"} ${role === "hidden" ? "pointer-events-none" : ""}`}
+                      style={{ transformOrigin: "center bottom" }}
+                    >
+                      <RecommendationShowcaseCard
+                        recommendation={recommendation}
+                        active={isCenter}
+                        accent={recommendationAccent(index)}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {showRecommendationControls && (
+                <div className="mt-6 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    {recommendations.map((recommendation, index) => (
+                      <button
+                        key={recommendation.id}
+                        type="button"
+                        onClick={() => setActiveRecommendationIndex(index)}
+                        aria-label={`Show recommendation ${index + 1}`}
+                        className={`h-1.5 rounded-full transition-all ${
+                          index === activeRecommendationIndex ? "w-8 bg-primary" : "w-3 bg-border hover:bg-muted-foreground/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={showPreviousRecommendation}
+                      aria-label="Previous recommendation"
+                      className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={showNextRecommendation}
+                      aria-label="Next recommendation"
+                      className="grid h-10 w-10 place-items-center rounded-full border border-border bg-background/60 text-muted-foreground transition-colors hover:border-primary/60 hover:text-primary"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <ProjectsSection />
 
       {/* CONTACT */}
       <section id="contact" className="relative overflow-hidden border-t border-border/60 bg-surface/40">
@@ -662,4 +715,262 @@ export default function HomePage() {
 
     </SiteShell>
   );
+}
+
+function ProjectsSection() {
+  return (
+    <section id="projects" className="scroll-mt-20 border-t border-border/60 bg-surface/30">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={stagger}
+          className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+        >
+          <motion.div variants={fadeUp}>
+            <p className="font-mono text-xs uppercase tracking-wider text-primary">// Projects</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Selected case studies</h2>
+            <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+              Three runnable full-stack demos. TaskManager leads the set, followed by BookReview and the Job Board.
+            </p>
+          </motion.div>
+          <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
+            {["All", "Productivity", "Backend", "Full-stack"].map((chip, i) => (
+              <span
+                key={chip}
+                className={`rounded-full border px-3 py-1 text-xs font-mono uppercase tracking-wider ${
+                  i === 0
+                    ? "border-primary/50 bg-primary/10 text-primary"
+                    : "border-border bg-background/40 text-muted-foreground"
+                }`}
+              >
+                {chip}
+              </span>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        <div className="mt-12 space-y-10">
+          {projects.map((p, idx) => (
+            <motion.article
+              key={p.name}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
+              whileHover={{ y: -4 }}
+              className="group relative grid gap-0 overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-colors hover:border-primary/40 lg:grid-cols-[1.1fr_0.9fr]"
+            >
+              <Link
+                href={p.href}
+                aria-label={`View ${p.name} project`}
+                className={`relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:order-${idx % 2 === 0 ? "last" : "first"} lg:border-l lg:border-t-0`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${p.accent}`} />
+                <div className="absolute inset-0 bg-grid opacity-30" />
+                <div className="relative flex h-full items-center justify-center p-8">
+                  <motion.div
+                    whileHover={{ scale: 1.02, rotate: 0.5 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
+                    className="w-full max-w-sm overflow-hidden rounded-xl border border-border bg-background/95 shadow-2xl backdrop-blur"
+                  >
+                    <div className="flex items-center gap-1.5 border-b border-border px-3 py-2">
+                      <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
+                      <span className="ml-3 font-mono text-[10px] text-muted-foreground">{p.href}</span>
+                    </div>
+                    {(() => {
+                      const Preview = previewMap[p.preview];
+                      return <Preview />;
+                    })()}
+                  </motion.div>
+                </div>
+              </Link>
+
+              <div className="relative flex flex-col p-7 sm:p-9">
+                <div className="flex items-center justify-between">
+                  <p className="font-mono text-xs uppercase tracking-wider text-primary">{p.tag}</p>
+                  <span className="font-mono text-xs text-muted-foreground">0{idx + 1} / 0{projects.length}</span>
+                </div>
+                <h3 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{p.name}</h3>
+                <p className="mt-3 text-sm text-muted-foreground sm:text-base">{p.blurb}</p>
+
+                <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" /> {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-6 flex flex-wrap gap-1.5">
+                  {p.tech.map((t) => (
+                    <span key={t} className="rounded-md border border-border bg-background/40 px-2 py-0.5 text-xs font-mono text-muted-foreground">{t}</span>
+                  ))}
+                </div>
+
+                <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <Button asChild>
+                    <Link href={p.href}>View Project <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                  <Button asChild variant="ghost">
+                    <a href="#contact">Discuss this project</a>
+                  </Button>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const recommendationAccents = [
+  "from-amber-400/30 to-orange-500/10",
+  "from-sky-400/30 to-indigo-500/10",
+  "from-emerald-400/30 to-teal-500/10",
+];
+
+function recommendationAccent(index: number) {
+  return recommendationAccents[index % recommendationAccents.length];
+}
+
+function isLongRecommendation(body: string) {
+  return body.length > 360;
+}
+
+function recommendationPreview(body: string) {
+  const text = body.replace(/\\n/g, "\n");
+
+  if (! isLongRecommendation(text)) {
+    return text;
+  }
+
+  const limit = 300;
+  const trimmed = text.slice(0, limit);
+  const lastSpace = trimmed.lastIndexOf(" ");
+
+  return `${trimmed.slice(0, lastSpace > 220 ? lastSpace : limit).trim()}...`;
+}
+
+function RecommendationShowcaseCard({
+  accent,
+  active,
+  recommendation,
+}: {
+  accent: string;
+  active: boolean;
+  recommendation: Recommendation;
+}) {
+  const longRecommendation = isLongRecommendation(recommendation.body);
+  const preview = recommendationPreview(recommendation.body);
+
+  return (
+    <article
+      className={`relative flex h-full overflow-hidden rounded-3xl border border-border shadow-card backdrop-blur sm:p-12 p-8 ${
+        active ? "" : "pointer-events-none"
+      }`}
+    >
+      <div className="absolute inset-0 bg-card" aria-hidden />
+      <div className={`absolute inset-0 bg-gradient-to-br ${accent} ${active ? "opacity-38" : "opacity-45"}`} aria-hidden />
+      <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
+      {active && <div className="absolute inset-0 bg-background/32" aria-hidden />}
+      {!active && <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" aria-hidden />}
+      {active && (
+        <motion.div
+          aria-hidden
+          className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        />
+      )}
+
+      <div className="relative flex h-full flex-col">
+        <Quote className="h-10 w-10 text-primary/70" />
+
+        <p className="mt-5 flex-1 overflow-hidden whitespace-pre-line text-base leading-relaxed text-foreground/95 sm:text-lg">
+          {preview}
+          {longRecommendation && active && (
+            <>
+              <a
+                href={`/recommendations/all#recommendation-${recommendation.id}`}
+                className="font-medium text-primary transition-colors hover:text-primary/80"
+              >
+                (read more)
+              </a>
+            </>
+          )}
+        </p>
+
+        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-border/60 pt-6">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
+            <RecommendationAvatar recommendation={recommendation} />
+            <div className="min-w-0">
+              <p className="font-display text-base font-semibold">{recommendation.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {[recommendation.role, recommendation.company].filter(Boolean).join(" | ")}
+              </p>
+              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
+                {recommendation.recommended_at ? formatRecommendationDate(recommendation.recommended_at) : "LinkedIn recommendation"}
+                {recommendation.relationship && ` - ${recommendation.relationship}`}
+              </p>
+            </div>
+          </div>
+
+          {active && (
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={`/recommendations/all#recommendation-${recommendation.id}`}
+                className="rounded-full border border-border bg-background/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+              >
+                All recommendations
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function RecommendationAvatar({ recommendation }: { recommendation: Recommendation }) {
+  if (recommendation.image_url) {
+    return (
+      <img
+        src={recommendation.image_url}
+        alt={`${recommendation.name} profile`}
+        className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
+      />
+    );
+  }
+
+  return (
+    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-border bg-primary/10 font-display text-base font-semibold text-primary">
+      {getRecommendationInitials(recommendation.name)}
+    </div>
+  );
+}
+
+function getRecommendationInitials(name: string) {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function formatRecommendationDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
 }

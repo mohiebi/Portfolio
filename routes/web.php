@@ -10,14 +10,24 @@ use App\Http\Controllers\Projects\JobBoard\JobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\JobController;
 use App\Http\Controllers\Projects\JobBoard\myJobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\MyJobController;
+use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\TaskmanagerController;
+use App\Models\Recommendation;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
 Route::get('/', function () {
-    return Inertia::render('Portfolio/Home');
+    return Inertia::render('Portfolio/Home', [
+        'recommendations' => Recommendation::published()->ordered()->get(),
+    ]);
 })->name('portfolio');
+
+Route::get('/recommendations/all', function () {
+    return Inertia::render('Recommendations/PublicIndex', [
+        'recommendations' => Recommendation::published()->ordered()->get(),
+    ]);
+})->name('recommendations.public');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -28,6 +38,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::middleware(['auth', 'admin'])->resource('recommendations', RecommendationController::class)
+    ->except(['show']);
 
 require __DIR__.'/auth.php';
 

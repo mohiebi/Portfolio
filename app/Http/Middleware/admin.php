@@ -18,9 +18,7 @@ class admin
     {
         $user = Auth::user();
 
-        if (! $user || (int) $user->role !== 7) {
-            return redirect(route('portfolio'));
-        }
+        abort_if(! $user || (int) $user->role !== 7, 403);
 
         return $next($request);
     }

@@ -66,6 +66,24 @@ export type Task = {
   updated_at?: string;
 };
 
+export type Recommendation = {
+  id: number;
+  name: string;
+  role?: string | null;
+  company?: string | null;
+  relationship?: string | null;
+  project?: string | null;
+  image_path?: string | null;
+  image_url?: string | null;
+  linkedin_url?: string | null;
+  body: string;
+  recommended_at?: string | null;
+  is_published: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type JobApplication = {
   id: number;
   expected_salary: number;

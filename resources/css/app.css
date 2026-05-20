@@ -116,6 +116,17 @@
     background-color: oklch(0.82 0.16 78 / 0.35);
     color: var(--color-foreground);
   }
+
+  input[type="date"] {
+    color-scheme: dark;
+    color: var(--color-foreground);
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(1) brightness(1.6);
+    opacity: 0.85;
+  }
 }
 
 @layer utilities {

@@ -8,15 +8,16 @@ type NavItem = { label: string; to?: string; href?: string; exact?: boolean; sec
 
 const portfolioNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true, sectionId: "top" },
-  { label: "Projects", href: "/#projects", sectionId: "projects" },
   { label: "About", href: "/#about", sectionId: "about" },
+  { label: "Recommendations", href: "/#recommendations", sectionId: "recommendations" },
+  { label: "Projects", href: "/#projects", sectionId: "projects" },
   { label: "Contact", href: "/#contact", sectionId: "contact" },
 ];
 
 const projectsNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true },
-  { label: "Book Review", to: "/books" },
   { label: "Tasks Manager", to: "/taskmanager" },
+  { label: "Book Review", to: "/books" },
   { label: "Job Board", to: "/jobs" },
   { label: "Contact Me", href: "/#contact" },
 ];
@@ -29,6 +30,9 @@ function isProjectsRoute(pathname: string) {
     pathname.startsWith("/my-jobs") ||
     pathname.startsWith("/my-job-applications") ||
     pathname.startsWith("/employer") ||
+    pathname === "/recommendations" ||
+    pathname === "/recommendations/create" ||
+    /^\/recommendations\/\d+\/edit$/.test(pathname) ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/profile")
   );
@@ -39,15 +43,20 @@ export function SiteHeader() {
   const page = usePage();
   const pathname = page.url.split("?")[0];
   const auth = (page.props as any).auth;
+  const isAdmin = Boolean(auth?.user?.is_admin);
   const onProjects = isProjectsRoute(pathname);
-  const nav = onProjects ? projectsNav : portfolioNav;
+  const hasRecommendations = Array.isArray((page.props as any).recommendations)
+    && (page.props as any).recommendations.length > 0;
+  const nav = onProjects
+    ? projectsNav
+    : portfolioNav.filter((item) => item.sectionId !== "recommendations" || hasRecommendations);
   const onPortfolioHome = pathname === "/";
   const authUrl = (path: "/login" | "/register") => `${path}?redirect=${encodeURIComponent(page.url)}`;
   const [activeSection, setActiveSection] = useState<string>("top");
 
   useEffect(() => {
     if (!onPortfolioHome) return;
-    const ids = ["projects", "about", "contact"];
+    const ids = ["about", "recommendations", "projects", "contact"];
     const handler = () => {
       const scrollY = window.scrollY;
       let current = "top";
@@ -127,6 +136,11 @@ export function SiteHeader() {
             {auth?.user ? (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-foreground">Hi {auth.user.name}</span>
+                {isAdmin && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/recommendations">Recommendations</Link>
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -169,6 +183,11 @@ export function SiteHeader() {
                 {auth?.user ? (
                   <div className="flex flex-col gap-2">
                     <span className="text-sm text-foreground px-3 py-2">Hi {auth.user.name}</span>
+                    {isAdmin && (
+                      <Button asChild variant="outline" size="sm" className="w-full">
+                        <Link href="/recommendations">Recommendations</Link>
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
