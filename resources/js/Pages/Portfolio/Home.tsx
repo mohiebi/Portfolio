@@ -453,6 +453,8 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
         </div>
       </section>
 
+      <CaseStudiesSection caseStudies={caseStudies} />
+
       {activeRecommendation && (
         <section id="recommendations" className="relative scroll-mt-20 overflow-hidden border-t border-border/60">
           <motion.div
@@ -489,7 +491,7 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
             </motion.div>
 
             <div className="relative mt-10">
-              <div className="relative mx-auto h-[540px] max-w-3xl sm:h-[480px]">
+              <div className="relative mx-auto max-w-3xl sm:h-[520px] md:h-[480px]">
                 {recommendations.map((recommendation, index) => {
                   const offset = (index - activeRecommendationIndex + recommendationTotal) % recommendationTotal;
                   const isCenter = offset === 0;
@@ -509,7 +511,7 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
                       animate={variants[role]}
                       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                       onClick={() => !isCenter && setActiveRecommendationIndex(index)}
-                      className={`absolute inset-0 ${isCenter ? "" : "cursor-pointer"} ${role === "hidden" ? "pointer-events-none" : ""}`}
+                      className={`${isCenter ? "relative sm:absolute sm:inset-0" : "hidden cursor-pointer sm:absolute sm:inset-0 sm:block"} ${role === "hidden" ? "pointer-events-none" : ""}`}
                       style={{ transformOrigin: "center bottom" }}
                     >
                       <RecommendationShowcaseCard
@@ -523,8 +525,8 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
               </div>
 
               {showRecommendationControls && (
-                <div className="mt-6 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
+                <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
                     {recommendations.map((recommendation, index) => (
                       <button
                         key={recommendation.id}
@@ -563,8 +565,6 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
       )}
 
       <ProjectsSection />
-
-      <CaseStudiesSection caseStudies={caseStudies} />
 
       {/* CONTACT */}
       <section id="contact" className="relative overflow-hidden border-t border-border/60 bg-surface/40">
@@ -968,7 +968,7 @@ function RecommendationShowcaseCard({
 
   return (
     <article
-      className={`relative flex h-full overflow-hidden rounded-3xl border border-border shadow-card backdrop-blur sm:p-12 p-8 ${
+      className={`relative flex h-full overflow-hidden rounded-2xl border border-border p-6 shadow-card backdrop-blur sm:rounded-3xl sm:p-10 md:p-12 ${
         active ? "" : "pointer-events-none"
       }`}
     >
@@ -986,13 +986,14 @@ function RecommendationShowcaseCard({
         />
       )}
 
-      <div className="relative flex h-full flex-col">
-        <Quote className="h-10 w-10 text-primary/70" />
+      <div className="relative flex h-full min-w-0 flex-col">
+        <Quote className="h-8 w-8 text-primary/70 sm:h-10 sm:w-10" />
 
-        <p className="mt-5 flex-1 overflow-hidden whitespace-pre-line text-base leading-relaxed text-foreground/95 sm:text-lg">
+        <p className="mt-4 min-h-0 flex-1 overflow-hidden whitespace-pre-line break-words text-sm leading-6 text-foreground/95 sm:mt-5 sm:text-base sm:leading-relaxed md:text-lg">
           {preview}
           {longRecommendation && active && (
             <>
+              {" "}
               <a
                 href={`/recommendations/all#recommendation-${recommendation.id}`}
                 className="font-medium text-primary transition-colors hover:text-primary/80"
@@ -1003,15 +1004,15 @@ function RecommendationShowcaseCard({
           )}
         </p>
 
-        <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-border/60 pt-6">
-          <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="mt-5 flex flex-col gap-4 border-t border-border/60 pt-5 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
+          <div className="flex min-w-0 items-center gap-3 sm:flex-1 sm:gap-4">
             <RecommendationAvatar recommendation={recommendation} />
             <div className="min-w-0">
-              <p className="font-display text-base font-semibold">{recommendation.name}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-display text-sm font-semibold sm:text-base">{recommendation.name}</p>
+              <p className="break-words text-xs text-muted-foreground">
                 {[recommendation.role, recommendation.company].filter(Boolean).join(" | ")}
               </p>
-              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
+              <p className="mt-0.5 break-words font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
                 {recommendation.recommended_at ? formatRecommendationDate(recommendation.recommended_at) : "LinkedIn recommendation"}
                 {recommendation.relationship && ` - ${recommendation.relationship}`}
               </p>
@@ -1022,7 +1023,7 @@ function RecommendationShowcaseCard({
             <div className="flex flex-wrap items-center gap-2">
               <a
                 href={`/recommendations/all#recommendation-${recommendation.id}`}
-                className="rounded-full border border-border bg-background/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+                className="inline-flex w-full justify-center rounded-full border border-border bg-background/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary sm:w-auto"
               >
                 All recommendations
               </a>
@@ -1040,13 +1041,13 @@ function RecommendationAvatar({ recommendation }: { recommendation: Recommendati
       <img
         src={recommendation.image_url}
         alt={`${recommendation.name} profile`}
-        className="h-14 w-14 shrink-0 rounded-full border border-border object-cover"
+        className="h-12 w-12 shrink-0 rounded-full border border-border object-cover sm:h-14 sm:w-14"
       />
     );
   }
 
   return (
-    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-border bg-primary/10 font-display text-base font-semibold text-primary">
+    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-border bg-primary/10 font-display text-sm font-semibold text-primary sm:h-14 sm:w-14 sm:text-base">
       {getRecommendationInitials(recommendation.name)}
     </div>
   );
