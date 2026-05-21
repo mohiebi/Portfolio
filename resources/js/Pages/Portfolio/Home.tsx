@@ -727,6 +727,13 @@ const caseStudyIcons = {
   web: Globe,
 } as const;
 
+const caseStudyTabTones = {
+  web3: "fill-amber-400/25",
+  modernize: "fill-sky-400/25",
+  ai: "fill-emerald-400/25",
+  web: "fill-rose-400/25",
+} as const;
+
 function CaseStudiesSection({ caseStudies }: { caseStudies: CaseStudy[] }) {
   if (caseStudies.length === 0) {
     return null;
@@ -756,7 +763,7 @@ function CaseStudiesSection({ caseStudies }: { caseStudies: CaseStudy[] }) {
           </motion.div>
         </motion.div>
 
-        <div className="mt-12 grid gap-6">
+        <div className="mt-12 grid gap-7 lg:grid-cols-2">
           {caseStudies.slice(0, 4).map((caseStudy, index) => (
             <CaseStudyCard key={caseStudy.id} caseStudy={caseStudy} index={index} />
           ))}
@@ -768,6 +775,9 @@ function CaseStudiesSection({ caseStudies }: { caseStudies: CaseStudy[] }) {
 
 function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: number }) {
   const Icon = caseStudyIcons[caseStudy.cover] ?? Globe;
+  const tabTone = caseStudyTabTones[caseStudy.cover] ?? "fill-primary/20";
+  const tabLabel = caseStudy.company ?? caseStudy.role ?? "Case study";
+  const tabDetail = caseStudy.period ?? caseStudy.location;
 
   return (
     <motion.article
@@ -775,26 +785,49 @@ function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: numb
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: index * 0.05 }}
-      className="group relative flex min-h-[24rem] flex-col overflow-hidden rounded-3xl border border-border bg-card/70 shadow-card backdrop-blur transition-colors hover:border-primary/60"
+      className="group relative flex min-h-[25rem] flex-col pt-12"
     >
-      <div className={`relative h-36 overflow-hidden bg-gradient-to-br ${caseStudy.accent}`}>
-        <div className="absolute inset-0 bg-grid opacity-30" />
-        <div className="relative flex h-full items-center justify-between p-6">
-          <div>
-            {caseStudy.tag && <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{caseStudy.tag}</p>}
-            {caseStudy.company && <p className="mt-1 font-display text-lg font-semibold">{caseStudy.company}</p>}
-          </div>
-          <div className="grid h-14 w-14 place-items-center rounded-2xl border border-border bg-background/70 text-primary backdrop-blur">
-            <Icon className="h-6 w-6" />
-          </div>
+      <div className="absolute left-0 top-0 z-10 h-12 w-[60%] max-w-[24rem]">
+        <svg
+          aria-hidden
+          viewBox="0 0 360 48"
+          preserveAspectRatio="none"
+          className="absolute inset-0 h-full w-full drop-shadow-sm"
+        >
+          <path
+            d="M0 48V16Q0 0 16 0H246Q261 0 269 11L302 48H0Z"
+            className={`${tabTone} stroke-border transition-colors group-hover:stroke-primary/60`}
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <div className="absolute inset-y-0 left-0 right-16 overflow-hidden rounded-tl-2xl bg-grid opacity-20" aria-hidden />
+        <div className="relative flex h-full min-w-0 flex-col justify-center px-7 pr-22">
+          <p className="mt-2 truncate font-display text-base font-semibold">{tabLabel}</p>
+         
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-7">
-        <h3 className="font-display text-2xl font-semibold leading-tight">{caseStudy.title}</h3>
-        <p className="mt-3 text-sm text-muted-foreground">{caseStudy.summary}</p>
+      <div className="relative flex flex-1 flex-col overflow-hidden rounded-b-3xl rounded-tr-3xl border border-border bg-card/75 p-6 pt-8 shadow-card backdrop-blur transition-colors group-hover:border-primary/60 sm:p-7 sm:pt-9">
+        <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${caseStudy.accent}`} aria-hidden />
+        <div className="absolute inset-0 bg-grid opacity-10" aria-hidden />
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h3 className="font-display text-2xl font-semibold leading-tight">{caseStudy.title}</h3>
+             {caseStudy.tag && (
+            <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-primary">
+              {caseStudy.tag}
+            </p>
+          )}
+            {/* {tabDetail && <p className="truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{tabDetail}</p>} */}
+          </div>
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-border bg-background/70 text-primary backdrop-blur">
+            <Icon className="h-5 w-5" />
+          </div>
+        </div>
 
-        <div className="mt-5 flex flex-wrap gap-1.5">
+        <p className="relative mt-4 text-sm leading-6 text-muted-foreground">{caseStudy.summary}</p>
+
+        <div className="relative mt-5 flex flex-wrap gap-1.5">
           {(caseStudy.stack ?? []).slice(0, 6).map((item) => (
             <span key={item} className="rounded-md border border-border bg-background/40 px-2 py-0.5 text-xs font-mono text-muted-foreground">
               {item}
@@ -802,7 +835,7 @@ function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: numb
           ))}
         </div>
 
-        <div className="mt-auto pt-7">
+        <div className="relative mt-auto pt-7">
           <Button asChild variant="outline" className="group/btn">
             <Link href={`/case-studies/${caseStudy.slug}`}>
               Read case study
