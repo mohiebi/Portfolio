@@ -27,6 +27,14 @@ class Task extends Model
         $this->complete = ! $this->complete;
         $this->status = $this->complete ? self::STATUS_DONE : self::STATUS_OPEN;
         $this->save();
+
+        if ($this->complete) {
+            $this->markSubtasksDone();
+
+            return;
+        }
+
+        $this->markSubtasksOpen();
     }
 
     public function moveToStatus(string $status): void
@@ -34,6 +42,36 @@ class Task extends Model
         $this->status = $status;
         $this->complete = $status === self::STATUS_DONE;
         $this->save();
+
+        if ($status === self::STATUS_DONE) {
+            $this->markSubtasksDone();
+
+            return;
+        }
+
+        if ($status === self::STATUS_OPEN) {
+            $this->markSubtasksOpen();
+        }
+    }
+
+    public function markSubtasksDone(): void
+    {
+        $this->subtasks()
+            ->where('complete', false)
+            ->update([
+                'complete' => true,
+                'status' => self::STATUS_DONE,
+            ]);
+    }
+
+    public function markSubtasksOpen(): void
+    {
+        $this->subtasks()
+            ->where('complete', true)
+            ->update([
+                'complete' => false,
+                'status' => self::STATUS_OPEN,
+            ]);
     }
 
     public function syncStatusFromSubtasks(): void

@@ -88,7 +88,7 @@ class TaskSubtaskTest extends TestCase
             ->assertJsonPath('task.complete', false);
     }
 
-    public function test_manual_parent_status_changes_do_not_rewrite_subtasks(): void
+    public function test_marking_parent_done_marks_subtasks_done(): void
     {
         $user = User::factory()->create();
         $parent = Task::factory()->for($user)->create([
@@ -110,16 +110,36 @@ class TaskSubtaskTest extends TestCase
 
         $this->assertDatabaseHas('tasks', [
             'id' => $subtask->id,
-            'complete' => false,
-            'status' => Task::STATUS_OPEN,
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+        ]);
+    }
+
+    public function test_marking_parent_open_marks_subtasks_open(): void
+    {
+        $user = User::factory()->create();
+        $parent = Task::factory()->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+        ]);
+        $subtask = Task::factory()->for($user)->create([
+            'parent_id' => $parent->id,
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
         ]);
 
         $this->actingAs($user)
-            ->patchJson("/taskmanager/{$parent->id}/subtasks/{$subtask->id}", [
+            ->patchJson("/taskmanager/{$parent->id}/status", [
                 'status' => Task::STATUS_OPEN,
             ])
             ->assertOk()
             ->assertJsonPath('task.status', Task::STATUS_OPEN);
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $subtask->id,
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+        ]);
     }
 
     public function test_subtasks_are_limited_to_one_level(): void

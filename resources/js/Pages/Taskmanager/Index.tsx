@@ -46,6 +46,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [quickAddProcessing, setQuickAddProcessing] = useState(false);
   const [workingTaskIds, setWorkingTaskIds] = useState<number[]>([]);
+  const [workingSubtaskIds, setWorkingSubtaskIds] = useState<number[]>([]);
   const [draggingTaskId, setDraggingTaskId] = useState<number | null>(null);
   const [dragOverStatus, setDragOverStatus] = useState<TaskStatus | null>(null);
   const newTaskHref = demoMode ? "/login?redirect=/taskmanager/create" : "/taskmanager/create";
@@ -65,6 +66,14 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
       working
         ? Array.from(new Set([...current, taskId]))
         : current.filter((id) => id !== taskId),
+    );
+  };
+
+  const setSubtaskWorking = (subtaskId: number, working: boolean) => {
+    setWorkingSubtaskIds((current) =>
+      working
+        ? Array.from(new Set([...current, subtaskId]))
+        : current.filter((id) => id !== subtaskId),
     );
   };
 
@@ -117,6 +126,37 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
     const targetStatus = getTaskStatus(task) === "done" ? "open" : "done";
 
     void moveTaskToStatus(task, targetStatus);
+  };
+
+  const handleToggleSubtask = async (task: Task, subtask: Task) => {
+    const nextStatus = getTaskStatus(subtask) === "done" ? "open" : "done";
+
+    if (demoMode) {
+      updateLocalTask(task.id, (current) => withToggledSubtask(current, subtask.id, nextStatus));
+
+      return;
+    }
+
+    setActionError(null);
+    setSubtaskWorking(subtask.id, true);
+
+    try {
+      const { task: updatedTask } = await taskRequest<TaskResponse>(
+        `/taskmanager/${task.id}/subtasks/${subtask.id}`,
+        {
+          method: "PATCH",
+          body: { status: nextStatus },
+        },
+      );
+
+      setSavedTasks((current) =>
+        current.map((item) => (item.id === updatedTask.id ? updatedTask : item)),
+      );
+    } catch (error) {
+      setActionError(getMessage(error));
+    } finally {
+      setSubtaskWorking(subtask.id, false);
+    }
   };
 
   const handleDragStart = (event: DragEvent<HTMLDivElement>, task: Task) => {
@@ -270,6 +310,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
             demoMode={demoMode}
             dragOverStatus={dragOverStatus}
             groupedTasks={groupedTasks}
+            workingSubtaskIds={workingSubtaskIds}
             workingTaskIds={workingTaskIds}
             onDelete={handleDelete}
             onDragEnd={handleDragEnd}
@@ -277,6 +318,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
             onDragStart={handleDragStart}
             onDrop={handleDrop}
             onToggle={handleToggle}
+            onToggleSubtask={handleToggleSubtask}
           />
         )}
       </section>
@@ -288,6 +330,7 @@ function TaskBoard({
   demoMode,
   dragOverStatus,
   groupedTasks,
+  workingSubtaskIds,
   workingTaskIds,
   onDelete,
   onDragEnd,
@@ -295,10 +338,12 @@ function TaskBoard({
   onDragStart,
   onDrop,
   onToggle,
+  onToggleSubtask,
 }: {
   demoMode: boolean;
   dragOverStatus: TaskStatus | null;
   groupedTasks: Record<TaskStatus, Task[]>;
+  workingSubtaskIds: number[];
   workingTaskIds: number[];
   onDelete: (task: Task) => void;
   onDragEnd: () => void;
@@ -306,6 +351,7 @@ function TaskBoard({
   onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
   onDrop: (event: DragEvent, status: TaskStatus) => void;
   onToggle: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtask: Task) => void;
 }) {
   return (
     <>
@@ -317,6 +363,7 @@ function TaskBoard({
             demoMode={demoMode}
             dragging={dragOverStatus === column.status}
             tasks={groupedTasks[column.status]}
+            workingSubtaskIds={workingSubtaskIds}
             workingTaskIds={workingTaskIds}
             onDelete={onDelete}
             onDragEnd={onDragEnd}
@@ -324,6 +371,7 @@ function TaskBoard({
             onDragStart={onDragStart}
             onDrop={onDrop}
             onToggle={onToggle}
+            onToggleSubtask={onToggleSubtask}
           />
         ))}
       </div>
@@ -362,6 +410,7 @@ function TaskBoard({
                 dragging={dragOverStatus === column.status}
                 hasDivider={index < STATUS_COLUMNS.length - 1}
                 tasks={groupedTasks[column.status]}
+                workingSubtaskIds={workingSubtaskIds}
                 workingTaskIds={workingTaskIds}
                 onDelete={onDelete}
                 onDragEnd={onDragEnd}
@@ -369,6 +418,7 @@ function TaskBoard({
                 onDragStart={onDragStart}
                 onDrop={onDrop}
                 onToggle={onToggle}
+                onToggleSubtask={onToggleSubtask}
               />
             ))}
           </tr>
@@ -384,6 +434,7 @@ function MobileTaskLane({
   demoMode,
   dragging,
   tasks,
+  workingSubtaskIds,
   workingTaskIds,
   onDelete,
   onDragEnd,
@@ -391,11 +442,13 @@ function MobileTaskLane({
   onDragStart,
   onDrop,
   onToggle,
+  onToggleSubtask,
 }: {
   column: StatusColumn;
   demoMode: boolean;
   dragging: boolean;
   tasks: Task[];
+  workingSubtaskIds: number[];
   workingTaskIds: number[];
   onDelete: (task: Task) => void;
   onDragEnd: () => void;
@@ -403,6 +456,7 @@ function MobileTaskLane({
   onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
   onDrop: (event: DragEvent, status: TaskStatus) => void;
   onToggle: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtask: Task) => void;
 }) {
   return (
     <section
@@ -432,11 +486,13 @@ function MobileTaskLane({
               key={task.id}
               demoMode={demoMode}
               task={task}
+              workingSubtaskIds={workingSubtaskIds}
               working={workingTaskIds.includes(task.id)}
               onDelete={onDelete}
               onDragEnd={onDragEnd}
               onDragStart={onDragStart}
               onToggle={onToggle}
+              onToggleSubtask={onToggleSubtask}
             />
           ))
         )}
@@ -451,6 +507,7 @@ function TaskLaneCell({
   dragging,
   hasDivider,
   tasks,
+  workingSubtaskIds,
   workingTaskIds,
   onDelete,
   onDragEnd,
@@ -458,12 +515,14 @@ function TaskLaneCell({
   onDragStart,
   onDrop,
   onToggle,
+  onToggleSubtask,
 }: {
   column: StatusColumn;
   demoMode: boolean;
   dragging: boolean;
   hasDivider: boolean;
   tasks: Task[];
+  workingSubtaskIds: number[];
   workingTaskIds: number[];
   onDelete: (task: Task) => void;
   onDragEnd: () => void;
@@ -471,6 +530,7 @@ function TaskLaneCell({
   onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
   onDrop: (event: DragEvent, status: TaskStatus) => void;
   onToggle: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtask: Task) => void;
 }) {
   return (
     <td
@@ -491,11 +551,13 @@ function TaskLaneCell({
               key={task.id}
               demoMode={demoMode}
               task={task}
+              workingSubtaskIds={workingSubtaskIds}
               working={workingTaskIds.includes(task.id)}
               onDelete={onDelete}
               onDragEnd={onDragEnd}
               onDragStart={onDragStart}
               onToggle={onToggle}
+              onToggleSubtask={onToggleSubtask}
             />
           ))
         )}
@@ -507,22 +569,27 @@ function TaskLaneCell({
 function TaskCard({
   demoMode,
   task,
+  workingSubtaskIds,
   working,
   onDelete,
   onDragEnd,
   onDragStart,
   onToggle,
+  onToggleSubtask,
 }: {
   demoMode: boolean;
   task: Task;
+  workingSubtaskIds: number[];
   working: boolean;
   onDelete: (task: Task) => void;
   onDragEnd: () => void;
   onDragStart: (event: DragEvent<HTMLDivElement>, task: Task) => void;
   onToggle: (task: Task) => void;
+  onToggleSubtask: (task: Task, subtask: Task) => void;
 }) {
   const status = getTaskStatus(task);
   const focusing = status === "in_progress";
+  const subtasks = task.subtasks ?? [];
 
   return (
     <div
@@ -568,20 +635,46 @@ function TaskCard({
             {getTaskSummary(task)}
           </p>
         )}
-        {getSubtaskProgress(task).total > 0 && (
+        {subtasks.length > 0 && (
           <div className="mt-2">
-            <div className="flex items-center justify-between gap-2 text-xs leading-none text-[#9bb1ce]">
-              <span className="inline-flex items-center gap-1.5">
-                <ListChecks className="h-3 w-3" />
-                Subtasks
-              </span>
-              <span>{getSubtaskProgress(task).done}/{getSubtaskProgress(task).total}</span>
-            </div>
-            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#1d2a43]">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${getSubtaskProgress(task).percent}%` }}
-              />
+            <p className="text-xs font-semibold leading-none text-[#9bb1ce]">Sub tasks</p>
+            <div className="mt-1.5 grid gap-1">
+              {subtasks.map((subtask) => {
+                const subtaskStatus = getTaskStatus(subtask);
+                const subtaskWorking = workingSubtaskIds.includes(subtask.id);
+
+                return (
+                  <button
+                    key={subtask.id}
+                    type="button"
+                    disabled={working || subtaskWorking}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onToggleSubtask(task, subtask);
+                    }}
+                    className="grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md py-0.5 text-left transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-70"
+                    aria-label={subtaskStatus === "done" ? `Mark ${subtask.title} open` : `Mark ${subtask.title} done`}
+                  >
+                    <span
+                      className={`grid h-3.5 w-3.5 place-items-center rounded-full border ${
+                        subtaskStatus === "done"
+                          ? "border-success bg-success text-success-foreground"
+                          : "border-[#2a3b5a] bg-[#071224]"
+                      }`}
+                    >
+                      {subtaskStatus === "done" ? <Check className="h-2.5 w-2.5" /> : null}
+                    </span>
+                    <span
+                      className={`truncate text-xs leading-4 ${
+                        subtaskStatus === "done" ? "text-[#8090ad] line-through" : "text-[#d8e7ff]"
+                      }`}
+                    >
+                      {subtask.title}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -648,25 +741,39 @@ function getTaskStatus(task: Task): TaskStatus {
 function withStatus(task: Task, status: TaskStatus): Task {
   return {
     ...task,
+    subtasks: status === "done" || status === "open"
+      ? task.subtasks?.map((subtask) => withStatus(subtask, status))
+      : task.subtasks,
     status,
     complete: status === "done",
   };
 }
 
-function getTaskSummary(task: Task) {
-  return task.description || task.long_description || "";
+function withToggledSubtask(task: Task, subtaskId: number, status: TaskStatus): Task {
+  const subtasks = (task.subtasks ?? []).map((subtask) =>
+    subtask.id === subtaskId ? withStatus(subtask, status) : subtask,
+  );
+
+  return withStatus(
+    {
+      ...task,
+      subtasks,
+    },
+    getParentStatusFromSubtasks(subtasks),
+  );
 }
 
-function getSubtaskProgress(task: Task) {
-  const subtasks = task.subtasks ?? [];
-  const total = subtasks.length;
-  const done = subtasks.filter((subtask) => getTaskStatus(subtask) === "done").length;
+function getParentStatusFromSubtasks(subtasks: Task[]): TaskStatus {
+  const completed = subtasks.filter((subtask) => getTaskStatus(subtask) === "done").length;
 
-  return {
-    done,
-    total,
-    percent: total === 0 ? 0 : Math.round((done / total) * 100),
-  };
+  if (completed === 0) return "open";
+  if (completed === subtasks.length) return "done";
+
+  return "in_progress";
+}
+
+function getTaskSummary(task: Task) {
+  return task.description || task.long_description || "";
 }
 
 type RequestMethod = "POST" | "PUT" | "PATCH" | "DELETE";
