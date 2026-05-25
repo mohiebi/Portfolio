@@ -15,7 +15,11 @@ class TaskmanagerController extends Controller
     public function index()
     {
         $tasks = auth()->check()
-            ? auth()->user()->tasks()->latest()->get()
+            ? auth()->user()->tasks()
+                ->topLevel()
+                ->with('subtasks')
+                ->latest()
+                ->get()
             : $this->demoTasks();
 
         return Inertia::render('Taskmanager/Index', [
@@ -68,7 +72,7 @@ class TaskmanagerController extends Controller
      */
     public function show(Task $taskmanager)
     {
-        $taskmanager = $this->ownedTask($taskmanager);
+        $taskmanager = $this->ownedParentTask($taskmanager)->load('subtasks');
 
         return Inertia::render('Taskmanager/Show', [
             'task' => $taskmanager,
@@ -80,7 +84,7 @@ class TaskmanagerController extends Controller
      */
     public function edit(Task $taskmanager)
     {
-        $taskmanager = $this->ownedTask($taskmanager);
+        $taskmanager = $this->ownedParentTask($taskmanager)->load('subtasks');
 
         return Inertia::render('Taskmanager/Edit', [
             'task' => $taskmanager,
@@ -92,7 +96,7 @@ class TaskmanagerController extends Controller
      */
     public function update(Task $taskmanager, Taskrequest $request)
     {
-        $taskmanager = $this->ownedTask($taskmanager);
+        $taskmanager = $this->ownedParentTask($taskmanager);
         $data = $request->validated();
         $data['description'] ??= '';
 
@@ -113,7 +117,7 @@ class TaskmanagerController extends Controller
      */
     public function destroy(Task $taskmanager, Request $request)
     {
-        $taskmanager = $this->ownedTask($taskmanager);
+        $taskmanager = $this->ownedParentTask($taskmanager);
         $deletedTaskId = $taskmanager->id;
         $taskmanager->delete();
 
@@ -130,12 +134,12 @@ class TaskmanagerController extends Controller
 
     public function togglecomplete(Task $task, Request $request)
     {
-        $task = $this->ownedTask($task);
+        $task = $this->ownedParentTask($task);
         $task->toggleComplete();
 
         if ($request->expectsJson()) {
             return response()->json([
-                'task' => $task,
+                'task' => $this->freshTask($task),
                 'message' => 'Task updated.',
             ]);
         }
@@ -146,7 +150,7 @@ class TaskmanagerController extends Controller
 
     public function updateStatus(Task $task, Request $request)
     {
-        $task = $this->ownedTask($task);
+        $task = $this->ownedParentTask($task);
         $data = $request->validate([
             'status' => ['required', 'in:'.implode(',', [
                 Task::STATUS_OPEN,
@@ -159,7 +163,7 @@ class TaskmanagerController extends Controller
 
         if ($request->expectsJson()) {
             return response()->json([
-                'task' => $task,
+                'task' => $this->freshTask($task),
                 'message' => 'Task updated.',
             ]);
         }
@@ -168,9 +172,121 @@ class TaskmanagerController extends Controller
             ->with('success', 'Task updated.');
     }
 
-    private function ownedTask(Task $task): Task
+    public function storeSubtask(Task $task, Request $request)
     {
-        return auth()->user()->tasks()->whereKey($task->id)->firstOrFail();
+        $task = $this->ownedParentTask($task);
+        $data = $this->validatedSubtaskData($request, true);
+
+        $subtask = $task->subtasks()->create([
+            ...$data,
+            'user_id' => auth()->id(),
+            'description' => $data['description'] ?? '',
+        ]);
+
+        $task->syncStatusFromSubtasks();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'task' => $this->freshTask($task),
+                'subtask' => $subtask->fresh(),
+                'message' => 'Subtask created.',
+            ], 201);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Subtask created.');
+    }
+
+    public function updateSubtask(Task $task, Task $subtask, Request $request)
+    {
+        $task = $this->ownedParentTask($task);
+        $subtask = $this->ownedSubtask($task, $subtask);
+        $data = $this->validatedSubtaskData($request);
+
+        $subtask->update($data);
+        $task->syncStatusFromSubtasks();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'task' => $this->freshTask($task),
+                'subtask' => $subtask->fresh(),
+                'message' => 'Subtask updated.',
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Subtask updated.');
+    }
+
+    public function destroySubtask(Task $task, Task $subtask, Request $request)
+    {
+        $task = $this->ownedParentTask($task);
+        $subtask = $this->ownedSubtask($task, $subtask);
+        $deletedSubtaskId = $subtask->id;
+
+        $subtask->delete();
+        $task->syncStatusFromSubtasks();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'id' => $deletedSubtaskId,
+                'task' => $this->freshTask($task),
+                'message' => 'Subtask deleted.',
+            ]);
+        }
+
+        return redirect()->back()
+            ->with('success', 'Subtask deleted.');
+    }
+
+    private function ownedParentTask(Task $task): Task
+    {
+        return auth()->user()->tasks()
+            ->topLevel()
+            ->whereKey($task->id)
+            ->firstOrFail();
+    }
+
+    private function ownedSubtask(Task $parent, Task $subtask): Task
+    {
+        return auth()->user()->tasks()
+            ->where('parent_id', $parent->id)
+            ->whereKey($subtask->id)
+            ->firstOrFail();
+    }
+
+    private function freshTask(Task $task): Task
+    {
+        return $task->fresh()->load('subtasks');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validatedSubtaskData(Request $request, bool $creating = false): array
+    {
+        $data = $request->validate([
+            'title' => [$creating ? 'required' : 'sometimes', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+            'long_description' => ['nullable', 'string'],
+            'complete' => ['sometimes', 'boolean'],
+            'status' => ['sometimes', 'in:'.implode(',', [
+                Task::STATUS_OPEN,
+                Task::STATUS_IN_PROGRESS,
+                Task::STATUS_DONE,
+            ])],
+        ]);
+
+        if (array_key_exists('complete', $data)) {
+            $data['status'] = $data['complete'] ? Task::STATUS_DONE : Task::STATUS_OPEN;
+        } elseif (array_key_exists('status', $data)) {
+            $data['complete'] = $data['status'] === Task::STATUS_DONE;
+        } elseif ($creating) {
+            $data['status'] = Task::STATUS_OPEN;
+            $data['complete'] = false;
+        }
+
+        return $data;
     }
 
     private function demoTasks(): array
@@ -205,6 +321,28 @@ class TaskmanagerController extends Controller
                 'status' => Task::STATUS_IN_PROGRESS,
                 'created_at' => '1 week ago',
                 'updated_at' => '1 week ago',
+                'subtasks' => [
+                    [
+                        'id' => 301,
+                        'title' => 'Outline project setup',
+                        'description' => '',
+                        'long_description' => 'List the framework, local services, and first-run commands.',
+                        'complete' => true,
+                        'status' => Task::STATUS_DONE,
+                        'created_at' => '1 week ago',
+                        'updated_at' => '1 week ago',
+                    ],
+                    [
+                        'id' => 302,
+                        'title' => 'Add screenshots',
+                        'description' => '',
+                        'long_description' => 'Capture the job listing and application screens.',
+                        'complete' => false,
+                        'status' => Task::STATUS_OPEN,
+                        'created_at' => '3 days ago',
+                        'updated_at' => '3 days ago',
+                    ],
+                ],
             ],
             [
                 'id' => 4,

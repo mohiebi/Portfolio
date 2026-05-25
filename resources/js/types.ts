@@ -57,11 +57,13 @@ export type Job = {
 
 export type Task = {
   id: number;
+  parent_id?: number | null;
   title: string;
   description?: string | null;
   long_description?: string | null;
   complete: boolean;
   status?: "open" | "in_progress" | "done";
+  subtasks?: Task[];
   created_at?: string;
   updated_at?: string;
 };

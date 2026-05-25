@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
 
 class Task extends Model
@@ -15,7 +16,7 @@ class Task extends Model
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_DONE = 'done';
 
-    protected $fillable = ['title', 'description', 'long_description', 'complete', 'status'];
+    protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status'];
 
     protected $casts = [
         'complete' => 'boolean',
@@ -35,12 +36,51 @@ class Task extends Model
         $this->save();
     }
 
+    public function syncStatusFromSubtasks(): void
+    {
+        $totalSubtasks = $this->subtasks()->count();
+        $completedSubtasks = $this->subtasks()
+            ->where('complete', true)
+            ->count();
+
+        if ($completedSubtasks === 0) {
+            $this->moveToStatus(self::STATUS_OPEN);
+
+            return;
+        }
+
+        if ($completedSubtasks === $totalSubtasks) {
+            $this->moveToStatus(self::STATUS_DONE);
+
+            return;
+        }
+
+        $this->moveToStatus(self::STATUS_IN_PROGRESS);
+    }
+
+    public function scopeTopLevel($query)
+    {
+        return $query->whereNull('parent_id');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id')->latest();
+    }
+
     public static function boot()
     {
         parent::boot();
 
         static::creating(function ($task) {
-            $task->user_id = Auth::id();
+            if (! $task->user_id && Auth::id()) {
+                $task->user_id = Auth::id();
+            }
         });
     }
     public function user(): BelongsTo

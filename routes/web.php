@@ -92,6 +92,13 @@ Route::middleware('auth')->group(function(){
         ->resource('my-jobs', MyJobController::class);
 });
 Route::middleware('auth')->group(function(){
+    Route::post('taskmanager/{task}/subtasks', [TaskmanagerController::class, 'storeSubtask'])
+        ->name('taskmanager.subtasks.store');
+    Route::patch('taskmanager/{task}/subtasks/{subtask}', [TaskmanagerController::class, 'updateSubtask'])
+        ->name('taskmanager.subtasks.update');
+    Route::delete('taskmanager/{task}/subtasks/{subtask}', [TaskmanagerController::class, 'destroySubtask'])
+        ->name('taskmanager.subtasks.destroy');
+
     Route::resource('taskmanager', TaskmanagerController::class)
         ->except(['index']);
 });

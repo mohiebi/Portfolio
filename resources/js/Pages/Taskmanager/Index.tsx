@@ -568,6 +568,23 @@ function TaskCard({
             {getTaskSummary(task)}
           </p>
         )}
+        {getSubtaskProgress(task).total > 0 && (
+          <div className="mt-2">
+            <div className="flex items-center justify-between gap-2 text-xs leading-none text-[#9bb1ce]">
+              <span className="inline-flex items-center gap-1.5">
+                <ListChecks className="h-3 w-3" />
+                Subtasks
+              </span>
+              <span>{getSubtaskProgress(task).done}/{getSubtaskProgress(task).total}</span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#1d2a43]">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${getSubtaskProgress(task).percent}%` }}
+              />
+            </div>
+          </div>
+        )}
         <div className="mt-2 flex items-center gap-1.5 text-xs leading-none text-[#9bb1ce]">
           <Clock className="h-3 w-3" /> {formatTaskDate(task.created_at)}
         </div>
@@ -638,6 +655,18 @@ function withStatus(task: Task, status: TaskStatus): Task {
 
 function getTaskSummary(task: Task) {
   return task.description || task.long_description || "";
+}
+
+function getSubtaskProgress(task: Task) {
+  const subtasks = task.subtasks ?? [];
+  const total = subtasks.length;
+  const done = subtasks.filter((subtask) => getTaskStatus(subtask) === "done").length;
+
+  return {
+    done,
+    total,
+    percent: total === 0 ? 0 : Math.round((done / total) * 100),
+  };
 }
 
 type RequestMethod = "POST" | "PUT" | "PATCH" | "DELETE";
