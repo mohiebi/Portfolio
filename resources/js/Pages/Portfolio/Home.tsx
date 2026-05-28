@@ -298,7 +298,7 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
             <motion.dl variants={fadeUp} className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 max-w-md">
               <div><dt className="text-xs uppercase text-muted-foreground">Experience</dt><dd className="mt-1 font-display text-2xl">3+ yrs</dd></div>
               <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">150+</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+87%</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+70%</dd></div>
             </motion.dl>
           </motion.div>
 
