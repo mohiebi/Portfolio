@@ -225,10 +225,10 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
   return (
     <SiteShell>
       <Head>
-        <title>Mohi - Fullstack and Solidity Developer</title>
-        <meta name="description" content="Fullstack Developer with 3+ years building PHP, Laravel, Symfony, Vue, NestJS apps and Solidity smart contracts. Selected case studies and contact." />
-        <meta property="og:title" content="Mohi - Fullstack Developer" />
-        <meta property="og:description" content="PHP, JS, Laravel, Symfony, Vue, NestJS, Solidity, and Web3." />
+        <title>Mohi - Back-End / Full-Stack Engineer</title>
+        <meta name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and SaaS platforms." />
+        <meta property="og:title" content="Mohi - Back-End / Full-Stack Engineer" />
+        <meta property="og:description" content="PHP, Node.js, Symfony, Laravel, NestJS, Vue.js, APIs, Web3 wallet integrations, and scalable backend services." />
       </Head>
       {/* HERO */}
       <section ref={heroRef} className="relative overflow-hidden">
@@ -269,16 +269,14 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
               variants={fadeUp}
               className="mt-5 font-display text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl"
             >
-              Fullstack web apps with{" "}
-              <span className="text-primary">PHP</span>, <span className="text-primary">JS</span> &{" "}
-              <span className="text-primary">Solidity</span>.
+              Backend-focused systems with{" "}
+              <span className="text-primary">PHP</span>, <span className="text-primary">Node.js</span> &{" "}
+              <span className="text-primary">Web3</span>.
             </motion.h1>
 
             <motion.p variants={fadeUp} className="mt-5 max-w-xl text-lg text-muted-foreground">
-              Hi, I'm <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> — a fullstack developer with
-              3+ years shipping production systems in <span className="text-foreground">Symfony</span>,{" "}
-              <span className="text-foreground">Laravel</span>, <span className="text-foreground">Vue</span>, and{" "}
-              <span className="text-foreground">NestJS</span>, plus Web3 gateways and smart contracts in Solidity.
+              Hi, I'm <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> - a back-end / full-stack engineer with
+              3+ years delivering production systems across fintech, blockchain, and SaaS platforms.
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
@@ -297,7 +295,7 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
 
             <motion.dl variants={fadeUp} className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 max-w-md">
               <div><dt className="text-xs uppercase text-muted-foreground">Experience</dt><dd className="mt-1 font-display text-2xl">3+ yrs</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">150+</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">100+</dd></div>
               <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+70%</dd></div>
             </motion.dl>
           </motion.div>
@@ -330,7 +328,7 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
                     <span className="h-1.5 w-1.5 rounded-full bg-success" />online
                   </span>
                 </div>
-                <p className="mt-1 font-display text-sm">Mohi / PHP/JS / Solidity</p>
+                <p className="mt-1 font-display text-sm">Mohi / PHP / Node.js / Web3</p>
               </div>
             </motion.div>
           </motion.div>
@@ -361,23 +359,23 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
             </p>
             <p className="mt-3 text-muted-foreground">
               I bring strong problem-solving, clean architecture, and testing habits to legacy and modern codebases.
-              Recently I modernized PHP architecture with Docker, migrated legacy UI work to Vue.js, delivered 90+
-              Symfony/Vue tasks on Mintme.com, and built blockchain data pipelines plus Web3 wallet flows for
-              MetaMask, Solflare, and multiple networks.
+              Recently I reduced legacy PHP page load time by 85% with a Vue.js migration, cut Docker setup from
+              2.5 hours to under 15 minutes, delivered 100+ Symfony/Vue tasks on Mintme.com, and built blockchain
+              data pipelines for 1,000+ daily transactions.
             </p>
             <p className="hidden">
               Highly motivated developer with 3+ years of professional experience, specialized in
               <span className="text-foreground"> PHP</span>, <span className="text-foreground">JavaScript</span>,
               and Node.js frameworks (Vue.js, Symfony, Laravel, NestJS). I also build on Ethereum with
-              <span className="text-foreground"> Solidity</span> — wallet integrations, on-chain watchers, and
+              <span className="text-foreground"> Solidity</span> - wallet integrations, on-chain watchers, and
               smart contracts (lottery, fundraising) using Chainlink helpers.
             </p>
             <p className="hidden">
               I care about clean architecture, unit testing, and shipping reliable features.
               At ABC Hosting I modernized legacy PHP architecture, containerized the environment with Docker,
-              migrated the frontend to Vue.js, and added multilingual, multi-currency support. On Mintme.com I
-              delivered 90+ Symfony/Vue tasks, contributed 1500+ GitLab commits, and built Node.js Web3 data
-              pipelines plus wallet integrations for MetaMask and Solflare.
+              migrated the frontend to Vue.js, and added multilingual, multi-currency support for 7 countries.
+              On Mintme.com I delivered 100+ Symfony/Vue tasks, contributed 1,500+ GitLab commits, and built
+              Node.js Web3 data pipelines plus wallet integrations for MetaMask and Solflare.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
