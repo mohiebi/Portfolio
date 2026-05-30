@@ -7,6 +7,7 @@
     <meta name="author" content="Mohi">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/svg+xml" href="/img/mohi-logo.svg">
+    @routes
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.tsx'])
     @inertiaHead

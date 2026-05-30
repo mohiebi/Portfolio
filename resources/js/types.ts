@@ -120,3 +120,58 @@ export type JobApplication = {
   created_at?: string;
   job: Job;
 };
+
+export type ListingImage = {
+  id: number;
+  filename: string;
+  src: string;
+  listing_id: number;
+};
+
+export type Listing = {
+  id: number;
+  beds: number;
+  baths: number;
+  area: number;
+  city: string;
+  code: string;
+  street: string;
+  price: number;
+  sold_at?: string | null;
+  deleted_at?: string | null;
+  by_user_id?: number;
+  images?: ListingImage[];
+  images_count?: number;
+  offers_count?: number;
+  offers?: Offer[];
+  created_at?: string;
+};
+
+export type Offer = {
+  id: number;
+  amount: number;
+  accepted_at?: string | null;
+  rejected_at?: string | null;
+  listing_id: number;
+  bidder_id: number;
+  bidder?: { id: number; name: string };
+  listing?: Listing;
+  created_at?: string;
+};
+
+export type PaginatedData<T> = {
+  data: T[];
+  links: Array<{ url: string | null; label: string; active: boolean }>;
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+};
+
+export type DatabaseNotification = {
+  id: string;
+  type: string;
+  data: Record<string, unknown>;
+  read_at: string | null;
+  created_at: string;
+};

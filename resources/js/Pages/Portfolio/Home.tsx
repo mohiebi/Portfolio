@@ -64,6 +64,16 @@ const projects = [
     accent: "from-sky-400/25 to-indigo-500/10",
     preview: "jobs" as const,
   },
+  {
+    name: "Real Estate",
+    href: "/listing",
+    tag: "Property marketplace",
+    blurb: "A full real estate marketplace with property listings, offer bidding, image uploads, and a realtor dashboard.",
+    features: ["Filter by price, beds, baths, area", "Buyer offer system with notifications", "Realtor CRUD + image management"],
+    tech: ["Laravel", "Inertia", "Policies", "Storage"],
+    accent: "from-rose-400/25 to-pink-500/10",
+    preview: "realestate" as const,
+  },
 ];
 
 function BooksPreview() {
@@ -175,10 +185,49 @@ function JobsPreview() {
   );
 }
 
+function RealEstatePreview() {
+  const listings = [
+    { price: "$480,000", beds: 3, baths: 2, city: "Austin" },
+    { price: "$320,000", beds: 2, baths: 1, city: "Denver" },
+    { price: "$650,000", beds: 4, baths: 3, city: "Seattle" },
+  ];
+  return (
+    <div className="space-y-2 p-4">
+      <div className="flex items-center gap-1.5">
+        <span className="rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-mono text-primary">All</span>
+        <span className="rounded-full border border-border px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">2+ beds</span>
+        <span className="rounded-full border border-border px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">Under $500k</span>
+      </div>
+      <ul className="space-y-1.5">
+        {listings.map((l, i) => (
+          <motion.li
+            key={i}
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            viewport={{ once: true }}
+            className="rounded-md border border-border bg-card p-2"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold">{l.price}</span>
+              <span className="font-mono text-[9px] text-primary">View</span>
+            </div>
+            <div className="mt-0.5 flex items-center gap-2 text-[9px] text-muted-foreground">
+              <span className="inline-flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{l.city}</span>
+              <span>{l.beds} bd · {l.baths} ba</span>
+            </div>
+          </motion.li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 const previewMap = {
   books: BooksPreview,
   tasks: TasksPreview,
   jobs: JobsPreview,
+  realestate: RealEstatePreview,
 };
 
 const fadeUp: Variants = {

@@ -58,8 +58,23 @@ class User extends Authenticatable implements  MustVerifyEmail
         return $this->hasMany(JobApplication::class);
     }
 
-    public function tasks() : HasMany
+    public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function listings(): HasMany
+    {
+        return $this->hasMany(Listing::class, 'by_user_id');
+    }
+
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class, 'bidder_id');
+    }
+
+    public function isRealtor(): bool
+    {
+        return (int) $this->role >= 1;
     }
 }

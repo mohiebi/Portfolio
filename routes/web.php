@@ -1,6 +1,12 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuth;
+use App\Http\Controllers\Projects\RealEstate\ListingController;
+use App\Http\Controllers\Projects\RealEstate\ListingOfferController;
+use App\Http\Controllers\Projects\RealEstate\NotificationController;
+use App\Http\Controllers\Projects\RealEstate\RealtorListingAcceptOfferController;
+use App\Http\Controllers\Projects\RealEstate\RealtorListingController;
+use App\Http\Controllers\Projects\RealEstate\RealtorListingImageController;
 use App\Http\Controllers\CaseStudyController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Projects\BookReview\BookController;
@@ -116,3 +122,38 @@ Route::patch('taskmanager/{task}/status', [TaskmanagerController::class, 'update
 
 Route::post('sendmail', [ContactController::class ,'contact'] )
 ->name('contact');
+
+// ── Real Estate Marketplace ───────────────────────────────────────────────────
+
+// Public listing browse
+Route::get('listing', [ListingController::class, 'index'])->name('listing.index');
+Route::get('listing/{listing}', [ListingController::class, 'show'])->name('listing.show');
+
+// Authenticated buyer — make an offer / notifications
+Route::middleware('auth')->group(function () {
+    Route::post('listing/{listing}/offer', [ListingOfferController::class, 'store'])
+        ->name('listing.offer.store');
+
+    Route::get('notification', [NotificationController::class, 'index'])
+        ->name('notification.index');
+    Route::put('notification/{notification}/seen', [NotificationController::class, 'markAsRead'])
+        ->name('notification.seen');
+});
+
+// Realtor dashboard — role >= 1
+Route::middleware(['auth', 'realtor'])->prefix('realtor')->name('realtor.')->group(function () {
+    Route::get('listing', [RealtorListingController::class, 'index'])->name('listing.index');
+    Route::get('listing/create', [RealtorListingController::class, 'create'])->name('listing.create');
+    Route::post('listing', [RealtorListingController::class, 'store'])->name('listing.store');
+    Route::get('listing/{listing}', [RealtorListingController::class, 'show'])->name('listing.show');
+    Route::get('listing/{listing}/edit', [RealtorListingController::class, 'edit'])->name('listing.edit');
+    Route::put('listing/{listing}', [RealtorListingController::class, 'update'])->name('listing.update');
+    Route::delete('listing/{listing}', [RealtorListingController::class, 'destroy'])->name('listing.destroy');
+    Route::put('listing/{listing}/restore', [RealtorListingController::class, 'restore'])->name('listing.restore');
+
+    Route::put('offer/{offer}/accept', RealtorListingAcceptOfferController::class)->name('offer.accept');
+
+    Route::get('listing/{listing}/image/create', [RealtorListingImageController::class, 'create'])->name('listing.image.create');
+    Route::post('listing/{listing}/image', [RealtorListingImageController::class, 'store'])->name('listing.image.store');
+    Route::delete('listing/{listing}/image/{image}', [RealtorListingImageController::class, 'destroy'])->name('listing.image.destroy');
+});

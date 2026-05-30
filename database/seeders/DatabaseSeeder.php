@@ -91,6 +91,8 @@ class DatabaseSeeder extends Seeder
         //  Task::factory(20)->create([
         //     'user_id' => $users->random()->id
         //  ]);
+
+        $this->call(ListingSeeder::class);
     }
     
 
