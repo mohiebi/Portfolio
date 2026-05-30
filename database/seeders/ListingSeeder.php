@@ -16,7 +16,7 @@ class ListingSeeder extends Seeder
             [
                 'name' => 'Demo Realtor',
                 'password' => Hash::make('password'),
-                'role' => 1,
+                'role' => 0,
             ]
         );
 

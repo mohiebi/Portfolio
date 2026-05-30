@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\admin;
-use App\Http\Middleware\realtor;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,7 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => admin::class,
-            'realtor' => realtor::class,
         ]);
         $middleware->web(append: [
             HandleInertiaRequests::class,

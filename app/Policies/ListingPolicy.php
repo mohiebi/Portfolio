@@ -1,7 +1,7 @@
 <?php
 
-// Role system: Portfolio uses integer `role` column (role=7 admin, role>=1 realtor).
-// is_admin from Real Estate is replaced by role === 7 check via the existing admin middleware.
+// Role system: Portfolio uses integer `role` column (role=7 = admin, bypasses all checks).
+// Any authenticated user can create/manage their own listings.
 
 namespace App\Policies;
 
@@ -35,7 +35,7 @@ class ListingPolicy
 
     public function create(User $user): bool
     {
-        return $user->isRealtor();
+        return true;
     }
 
     public function update(User $user, Listing $listing): bool

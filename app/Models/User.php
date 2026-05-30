@@ -73,8 +73,5 @@ class User extends Authenticatable implements  MustVerifyEmail
         return $this->hasMany(Offer::class, 'bidder_id');
     }
 
-    public function isRealtor(): bool
-    {
-        return (int) $this->role >= 1;
-    }
+
 }

@@ -141,7 +141,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Realtor dashboard — role >= 1
-Route::middleware(['auth', 'realtor'])->prefix('realtor')->name('realtor.')->group(function () {
+Route::middleware(['auth'])->prefix('realtor')->name('realtor.')->group(function () {
     Route::get('listing', [RealtorListingController::class, 'index'])->name('listing.index');
     Route::get('listing/create', [RealtorListingController::class, 'create'])->name('listing.create');
     Route::post('listing', [RealtorListingController::class, 'store'])->name('listing.store');

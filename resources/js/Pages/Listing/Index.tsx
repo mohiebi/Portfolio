@@ -1,11 +1,11 @@
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
-import { Bath, Bed, Filter, Home, Maximize2, X } from "lucide-react";
+import { Bath, Bed, Filter, Home, Maximize2, Plus, X } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Listing, PaginatedData } from "@/types";
+import type { Listing, PageProps, PaginatedData } from "@/types";
 
 interface Filters {
   priceFrom?: string;
@@ -22,6 +22,7 @@ interface Props {
 }
 
 export default function ListingIndex({ listings, filters }: Props) {
+  const { auth } = usePage<PageProps>().props;
   const [form, setForm] = useState<Filters>(filters);
 
   const visit = (next: Filters) => {
@@ -43,7 +44,13 @@ export default function ListingIndex({ listings, filters }: Props) {
   return (
     <SiteShell>
       <Head title="Real Estate Listings" />
-      <PageHeader eyebrow="Project / Real Estate" title="Property Listings" description="Browse available properties. Filter by price, beds, baths, or area." />
+      <PageHeader eyebrow="Project / Real Estate" title="Property Listings" description="Browse available properties. Filter by price, beds, baths, or area.">
+        {auth.user && (
+          <Link href={route("realtor.listing.create")}>
+            <Button><Plus className="mr-2 h-4 w-4" /> Add Listing</Button>
+          </Link>
+        )}
+      </PageHeader>
 
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
         <aside className="h-fit rounded-2xl border border-border bg-card p-5">
