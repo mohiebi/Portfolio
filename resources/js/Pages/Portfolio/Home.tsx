@@ -4,13 +4,14 @@ import {
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
   Building2, Phone, Globe, Copy, MessageCircle, GraduationCap, Briefcase,
   Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
+  CalendarDays, Clock, Newspaper,
 } from "lucide-react";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
-import type { CaseStudy, Recommendation } from "@/types";
+import type { Article, CaseStudy, Recommendation } from "@/types";
 
 const skills = [
   { name: "PHP", icon: Server },
@@ -241,11 +242,12 @@ const stagger: Variants = {
 };
 
 type Props = {
+  articles?: Article[];
   caseStudies?: CaseStudy[];
   recommendations?: Recommendation[];
 };
 
-export default function HomePage({ caseStudies = [], recommendations = [] }: Props) {
+export default function HomePage({ articles = [], caseStudies = [], recommendations = [] }: Props) {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -612,6 +614,8 @@ export default function HomePage({ caseStudies = [], recommendations = [] }: Pro
       )}
 
       <ProjectsSection />
+
+      <ArticlesSection articles={articles} />
 
       {/* CONTACT */}
       <section id="contact" className="relative overflow-hidden border-t border-border/60 bg-surface/40">
@@ -1004,6 +1008,102 @@ function ProjectsSection() {
       </div>
     </section>
   );
+}
+
+function ArticlesSection({ articles }: { articles: Article[] }) {
+  if (articles.length === 0) {
+    return null;
+  }
+
+  return (
+    <section id="articles" className="scroll-mt-20 border-t border-border/60">
+      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={stagger}
+          className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
+        >
+          <motion.div variants={fadeUp}>
+            <p className="font-mono text-xs uppercase tracking-wider text-primary">// Articles</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Technical notes and build logs</h2>
+            <p className="mt-3 max-w-xl text-sm text-muted-foreground">
+              Practical writing on backend design, Laravel delivery, production debugging, and the choices behind real systems.
+            </p>
+          </motion.div>
+          <motion.div variants={fadeUp}>
+            <Button asChild variant="outline">
+              <Link href="/articles">All articles <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+          {articles.slice(0, 3).map((article, index) => (
+            <motion.article
+              key={article.id}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
+              className="group flex min-h-[22rem] flex-col overflow-hidden rounded-2xl border border-border bg-card/75 shadow-card transition-colors hover:border-primary/60"
+            >
+              <div className="relative overflow-hidden border-b border-border bg-surface/40">
+                {article.cover_url ? (
+                  <img src={article.cover_url} alt="" className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                ) : (
+                  <div className="aspect-video bg-grid" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent" aria-hidden />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-foreground">
+                    {article.category && (
+                      <span className="rounded-full bg-background/75 px-2 py-1 font-mono uppercase tracking-wider text-primary backdrop-blur">{article.category}</span>
+                    )}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-background/75 px-2 py-1 backdrop-blur">
+                      <Clock className="h-3.5 w-3.5" /> {article.reading_time} min
+                    </span>
+                  </div>
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-background/75 text-primary backdrop-blur">
+                    <Newspaper className="h-4 w-4" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="font-display text-2xl font-semibold leading-tight">{article.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">{article.excerpt}</p>
+                <div className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                  {article.published_at ? formatArticleDate(article.published_at) : "Published note"}
+                </div>
+                <div className="mt-auto pt-7">
+                  <Button asChild variant="outline" className="group/btn">
+                    <Link href={`/articles/${article.slug}`}>
+                      Read article
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function formatArticleDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
 }
 
 const recommendationAccents = [

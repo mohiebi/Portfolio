@@ -114,6 +114,23 @@ export type CaseStudy = {
   updated_at?: string;
 };
 
+export type Article = {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  category?: string | null;
+  cover_path?: string | null;
+  cover_url?: string | null;
+  published_at?: string | null;
+  reading_time: number;
+  is_published: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type JobApplication = {
   id: number;
   expected_salary: number;

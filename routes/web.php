@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\GoogleAuth;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Projects\RealEstate\ListingController;
 use App\Http\Controllers\Projects\RealEstate\ListingOfferController;
 use App\Http\Controllers\Projects\RealEstate\NotificationController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Projects\JobBoard\myJobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\MyJobController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\TaskmanagerController;
+use App\Models\Article;
 use App\Models\CaseStudy;
 use App\Models\Recommendation;
 use Illuminate\Support\Facades\Route;
@@ -29,8 +31,14 @@ Route::get('/', function () {
     return Inertia::render('Portfolio/Home', [
         'caseStudies' => CaseStudy::published()->ordered()->get(),
         'recommendations' => Recommendation::published()->ordered()->get(),
+        'articles' => Article::published()->ordered()->limit(3)->get(),
     ]);
 })->name('portfolio');
+
+Route::get('/articles', [ArticleController::class, 'publicIndex'])
+    ->name('articles.public.index');
+Route::get('/articles/{article:slug}', [ArticleController::class, 'publicShow'])
+    ->name('articles.public.show');
 
 Route::get('/case-studies', [CaseStudyController::class, 'publicIndex'])
     ->name('case-studies.public.index');
@@ -62,6 +70,8 @@ Route::middleware(['auth', 'admin'])->prefix('dashboard')->name('dashboard.')->g
     Route::resource('case-studies', CaseStudyController::class)
         ->except(['show'])
         ->parameters(['case-studies' => 'caseStudy']);
+    Route::resource('articles', ArticleController::class)
+        ->except(['show']);
 });
 
 require __DIR__.'/auth.php';

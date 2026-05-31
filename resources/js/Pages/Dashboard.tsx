@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from "@inertiajs/react";
-import { BookOpen, Briefcase, FileText, ListChecks, MessageSquareQuote, User } from "lucide-react";
+import { BookOpen, Briefcase, FileText, ListChecks, MessageSquareQuote, Newspaper, User } from "lucide-react";
 import { SiteShell, PageHeader } from "@/components/site/SiteShell";
 import type { PageProps } from "@/types";
 
@@ -19,6 +19,7 @@ export default function Dashboard() {
           <>
             <Tile href="/dashboard/recommendations" icon={MessageSquareQuote} title="Recommendations" description="Manage public LinkedIn recommendations." />
             <Tile href="/dashboard/case-studies" icon={FileText} title="Case Studies" description="Create, edit, publish, and order case studies." />
+            <Tile href="/dashboard/articles" icon={Newspaper} title="Articles" description="Write, publish, and order portfolio articles." />
           </>
         )}
       </section>

@@ -12,6 +12,7 @@ const portfolioNav: NavItem[] = [
   { label: "Case Studies", href: "/#case-studies", sectionId: "case-studies" },
   { label: "Recommendations", href: "/#recommendations", sectionId: "recommendations" },
   { label: "Projects", href: "/#projects", sectionId: "projects" },
+  { label: "Articles", href: "/#articles", sectionId: "articles" },
   { label: "Contact", href: "/#contact", sectionId: "contact" },
 ];
 
@@ -21,6 +22,7 @@ const projectsNav: NavItem[] = [
   { label: "Book Review", to: "/books" },
   { label: "Job Board", to: "/jobs" },
   { label: "Case Studies", to: "/case-studies" },
+  { label: "Articles", to: "/articles" },
   { label: "Contact Me", href: "/#contact" },
 ];
 
@@ -32,9 +34,11 @@ function isProjectsRoute(pathname: string) {
     pathname.startsWith("/my-jobs") ||
     pathname.startsWith("/my-job-applications") ||
     pathname.startsWith("/employer") ||
+    pathname.startsWith("/articles") ||
     pathname.startsWith("/case-studies") ||
     pathname.startsWith("/dashboard/recommendations") ||
     pathname.startsWith("/dashboard/case-studies") ||
+    pathname.startsWith("/dashboard/articles") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/profile")
   );
@@ -55,6 +59,10 @@ export function SiteHeader() {
     : portfolioNav.filter((item) => {
       if (item.sectionId === "recommendations") return hasRecommendations;
       if (item.sectionId === "case-studies") return hasCaseStudies;
+      if (item.sectionId === "articles") {
+        return Array.isArray((page.props as any).articles)
+          && (page.props as any).articles.length > 0;
+      }
 
       return true;
     });
@@ -64,7 +72,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (!onPortfolioHome) return;
-    const ids = ["about", "case-studies", "recommendations", "projects", "contact"];
+    const ids = ["about", "case-studies", "recommendations", "projects", "articles", "contact"];
     const handler = () => {
       const scrollY = window.scrollY;
       let current = "top";
@@ -87,6 +95,10 @@ export function SiteHeader() {
 
     if (item.to === "/case-studies") {
       return pathname.startsWith("/case-studies");
+    }
+
+    if (item.to === "/articles") {
+      return pathname.startsWith("/articles");
     }
 
     if (item.to === "/jobs") {
