@@ -60,12 +60,14 @@ export default function PublicServicesIndex({ services }: Props) {
 
   return (
     <SiteShell>
-      <Head>
-        <title>Services - Business Systems, Automation & AI</title>
-        <meta
-          name="description"
-          content="Backend-focused business systems, modern websites, workflow automation and AI-powered platforms delivered in weeks, not months."
-        />
+      <Head title="Services - Business Systems, Automation & AI">
+        {[
+          <meta
+            key="description"
+            name="description"
+            content="Backend-focused business systems, modern websites, workflow automation and AI-powered platforms delivered in weeks, not months."
+          />,
+        ]}
       </Head>
 
       <section className="relative overflow-hidden border-b border-border/60">

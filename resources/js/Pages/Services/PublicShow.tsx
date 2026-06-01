@@ -35,9 +35,8 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
 
   return (
     <SiteShell>
-      <Head>
-        <title>{service.name} - Services</title>
-        <meta name="description" content={service.benefit} />
+      <Head title={`${service.name} - Services`}>
+        {[<meta key="description" name="description" content={service.benefit} />]}
       </Head>
 
       <section className="relative overflow-hidden border-b border-border/60">

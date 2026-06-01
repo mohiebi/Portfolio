@@ -4,7 +4,7 @@ import {
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
   Building2, Phone, Globe, Copy, MessageCircle, GraduationCap, Briefcase,
   Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
-  CalendarDays, Clock, Newspaper,
+  CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit,
 } from "lucide-react";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
@@ -275,11 +275,12 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
 
   return (
     <SiteShell>
-      <Head>
-        <title>Mohi - Back-End / Full-Stack Engineer</title>
-        <meta name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and SaaS platforms." />
-        <meta property="og:title" content="Mohi - Back-End / Full-Stack Engineer" />
-        <meta property="og:description" content="PHP, Node.js, Symfony, Laravel, NestJS, Vue.js, APIs, Web3 wallet integrations, and scalable backend services." />
+      <Head title="Mohi - Back-End / Full-Stack Engineer">
+        {[
+          <meta key="description" name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and SaaS platforms." />,
+          <meta key="og:title" property="og:title" content="Mohi - Back-End / Full-Stack Engineer" />,
+          <meta key="og:description" property="og:description" content="PHP, Node.js, Symfony, Laravel, NestJS, Vue.js, APIs, Web3 wallet integrations, and scalable backend services." />,
+        ]}
       </Head>
       {/* HERO */}
       <section ref={heroRef} className="relative overflow-hidden">
@@ -501,6 +502,8 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
           </motion.div>
         </div>
       </section>
+
+      <ServicesSection />
 
       <CaseStudiesSection caseStudies={caseStudies} />
 
@@ -768,6 +771,142 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
       </section>
 
     </SiteShell>
+  );
+}
+
+function ServicesSection() {
+  const services = [
+    {
+      id: "launch",
+      Icon: Rocket,
+      name: "Launch",
+      tagline: "Idea → production in weeks",
+      detail: "A complete web application — backend, frontend, deployed — without months of setup or agency overhead.",
+      accentBar: "from-amber-400 to-orange-500",
+      accentGlow: "from-amber-500/10 via-transparent to-transparent",
+      borderHover: "group-hover:border-amber-500/40",
+      iconClass: "bg-amber-500/10 text-amber-400",
+      delay: 0,
+    },
+    {
+      id: "operations",
+      Icon: Settings2,
+      name: "Operations",
+      tagline: "Replace manual work with systems",
+      detail: "Automate your operational workflows with backend systems that run reliably without constant attention.",
+      accentBar: "from-sky-400 to-indigo-500",
+      accentGlow: "from-sky-500/10 via-transparent to-transparent",
+      borderHover: "group-hover:border-sky-500/40",
+      iconClass: "bg-sky-500/10 text-sky-400",
+      delay: 0.3,
+    },
+    {
+      id: "ai",
+      Icon: BrainCircuit,
+      name: "AI Integration",
+      tagline: "Make your product intelligent",
+      detail: "LLM-powered features, AI pipelines and smart automation integrated directly into your existing stack.",
+      accentBar: "from-primary to-teal-400",
+      accentGlow: "from-primary/10 via-transparent to-transparent",
+      borderHover: "group-hover:border-primary/40",
+      iconClass: "bg-primary/10 text-primary",
+      delay: 0.6,
+    },
+  ];
+
+  return (
+    <section id="services" className="relative overflow-hidden border-t border-border/60">
+      <div className="absolute inset-0 bg-grid opacity-15 mask-[radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+      <motion.div
+        aria-hidden
+        className="absolute left-1/2 -top-32 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+        animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-2xl text-center"
+        >
+          <p className="font-mono text-xs uppercase tracking-wider text-primary">// Services</p>
+          <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl lg:text-5xl">
+            Outcomes I deliver,{" "}
+            <span className="text-primary">not hours</span> I sell.
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            Three focused engagements. Each ships a working system with real business impact.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-80px" }}
+          variants={stagger}
+          className="mt-14 grid gap-5 lg:grid-cols-3"
+        >
+          {services.map((service) => {
+            const Icon = service.Icon;
+            return (
+              <motion.div
+                key={service.id}
+                variants={fadeUp}
+                whileHover={{ y: -6 }}
+                transition={{ type: "spring", stiffness: 260, damping: 22 }}
+              >
+                <Link
+                  href="/services"
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card/60 backdrop-blur transition-colors ${service.borderHover}`}
+                >
+                  <div className={`h-0.5 w-full bg-gradient-to-r ${service.accentBar}`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${service.accentGlow} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} aria-hidden />
+
+                  <div className="relative flex flex-1 flex-col p-7">
+                    <div className={`grid h-12 w-12 place-items-center rounded-xl border border-border transition-colors ${service.iconClass}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+
+                    <div className="mt-6 flex-1">
+                      <h3 className="font-display text-xl font-semibold">{service.name}</h3>
+                      <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-primary">{service.tagline}</p>
+                      <p className="mt-3 text-sm leading-6 text-muted-foreground">{service.detail}</p>
+                    </div>
+
+                    <div className="mt-8 flex items-center gap-1.5 text-sm text-primary">
+                      <span>Explore service</span>
+                      <motion.span
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: service.delay }}
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </motion.span>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.25, duration: 0.5 }}
+          className="mt-10 flex justify-center"
+        >
+          <Button asChild size="lg">
+            <Link href="/services">
+              See all services <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </motion.div>
+      </div>
+    </section>
   );
 }
 
