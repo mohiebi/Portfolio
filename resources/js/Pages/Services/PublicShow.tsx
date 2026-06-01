@@ -17,9 +17,9 @@ import {
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { Service } from "@/types";
-import launchImg from "@/assets/service-launch.jpg";
-import operationsImg from "@/assets/service-operations.jpg";
-import aiImg from "@/assets/service-ai.jpg";
+import launchImg from "@/assets/service-launch.png";
+import operationsImg from "@/assets/service-operations.png";
+import aiImg from "@/assets/service-ai.png";
 
 type Props = {
   service: Service;
@@ -220,10 +220,25 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
                       <Link
                         key={other.id}
                         href={`/services/${other.slug}`}
-                        className="flex items-center justify-between rounded-lg border border-border bg-background/40 px-3 py-2 text-sm transition-colors hover:border-primary/60"
+                        className="group flex items-center gap-3 rounded-lg border border-border bg-background/40 p-2 text-sm transition-colors hover:border-primary/60"
                       >
-                        <span>{other.name}</span>
-                        <ArrowRight className="h-4 w-4 text-primary" />
+                        <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-surface/70">
+                          <img
+                            src={coverImg[other.cover]}
+                            alt=""
+                            loading="lazy"
+                            width={112}
+                            height={112}
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium">{other.name}</span>
+                          <span className="mt-0.5 block truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {other.tagline}
+                          </span>
+                        </span>
+                        <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
                       </Link>
                     ))}
                   </div>

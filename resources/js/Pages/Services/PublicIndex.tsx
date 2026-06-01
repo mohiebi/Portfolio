@@ -19,9 +19,9 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { Service } from "@/types";
 import heroImg from "@/assets/services-hero.jpg";
-import launchImg from "@/assets/service-launch.jpg";
-import operationsImg from "@/assets/service-operations.jpg";
-import aiImg from "@/assets/service-ai.jpg";
+import launchImg from "@/assets/service-launch.png";
+import operationsImg from "@/assets/service-operations.png";
+import aiImg from "@/assets/service-ai.png";
 
 type Props = {
   services: Service[];
