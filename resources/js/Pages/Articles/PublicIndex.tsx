@@ -90,7 +90,7 @@ function ArticleCard({ article, index }: { article: Article; index: number }) {
         </div>
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <h2 className="font-display text-2xl font-semibold leading-tight">{article.title}</h2>
+        <h2 className="font-display text-xl font-semibold leading-tight sm:text-2xl">{article.title}</h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{article.excerpt}</p>
         <div className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <CalendarDays className="h-3.5 w-3.5 text-primary" />

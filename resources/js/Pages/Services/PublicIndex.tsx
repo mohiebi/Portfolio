@@ -169,7 +169,7 @@ export default function PublicServicesIndex({ services }: Props) {
             className="relative flex justify-center lg:col-span-1"
           >
             <div className="absolute -inset-4 rounded-[2.5rem] bg-primary/5 blur-2xl" />
-            <div className="relative w-4/5 overflow-hidden rounded-3xl border border-border/80 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
+            <div className="relative w-full overflow-hidden rounded-3xl border border-border/80 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)] lg:w-4/5">
               <img
                 src={heroImg}
                 alt="Modern AI-enabled business systems infrastructure"
@@ -572,7 +572,7 @@ function DetailedSection({ service, flip }: { service: Service; flip: boolean })
 
       <div className={flip ? "lg:order-1" : ""}>
         <div className="overflow-hidden rounded-3xl border border-border bg-card/60 shadow-card">
-          <div className="grid grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2">
             <div className="border-r border-border p-6">
               <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive/80">
                 <span className="h-1.5 w-1.5 rounded-full bg-destructive/70" />

@@ -105,18 +105,18 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
             initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="relative"
+            className="relative flex justify-center"
           >
             <div className="absolute -inset-4 rounded-[2.5rem] bg-primary/5 blur-2xl" />
-            <div className={`relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br ${service.accent} shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]`}>
+            <div className={`relative w-4/5 overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br ${service.accent} shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]`}>
               <div className="absolute inset-0 bg-grid opacity-20" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
               <img
                 src={coverImg[service.cover]}
                 alt={service.name}
                 width={768}
                 height={768}
-                className="relative h-full w-full object-cover"
+                className="relative w-full object-contain"
               />
             </div>
           </motion.div>
@@ -173,7 +173,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
             <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ duration: 0.4 }}>
               <Block title="The transformation" icon={TrendingUp}>
                 <div className="overflow-hidden rounded-2xl border border-border bg-card/60">
-                  <div className="grid grid-cols-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2">
                     <div className="border-r border-border p-6">
                       <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive/80">
                         <span className="h-1.5 w-1.5 rounded-full bg-destructive/70" />
