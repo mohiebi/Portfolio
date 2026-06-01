@@ -6,6 +6,7 @@ import {
   Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
   CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit,
 } from "lucide-react";
+import servicesCoverImg from "@/assets/services cover on main.png";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -774,54 +775,21 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
   );
 }
 
-function ServicesSection() {
-  const services = [
-    {
-      id: "launch",
-      Icon: Rocket,
-      name: "Launch",
-      tagline: "Idea → production in weeks",
-      detail: "A complete web application — backend, frontend, deployed — without months of setup or agency overhead.",
-      accentBar: "from-amber-400 to-orange-500",
-      accentGlow: "from-amber-500/10 via-transparent to-transparent",
-      borderHover: "group-hover:border-amber-500/40",
-      iconClass: "bg-amber-500/10 text-amber-400",
-      delay: 0,
-    },
-    {
-      id: "operations",
-      Icon: Settings2,
-      name: "Operations",
-      tagline: "Replace manual work with systems",
-      detail: "Automate your operational workflows with backend systems that run reliably without constant attention.",
-      accentBar: "from-sky-400 to-indigo-500",
-      accentGlow: "from-sky-500/10 via-transparent to-transparent",
-      borderHover: "group-hover:border-sky-500/40",
-      iconClass: "bg-sky-500/10 text-sky-400",
-      delay: 0.3,
-    },
-    {
-      id: "ai",
-      Icon: BrainCircuit,
-      name: "AI Integration",
-      tagline: "Make your product intelligent",
-      detail: "LLM-powered features, AI pipelines and smart automation integrated directly into your existing stack.",
-      accentBar: "from-primary to-teal-400",
-      accentGlow: "from-primary/10 via-transparent to-transparent",
-      borderHover: "group-hover:border-primary/40",
-      iconClass: "bg-primary/10 text-primary",
-      delay: 0.6,
-    },
-  ];
+const homeServices = [
+  { id: "launch",     slug: "launch-sprint",            Icon: Rocket,       name: "Launch Sprint",          tagline: "Idea → production in weeks",       color: "text-blue-400"   },
+  { id: "operations", slug: "operations-system-sprint", Icon: Settings2,    name: "Operations System",      tagline: "Replace manual work with systems", color: "text-primary"    },
+  { id: "ai",         slug: "ai-operations-platform",   Icon: BrainCircuit, name: "AI Operations Platform", tagline: "Make your product intelligent",    color: "text-violet-400" },
+];
 
+function ServicesSection() {
   return (
     <section id="services" className="relative overflow-hidden border-t border-border/60">
-      <div className="absolute inset-0 bg-grid opacity-15 mask-[radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+      <div className="absolute inset-0 bg-grid opacity-15 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
       <motion.div
         aria-hidden
-        className="absolute left-1/2 -top-32 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+        className="absolute left-1/2 -top-32 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]"
         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
       />
 
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -834,74 +802,56 @@ function ServicesSection() {
         >
           <p className="font-mono text-xs uppercase tracking-wider text-primary">// Services</p>
           <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl lg:text-5xl">
-            Outcomes I deliver,{" "}
-            <span className="text-primary">not hours</span> I sell.
+            Systems that{" "}
+            <span className="text-primary">run your business</span>
+            {" "}— not just your website.
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Three focused engagements. Each ships a working system with real business impact.
+            From launch to full AI-powered operations — each engagement ships a working system with measurable business impact.
           </p>
         </motion.div>
 
         <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-80px" }}
-          variants={stagger}
-          className="mt-14 grid gap-5 lg:grid-cols-3"
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="relative mt-12 rounded-3xl border border-border/60 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]"
         >
-          {services.map((service) => {
-            const Icon = service.Icon;
-            return (
-              <motion.div
-                key={service.id}
-                variants={fadeUp}
-                whileHover={{ y: -6 }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
-              >
-                <Link
-                  href="/services"
-                  className={`group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card/60 backdrop-blur transition-colors ${service.borderHover}`}
-                >
-                  <div className={`h-0.5 w-full bg-gradient-to-r ${service.accentBar}`} />
-                  <div className={`absolute inset-0 bg-gradient-to-br ${service.accentGlow} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} aria-hidden />
+          <div className="overflow-hidden rounded-3xl">
+            <img
+              src={servicesCoverImg}
+              alt="Launch Sprint, Operations System and AI Operations Platform"
+              loading="lazy"
+              width={1920}
+              height={960}
+              className="w-full object-contain"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+          </div>
 
-                  <div className="relative flex flex-1 flex-col p-7">
-                    <div className={`grid h-12 w-12 place-items-center rounded-xl border border-border transition-colors ${service.iconClass}`}>
-                      <Icon className="h-5 w-5" />
-                    </div>
-
-                    <div className="mt-6 flex-1">
-                      <h3 className="font-display text-xl font-semibold">{service.name}</h3>
-                      <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-primary">{service.tagline}</p>
-                      <p className="mt-3 text-sm leading-6 text-muted-foreground">{service.detail}</p>
-                    </div>
-
-                    <div className="mt-8 flex items-center gap-1.5 text-sm text-primary">
-                      <span>Explore service</span>
-                      <motion.span
-                        animate={{ x: [0, 3, 0] }}
-                        transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", delay: service.delay }}
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </motion.span>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+          {/* Icons straddling the bottom edge */}
+          <div className="absolute bottom-0 left-0 right-0 grid translate-y-1/2 grid-cols-3">
+            {homeServices.map((service) => (
+              <div key={service.id} className="flex justify-center">
+                <div className={`grid h-11 w-11 place-items-center rounded-xl border-2 border-border bg-card shadow-lg ${service.color}`}>
+                  <service.Icon className="h-5 w-5" />
+                </div>
+              </div>
+            ))}
+          </div>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.25, duration: 0.5 }}
-          className="mt-10 flex justify-center"
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-14 flex justify-center"
         >
-          <Button asChild size="lg">
+          <Button asChild size="lg" className="glow-primary">
             <Link href="/services">
-              See all services <ArrowRight className="ml-2 h-4 w-4" />
+              See all services &amp; pricing <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </motion.div>
@@ -909,7 +859,6 @@ function ServicesSection() {
     </section>
   );
 }
-
 const caseStudyIcons = {
   web3: Cpu,
   modernize: Layers,

@@ -474,21 +474,22 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         </div>
       )}
 
-      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${service.accent}`}>
-        <div className="absolute inset-0 bg-grid opacity-25" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/30" />
+      <div className={`relative h-64 overflow-hidden bg-gradient-to-br ${service.accent}`}>
+        <div className="absolute inset-0 bg-grid opacity-20" />
+        {/* Full-frame image */}
         <img
           src={coverImg[service.cover]}
           alt={service.name}
           loading="lazy"
           width={768}
           height={768}
-          className="absolute -right-4 -top-2 h-48 w-48 object-contain opacity-90 transition-transform duration-500 group-hover:scale-105"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="relative flex h-full flex-col justify-end p-6">
-          <div className="grid h-11 w-11 place-items-center rounded-xl border border-border/60 bg-background/80 text-primary backdrop-blur">
-            <Icon className="h-5 w-5" />
-          </div>
+        {/* Bottom gradient fade into card body */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
+        {/* Icon badge pinned bottom-left, sits above the fade */}
+        <div className="absolute bottom-4 left-4 z-10 grid h-11 w-11 place-items-center rounded-xl border border-border/60 bg-background/80 text-primary backdrop-blur">
+          <Icon className="h-5 w-5" />
         </div>
       </div>
 

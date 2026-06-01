@@ -110,13 +110,13 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
             <div className="absolute -inset-4 rounded-[2.5rem] bg-primary/5 blur-2xl" />
             <div className={`relative overflow-hidden rounded-3xl border border-border/80 bg-gradient-to-br ${service.accent} shadow-[0_24px_48px_-12px_rgba(0,0,0,0.4)]`}>
               <div className="absolute inset-0 bg-grid opacity-20" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
               <img
                 src={coverImg[service.cover]}
                 alt={service.name}
                 width={768}
                 height={768}
-                className="relative mx-auto h-72 w-72 object-contain drop-shadow-xl"
+                className="relative h-full w-full object-cover"
               />
             </div>
           </motion.div>
