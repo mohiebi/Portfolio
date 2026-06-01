@@ -332,7 +332,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
 
             <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
-                <a href="#contact">Get in touch <ArrowRight className="ml-2 h-4 w-4" /></a>
+                <Link href="/services">View services <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <a href="https://github.com/mohiebi" target="_blank" rel="noreferrer">
