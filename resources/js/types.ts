@@ -131,6 +131,46 @@ export type Article = {
   updated_at?: string;
 };
 
+export type ServiceBonus = {
+  name: string;
+  value: string;
+  why: string;
+};
+
+export type ServiceGuarantee = {
+  name: string;
+  detail: string;
+};
+
+export type Service = {
+  id: number;
+  slug: string;
+  name: string;
+  badge?: string | null;
+  tagline: string;
+  promise: string;
+  investment: string;
+  timeline: string;
+  outcome: string;
+  best_for: string;
+  benefit: string;
+  cover: "launch" | "operations" | "ai";
+  accent: string;
+  problem: string;
+  what_you_get: string;
+  why_it_matters: string;
+  before?: string[] | null;
+  after?: string[] | null;
+  deliverables?: string[] | null;
+  ai_capabilities?: string[] | null;
+  bonuses?: ServiceBonus[] | null;
+  guarantees?: ServiceGuarantee[] | null;
+  is_published: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type JobApplication = {
   id: number;
   expected_salary: number;

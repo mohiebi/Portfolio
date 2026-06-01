@@ -19,6 +19,7 @@ use App\Http\Controllers\Projects\JobBoard\JobController;
 use App\Http\Controllers\Projects\JobBoard\myJobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\MyJobController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TaskmanagerController;
 use App\Models\Article;
 use App\Models\CaseStudy;
@@ -44,6 +45,11 @@ Route::get('/case-studies', [CaseStudyController::class, 'publicIndex'])
     ->name('case-studies.public.index');
 Route::get('/case-studies/{caseStudy:slug}', [CaseStudyController::class, 'publicShow'])
     ->name('case-studies.public.show');
+
+Route::get('/services', [ServiceController::class, 'publicIndex'])
+    ->name('services.public.index');
+Route::get('/services/{service:slug}', [ServiceController::class, 'publicShow'])
+    ->name('services.public.show');
 
 Route::get('/recommendations/all', function () {
     return Inertia::render('Recommendations/PublicIndex', [
@@ -71,6 +77,8 @@ Route::middleware(['auth', 'admin'])->prefix('dashboard')->name('dashboard.')->g
         ->except(['show'])
         ->parameters(['case-studies' => 'caseStudy']);
     Route::resource('articles', ArticleController::class)
+        ->except(['show']);
+    Route::resource('services', ServiceController::class)
         ->except(['show']);
 });
 

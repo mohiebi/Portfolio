@@ -9,6 +9,7 @@ type NavItem = { label: string; to?: string; href?: string; exact?: boolean; sec
 const portfolioNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true, sectionId: "top" },
   { label: "About", href: "/#about", sectionId: "about" },
+  { label: "Services", href: "/services" },
   { label: "Case Studies", href: "/#case-studies", sectionId: "case-studies" },
   { label: "Recommendations", href: "/#recommendations", sectionId: "recommendations" },
   { label: "Projects", href: "/#projects", sectionId: "projects" },
@@ -21,6 +22,7 @@ const projectsNav: NavItem[] = [
   { label: "Tasks Manager", to: "/taskmanager" },
   { label: "Book Review", to: "/books" },
   { label: "Job Board", to: "/jobs" },
+  { label: "Services", to: "/services" },
   { label: "Case Studies", to: "/case-studies" },
   { label: "Articles", to: "/articles" },
   { label: "Contact Me", href: "/#contact" },
@@ -36,9 +38,11 @@ function isProjectsRoute(pathname: string) {
     pathname.startsWith("/employer") ||
     pathname.startsWith("/articles") ||
     pathname.startsWith("/case-studies") ||
+    pathname.startsWith("/services") ||
     pathname.startsWith("/dashboard/recommendations") ||
     pathname.startsWith("/dashboard/case-studies") ||
     pathname.startsWith("/dashboard/articles") ||
+    pathname.startsWith("/dashboard/services") ||
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/profile")
   );
@@ -99,6 +103,10 @@ export function SiteHeader() {
 
     if (item.to === "/articles") {
       return pathname.startsWith("/articles");
+    }
+
+    if (item.to === "/services") {
+      return pathname.startsWith("/services");
     }
 
     if (item.to === "/jobs") {
