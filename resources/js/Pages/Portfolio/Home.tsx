@@ -847,13 +847,21 @@ function ServicesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-14 flex justify-center"
+          className="mt-14 flex flex-col items-center gap-4"
         >
-          <Button asChild size="lg" className="glow-primary">
-            <Link href="/services">
-              See all services &amp; pricing <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            Not sure which one fits? Browse all packages with full details and pricing.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button asChild size="lg" className="glow-primary">
+              <Link href="/services">
+                Explore all services <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href="/#contact">Book a free call</a>
+            </Button>
+          </div>
         </motion.div>
       </div>
     </section>
@@ -1134,47 +1142,58 @@ function ArticlesSection({ articles }: { articles: Article[] }) {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
-              className="group flex min-h-[22rem] flex-col overflow-hidden rounded-2xl border border-border bg-card/75 shadow-card transition-colors hover:border-primary/60"
+              transition={{ duration: 0.5, delay: index * 0.06 }}
             >
-              <div className="relative overflow-hidden border-b border-border bg-surface/40">
-                {article.cover_url ? (
-                  <img src={article.cover_url} alt="" className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                ) : (
-                  <div className="aspect-video bg-grid" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/10 to-transparent" aria-hidden />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-foreground">
+              <Link
+                href={`/articles/${article.slug}`}
+                className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card/75 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_16px_40px_-12px_rgba(0,0,0,0.4)]"
+              >
+                {/* Cover */}
+                <div className="relative overflow-hidden">
+                  {article.cover_url ? (
+                    <img
+                      src={article.cover_url}
+                      alt=""
+                      className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="aspect-[16/9] bg-grid opacity-40" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" aria-hidden />
+
+                  {/* Top-left chips */}
+                  <div className="absolute left-4 top-4 flex flex-wrap items-center gap-2">
                     {article.category && (
-                      <span className="rounded-full bg-background/75 px-2 py-1 font-mono uppercase tracking-wider text-primary backdrop-blur">{article.category}</span>
+                      <span className="rounded-full border border-primary/30 bg-background/80 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-primary backdrop-blur">
+                        {article.category}
+                      </span>
                     )}
-                    <span className="inline-flex items-center gap-1 rounded-full bg-background/75 px-2 py-1 backdrop-blur">
-                      <Clock className="h-3.5 w-3.5" /> {article.reading_time} min
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-xs text-muted-foreground backdrop-blur">
+                      <Clock className="h-3 w-3" /> {article.reading_time} min
                     </span>
                   </div>
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-background/75 text-primary backdrop-blur">
-                    <Newspaper className="h-4 w-4" />
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="font-display text-xl font-semibold leading-snug transition-colors group-hover:text-primary">
+                    {article.title}
+                  </h3>
+                  <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                    {article.excerpt}
+                  </p>
+
+                  <div className="mt-auto flex items-center justify-between pt-5">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                      {article.published_at ? formatArticleDate(article.published_at) : "Published note"}
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                      Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex flex-1 flex-col p-6">
-                <h3 className="font-display text-2xl font-semibold leading-tight">{article.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{article.excerpt}</p>
-                <div className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CalendarDays className="h-3.5 w-3.5 text-primary" />
-                  {article.published_at ? formatArticleDate(article.published_at) : "Published note"}
-                </div>
-                <div className="mt-auto pt-7">
-                  <Button asChild variant="outline" className="group/btn">
-                    <Link href={`/articles/${article.slug}`}>
-                      Read article
-                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
+              </Link>
             </motion.article>
           ))}
         </div>

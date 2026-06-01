@@ -21,7 +21,7 @@ import {
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { Service } from "@/types";
-import heroImg from "@/assets/services-hero.jpg";
+import heroImg from "@/assets/dark2.png";
 import launchImg from "@/assets/service-launch.png";
 import operationsImg from "@/assets/service-operations.png";
 import aiImg from "@/assets/service-ai.png";
@@ -95,7 +95,7 @@ export default function PublicServicesIndex({ services }: Props) {
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-32">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[1fr_1.2fr] lg:px-8 lg:py-32">
           <div>
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -166,36 +166,20 @@ export default function PublicServicesIndex({ services }: Props) {
             initial={{ opacity: 0, scale: 0.95, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.7 }}
-            className="relative"
+            className="relative flex justify-center lg:col-span-1"
           >
             <div className="absolute -inset-4 rounded-[2.5rem] bg-primary/5 blur-2xl" />
-            <div className="relative overflow-hidden rounded-3xl border border-border/80 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
+            <div className="relative w-4/5 overflow-hidden rounded-3xl border border-border/80 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.4)]">
               <img
                 src={heroImg}
                 alt="Modern AI-enabled business systems infrastructure"
                 width={1536}
                 height={1024}
-                className="h-full w-full object-cover"
+                className="w-full object-contain"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
             </div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="absolute -bottom-5 -left-5 rounded-2xl border border-border bg-card/90 px-5 py-4 shadow-lg backdrop-blur"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary/15 text-primary">
-                  <Zap className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Systems delivered</p>
-                  <p className="font-mono text-xs text-muted-foreground">On time, every time</p>
-                </div>
-              </div>
-            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -468,32 +452,38 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
         service.badge ? "border-primary/50 ring-1 ring-primary/20" : "border-border hover:border-primary/40"
       }`}
     >
-      {service.badge && (
-        <div className="absolute right-4 top-4 z-10 rounded-full bg-primary px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-primary-foreground shadow-lg">
-          {service.badge}
-        </div>
-      )}
-
-      <div className={`relative h-64 overflow-hidden bg-gradient-to-br ${service.accent}`}>
+      <div className={`relative overflow-hidden bg-gradient-to-br ${service.accent}`}>
+        {service.badge && (
+          <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
+            <div className="flex items-center gap-1.5 rounded-b-2xl bg-primary px-5 py-2 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
+              <Star className="h-3 w-3 fill-primary-foreground text-primary-foreground" />
+              <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary-foreground">
+                {service.badge}
+              </span>
+              <Star className="h-3 w-3 fill-primary-foreground text-primary-foreground" />
+            </div>
+          </div>
+        )}
         <div className="absolute inset-0 bg-grid opacity-20" />
-        {/* Full-frame image */}
         <img
           src={coverImg[service.cover]}
           alt={service.name}
           loading="lazy"
           width={768}
           height={768}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="relative w-full object-contain transition-transform duration-500 group-hover:scale-105"
         />
-        {/* Bottom gradient fade into card body */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
-        {/* Icon badge pinned bottom-left, sits above the fade */}
-        <div className="absolute bottom-4 left-4 z-10 grid h-11 w-11 place-items-center rounded-xl border border-border/60 bg-background/80 text-primary backdrop-blur">
+      </div>
+
+      {/* Icon straddling image/body boundary — 50% inside image, 50% outside */}
+      <div className="relative px-7">
+        <div className="absolute -top-[22px] left-7 z-10 grid h-11 w-11 place-items-center rounded-xl border-2 border-border bg-card text-primary shadow-lg">
           <Icon className="h-5 w-5" />
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-7">
+      <div className="flex flex-1 flex-col p-7 pt-8">
         <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{service.tagline}</p>
         <h3 className="mt-1.5 font-display text-2xl font-semibold">{service.name}</h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{service.benefit}</p>
