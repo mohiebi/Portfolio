@@ -21,10 +21,10 @@ import {
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { Service } from "@/types";
-import heroImg from "@/assets/dark2.png";
-import launchImg from "@/assets/service-launch.png";
-import operationsImg from "@/assets/service-operations.png";
-import aiImg from "@/assets/service-ai.png";
+import heroImg from "@/assets/dark2.webp";
+import launchImg from "@/assets/launch.webp";
+import operationsImg from "@/assets/service-operations.webp";
+import aiImg from "@/assets/service-ai.webp";
 
 type Props = {
   services: Service[];

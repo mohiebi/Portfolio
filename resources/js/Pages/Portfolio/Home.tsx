@@ -6,8 +6,8 @@ import {
   Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
   CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit,
 } from "lucide-react";
-import servicesCoverImg from "@/assets/services cover on main.png";
-import { motion, useScroll, useTransform, type Variants } from "framer-motion";
+import servicesCoverImg from "@/assets/services cover on main.webp";
+import { motion, useScroll, useTransform, useReducedMotion, type Variants } from "framer-motion";
 import { useRef, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import portraitUrl from "@/assets/portrait.webp";
@@ -249,6 +249,7 @@ type Props = {
 };
 
 export default function HomePage({ articles = [], caseStudies = [], recommendations = [] }: Props) {
+  const shouldReduceMotion = useReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
@@ -293,13 +294,13 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
           aria-hidden
           className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl"
           animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 8, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
         />
         <motion.div
           aria-hidden
           className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-success/15 blur-3xl"
           animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          transition={{ duration: 10, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut", delay: 1 }}
         />
 
         <motion.div
@@ -322,9 +323,8 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
               variants={fadeUp}
               className="mt-5 font-display text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl"
             >
-              Backend-focused systems with{" "}
-              <span className="text-primary">PHP</span>, <span className="text-primary">Node.js</span> &{" "}
-              <span className="text-primary">Web3</span>.
+              I build the backend systems that{" "}
+              <span className="text-primary">keep your business running</span>.
             </motion.h1>
 
             <motion.p variants={fadeUp} className="mt-5 max-w-xl text-lg text-muted-foreground">
@@ -347,9 +347,9 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             </motion.div>
 
             <motion.dl variants={fadeUp} className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 max-w-md">
-              <div><dt className="text-xs uppercase text-muted-foreground">Experience</dt><dd className="mt-1 font-display text-2xl">3+ yrs</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Tasks shipped</dt><dd className="mt-1 font-display text-2xl">100+</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Test coverage</dt><dd className="mt-1 font-display text-2xl">+70%</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Page load cut</dt><dd className="mt-1 font-display text-2xl text-primary">85%</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Commits shipped</dt><dd className="mt-1 font-display text-2xl text-primary">1,500+</dd></div>
+              <div><dt className="text-xs uppercase text-muted-foreground">Docker setup</dt><dd className="mt-1 font-display text-2xl text-primary">15 min</dd></div>
             </motion.dl>
           </motion.div>
 
@@ -362,7 +362,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             <motion.div
               className="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-primary/30 to-transparent blur-2xl"
               animate={{ opacity: [0.5, 0.9, 0.5] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 4, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
             />
             <motion.div
               whileHover={{ y: -4 }}
@@ -374,7 +374,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                 alt="MohammadHosein Ebrahimi portrait"
                 className="aspect-[4/5] w-full object-cover"
               />
-              <div className="absolute bottom-3 left-3 right-3 rounded-xl border border-border bg-background/80 px-4 py-3 backdrop-blur">
+              <div className="absolute bottom-3 left-4 right-4 rounded-xl border border-border bg-background/80 px-4 py-3 backdrop-blur">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-mono text-muted-foreground">~ /portfolio</span>
                   <span className="inline-flex items-center gap-1 text-success">
@@ -454,7 +454,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                   key={s.name}
                   variants={fadeUp}
                   whileHover={{ y: -2, borderColor: "hsl(var(--primary) / 0.5)" }}
-                  className="flex items-center gap-2 rounded-lg border border-border bg-card/60 px-3 py-2.5 text-sm transition-colors"
+                  className="flex cursor-default items-center gap-2 rounded-lg border border-border bg-card/60 px-3 py-2.5 text-sm transition-colors"
                 >
                   <s.icon className="h-4 w-4 text-primary" /> {s.name}
                 </motion.div>
@@ -512,7 +512,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             aria-hidden
             className="absolute -top-24 left-1/3 h-72 w-72 rounded-full bg-primary/15 blur-3xl"
             animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 8, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
           />
           <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8">
             <motion.div
@@ -631,7 +631,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
           aria-hidden
           className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl"
           animate={{ scale: [1, 1.15, 1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 6, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
         />
 
         <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
@@ -705,7 +705,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                   aria-hidden
                   className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl"
                   animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{ duration: 5, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
                 />
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
 
@@ -740,7 +740,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                     <span>{c.cta}</span>
                     <motion.span
                       animate={{ x: [0, 4, 0] }}
-                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{ duration: 1.6, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
                     >
                       <ArrowRight className="h-4 w-4" />
                     </motion.span>
@@ -782,6 +782,8 @@ const homeServices = [
 ];
 
 function ServicesSection() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <section id="services" className="relative overflow-hidden border-t border-border/60">
       <div className="absolute inset-0 bg-grid opacity-15 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
@@ -789,7 +791,7 @@ function ServicesSection() {
         aria-hidden
         className="absolute left-1/2 -top-32 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]"
         animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 10, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
       />
 
       <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -1250,6 +1252,7 @@ function RecommendationShowcaseCard({
   active: boolean;
   recommendation: Recommendation;
 }) {
+  const shouldReduceMotion = useReducedMotion();
   const longRecommendation = isLongRecommendation(recommendation.body);
   const preview = recommendationPreview(recommendation.body);
 
@@ -1269,7 +1272,7 @@ function RecommendationShowcaseCard({
           aria-hidden
           className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl"
           animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 6, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
         />
       )}
 
