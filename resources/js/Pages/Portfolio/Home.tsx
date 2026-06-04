@@ -347,9 +347,18 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             </motion.div>
 
             <motion.dl variants={fadeUp} className="mt-10 grid grid-cols-3 gap-6 border-t border-border pt-6 max-w-md">
-              <div><dt className="text-xs uppercase text-muted-foreground">Page load cut</dt><dd className="mt-1 font-display text-2xl text-primary">85%</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Commits shipped</dt><dd className="mt-1 font-display text-2xl text-primary">1,500+</dd></div>
-              <div><dt className="text-xs uppercase text-muted-foreground">Docker setup</dt><dd className="mt-1 font-display text-2xl text-primary">15 min</dd></div>
+              <div>
+                <dd className="font-display text-2xl text-primary">14 days</dd>
+                <dt className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">First live milestone</dt>
+              </div>
+              <div>
+                <dd className="font-display text-2xl text-primary">On-time</dd>
+                <dt className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">Or your money back</dt>
+              </div>
+              <div>
+                <dd className="font-display text-2xl text-primary">AI-ready</dd>
+                <dt className="mt-0.5 text-xs uppercase tracking-wider text-muted-foreground">Built into every system</dt>
+              </div>
             </motion.dl>
           </motion.div>
 
