@@ -30,6 +30,8 @@ import launchImg from "@/assets/launch.webp";
 import operationsImg from "@/assets/service-operations.webp";
 import aiImg from "@/assets/service-ai.webp";
 
+const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
+
 type Props = {
   services: Service[];
 };
@@ -176,7 +178,7 @@ export default function PublicServicesIndex({ services }: Props) {
               className="mt-8 flex flex-wrap gap-3"
             >
               <Button asChild size="lg" className="glow-primary">
-                <a href="/#contact">
+                <a href={CALENDLY_URL} target="_blank" rel="noreferrer">
                   Book a free consultation <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -454,7 +456,7 @@ export default function PublicServicesIndex({ services }: Props) {
             </p>
             <div className="mt-8">
               <Button asChild size="lg" className="glow-primary">
-                <a href="/#contact">
+                <a href={CALENDLY_URL} target="_blank" rel="noreferrer">
                   Talk to me <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -557,7 +559,7 @@ export default function PublicServicesIndex({ services }: Props) {
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="glow-primary min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary/50">
-              <a href="/#contact">
+              <a href={CALENDLY_URL} target="_blank" rel="noreferrer">
                 Book a free consultation <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
@@ -680,7 +682,7 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
             </Link>
           </Button>
           <Button asChild className="flex-1 min-h-[44px] focus-visible:ring-2 focus-visible:ring-primary/50">
-            <a href="/#contact">Get started</a>
+            <a href={CALENDLY_URL} target="_blank" rel="noreferrer">Get started</a>
           </Button>
         </div>
       </div>

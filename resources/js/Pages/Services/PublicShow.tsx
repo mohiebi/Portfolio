@@ -25,6 +25,8 @@ import launchImg from "@/assets/launch.webp";
 import operationsImg from "@/assets/service-operations.webp";
 import aiImg from "@/assets/service-ai.webp";
 
+const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
+
 type Props = {
   service: Service;
   otherServices: Service[];
@@ -121,7 +123,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Button asChild size="lg" className="glow-primary min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary/50">
-                <a href="/#contact">
+                <a href={CALENDLY_URL} target="_blank" rel="noreferrer">
                   Book a free consultation <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
@@ -324,7 +326,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
                 </dl>
                 <div className="px-6 pb-6">
                   <Button asChild className="w-full min-h-[48px] glow-primary focus-visible:ring-2 focus-visible:ring-primary/50">
-                    <a href="/#contact">Book a free consultation</a>
+                    <a href={CALENDLY_URL} target="_blank" rel="noreferrer">Book a free consultation</a>
                   </Button>
                 </div>
               </div>
@@ -392,7 +394,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="glow-primary">
-              <a href="/#contact">
+              <a href={CALENDLY_URL} target="_blank" rel="noreferrer">
                 Book a free consultation <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
