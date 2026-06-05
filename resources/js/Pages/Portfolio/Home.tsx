@@ -14,6 +14,8 @@ import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
 import type { Article, CaseStudy, Recommendation } from "@/types";
 
+const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
+
 const skills = [
   { name: "PHP", icon: Server },
   { name: "JavaScript / TypeScript", icon: Code2 },
@@ -631,157 +633,134 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
 
       {/* CONTACT */}
       <section id="contact" className="relative overflow-hidden border-t border-border/60 bg-surface/40">
+        <div className="absolute inset-0 bg-grid opacity-20 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
         <motion.div
           aria-hidden
-          className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]"
-        />
-        <motion.div
-          aria-hidden
-          className="absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/20 blur-3xl"
+          className="absolute left-1/2 top-0 h-80 w-80 -translate-x-1/2 rounded-full bg-primary/20 blur-[80px]"
           animate={{ scale: [1, 1.15, 1] }}
           transition={{ duration: 6, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-24 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-4xl px-4 py-24 sm:px-6 lg:px-8">
+
+          {/* Section header */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="mx-auto max-w-2xl text-center"
+            className="text-center"
           >
             <p className="font-mono text-xs uppercase tracking-wider text-primary">// Contact</p>
             <h2 className="mt-2 font-display text-4xl font-semibold sm:text-5xl">
               Let's build something <span className="text-primary">solid</span>.
             </h2>
-            <p className="mt-4 text-muted-foreground">
-              Open to fullstack roles, freelance projects and Web3 collaborations.
+            <p className="mt-3 text-muted-foreground">
+              Open to freelance projects, fullstack roles and Web3 collaborations.
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-3 text-sm">
-              {["I respond within 24 hours", "No commitment required", "First call is free"].map((item) => (
-                <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-primary">
-                  <Check className="h-3.5 w-3.5" /> {item}
+            <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm">
+              {["Responds within 24h", "No commitment", "First call free"].map((item) => (
+                <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/8 px-3 py-1 text-xs text-primary/90">
+                  <Check className="h-3 w-3" /> {item}
                 </span>
               ))}
             </div>
           </motion.div>
 
+          {/* ── PRIMARY CTA — Calendly ── */}
           <motion.div
-            initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }}
-            variants={stagger}
-            className="mt-14 grid gap-6 md:grid-cols-3"
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="mt-10"
           >
-            {[
-              {
-                key: "email",
-                icon: Mail,
-                label: "Email",
-                value: "e.mohamadhosein@gmail.com",
-                href: "mailto:e.mohamadhosein@gmail.com",
-                cta: "Send a message",
-                copyable: true,
-                accent: "from-primary/30 via-primary/10 to-transparent",
-              },
-              {
-                key: "linkedin",
-                icon: Linkedin,
-                label: "LinkedIn",
-                value: "linkedin.com/in/mohiebi",
-                href: "https://www.linkedin.com/in/mohiebi",
-                cta: "Connect with me",
-                accent: "from-sky-500/30 via-sky-500/10 to-transparent",
-              },
-              {
-                key: "github",
-                icon: Github,
-                label: "GitHub",
-                value: "github.com/mohiebi",
-                href: "https://github.com/mohiebi",
-                cta: "View my code",
-                accent: "from-zinc-500/30 via-zinc-500/10 to-transparent",
-              },
-            ].map((c) => (
-              <motion.a
-                key={c.key}
-                variants={fadeUp}
-                href={c.href}
-                target={c.href.startsWith("http") ? "_blank" : undefined}
-                rel="noreferrer"
-                whileHover={{ y: -6 }}
-                transition={{ type: "spring", stiffness: 280, damping: 20 }}
-                className="group relative flex flex-col justify-between gap-8 overflow-hidden rounded-3xl border border-border bg-card/70 p-7 backdrop-blur transition-colors hover:border-primary/60 min-h-[280px]"
-              >
-                <motion.div
-                  aria-hidden
-                  className={`absolute -inset-px rounded-3xl bg-gradient-to-br ${c.accent} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
-                />
-                <motion.div
-                  aria-hidden
-                  className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.7, 0.4] }}
-                  transition={{ duration: 5, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-                />
-                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-primary/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+            <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-card/80 p-8 shadow-[0_0_60px_-12px_rgba(0,0,0,0.5)] ring-1 ring-primary/20 sm:p-10">
+              {/* Glow */}
+              <div className="absolute -inset-px rounded-3xl bg-gradient-to-br from-primary/15 via-transparent to-transparent" aria-hidden />
+              <motion.div
+                aria-hidden
+                className="absolute right-0 top-0 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 8, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
+              />
 
-                <div className="relative flex items-start justify-between">
-                  <motion.div
-                    whileHover={{ rotate: -6, scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="grid h-14 w-14 place-items-center rounded-2xl border border-border bg-background text-primary shadow-lg shadow-primary/10"
-                  >
-                    <c.icon className="h-6 w-6" />
-                  </motion.div>
-                  {c.copyable && (
+              <div className="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="max-w-xl">
+                  <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/40 bg-primary/15 text-primary">
+                    <CalendarDays className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-4 font-display text-2xl font-semibold sm:text-3xl">
+                    Pick a time that works for you
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    A focused 30-minute call to map your project, timeline, and the fastest path to a working system.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-primary" /> 30 minutes</span>
+                    <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> Free consultation</span>
+                    <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> No obligation</span>
+                  </div>
+                </div>
+                <Button asChild size="lg" className="glow-primary shrink-0 min-h-[52px] px-8 text-base font-semibold focus-visible:ring-2 focus-visible:ring-primary/50">
+                  <a href={CALENDLY_URL} target="_blank" rel="noreferrer">
+                    Book a free call <ArrowRight className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ── SECONDARY — other channels ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-4"
+          >
+            <p className="mb-3 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">or reach out directly</p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { key: "email",    icon: Mail,     label: "Email",    value: "e.mohamadhosein@gmail.com", href: "mailto:e.mohamadhosein@gmail.com", copyable: true  },
+                { key: "linkedin", icon: Linkedin,  label: "LinkedIn", value: "linkedin.com/in/mohiebi",    href: "https://www.linkedin.com/in/mohiebi",             },
+                { key: "github",   icon: Github,    label: "GitHub",   value: "github.com/mohiebi",         href: "https://github.com/mohiebi",                     },
+              ].map((c) => (
+                <a
+                  key={c.key}
+                  href={c.href}
+                  target={c.href.startsWith("http") ? "_blank" : undefined}
+                  rel="noreferrer"
+                  className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-border bg-card/50 px-4 py-3.5 transition-all duration-200 hover:border-primary/40 hover:bg-card/80 focus-visible:ring-2 focus-visible:ring-primary/40"
+                >
+                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border/60 bg-background/60 text-primary transition-colors group-hover:border-primary/40">
+                    <c.icon className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{c.label}</p>
+                    <p className="truncate text-sm font-medium">{c.value}</p>
+                  </div>
+                  {c.copyable ? (
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); copy(c.value, c.key); }}
-                      className="relative rounded-md border border-border bg-background px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                      aria-label={`Copy ${c.label}`}
+                      aria-label="Copy email"
+                      className="shrink-0 rounded-md border border-border/60 bg-background/40 px-2 py-1 font-mono text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                     >
                       {copied === c.key ? (
-                        <span className="inline-flex items-center gap-1 text-success"><Check className="h-3 w-3" /> Copied</span>
+                        <span className="inline-flex items-center gap-1 text-success"><Check className="h-3 w-3" />copied</span>
                       ) : (
-                        <span className="inline-flex items-center gap-1"><Copy className="h-3 w-3" /> Copy</span>
+                        <span className="inline-flex items-center gap-1"><Copy className="h-3 w-3" />copy</span>
                       )}
                     </button>
+                  ) : (
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
                   )}
-                </div>
-
-                <div className="relative">
-                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{c.label}</p>
-                  <p className="mt-2 font-display text-xl font-semibold">{c.value}</p>
-                  <div className="mt-5 inline-flex items-center gap-2 text-sm text-primary">
-                    <span>{c.cta}</span>
-                    <motion.span
-                      animate={{ x: [0, 4, 0] }}
-                      transition={{ duration: 1.6, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                    </motion.span>
-                  </div>
-                </div>
-              </motion.a>
-            ))}
+                </a>
+              ))}
+            </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="mt-10 flex flex-wrap items-center justify-center gap-3"
-          >
-            <Button asChild size="lg">
-              <a href="mailto:e.mohamadhosein@gmail.com">
-                <Mail className="mr-2 h-4 w-4" /> Send an email
-              </a>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href="/CV/mohi-cv.pdf">
-                <FileDown className="mr-2 h-4 w-4" /> Download CV
-              </a>
-            </Button>
-          </motion.div>
         </div>
       </section>
 
@@ -891,7 +870,7 @@ function ServicesSection() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <a href="/#contact">Book a free call</a>
+              <a href="#contact">Book a free call</a>
             </Button>
           </div>
         </motion.div>
