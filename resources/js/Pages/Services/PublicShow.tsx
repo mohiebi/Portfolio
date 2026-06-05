@@ -15,6 +15,8 @@ import {
   Wallet,
   ChevronRight,
   TrendingUp,
+  Building2,
+  Zap,
 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
@@ -39,6 +41,10 @@ const fadeUp = {
 export default function PublicServiceShow({ service, otherServices }: Props) {
   const Icon = coverIcon[service.cover];
   const half = Math.ceil((service.deliverables ?? []).length / 2);
+  const totalBonusValue = (service.bonuses ?? []).reduce((acc, b) => {
+    const num = parseInt(b.value.replace(/[^0-9]/g, ""), 10);
+    return acc + (isNaN(num) ? 0 : num);
+  }, 0);
 
   return (
     <SiteShell>
@@ -58,44 +64,68 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24">
           <div>
-            <Link
-              href="/services"
-              className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-sm text-muted-foreground backdrop-blur transition-colors hover:border-primary/40 hover:text-foreground"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> All services
-            </Link>
+            {/* Badges row — all aligned, properly spaced */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-sm text-muted-foreground backdrop-blur transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> All services
+              </Link>
 
-            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5">
-              <Icon className="h-4 w-4 text-primary" />
-              <span className="font-mono text-xs uppercase tracking-wider text-primary">{service.tagline}</span>
-              {service.badge && (
-                <span className="rounded-full bg-primary px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary-foreground">
-                  {service.badge}
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
                 </span>
-              )}
+                <span className="font-mono text-xs uppercase tracking-wider text-amber-400">
+                  1 spot open — July 2026
+                </span>
+              </div>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5">
+                <Icon className="h-4 w-4 text-primary" />
+                <span className="font-mono text-xs uppercase tracking-wider text-primary">{service.tagline}</span>
+                {service.badge && (
+                  <span className="rounded-full bg-primary px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary-foreground">
+                    {service.badge}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+            <h1 className="mt-5 font-display text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
               {service.name}
             </h1>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted-foreground">{service.promise}</p>
 
-            <div className="mt-6 flex flex-wrap gap-3 text-sm">
-              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-2 font-mono text-primary shadow-sm">
-                <Wallet className="h-4 w-4" /> {service.investment}
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-2 text-muted-foreground shadow-sm">
-                <Clock className="h-4 w-4" /> {service.timeline}
-              </span>
+            {/* Price with agency anchor */}
+            <div className="mt-6 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                <Building2 className="h-3.5 w-3.5" />
+                <span>Agency equivalent: <span className="line-through">$25K–$80K+</span></span>
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm">
+                <span className="inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 font-mono font-medium text-primary shadow-sm">
+                  <Wallet className="h-4 w-4" /> Your investment: {service.investment}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-xl border border-border bg-card/60 px-4 py-2 text-muted-foreground shadow-sm">
+                  <Clock className="h-4 w-4" /> {service.timeline}
+                </span>
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-4 py-1.5 text-xs font-semibold text-primary shadow-sm">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                On-time guarantee — or you don&apos;t pay
+              </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="glow-primary">
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="glow-primary min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary/50">
                 <a href="/#contact">
-                  Contact me <ArrowRight className="ml-2 h-4 w-4" />
+                  Book a free consultation <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="min-h-[48px] focus-visible:ring-2 focus-visible:ring-primary/50">
                 <a href="/services#packages">View all packages</a>
               </Button>
             </div>
@@ -175,8 +205,8 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
                 <div className="overflow-hidden rounded-2xl border border-border bg-card/60">
                   <div className="grid grid-cols-1 sm:grid-cols-2">
                     <div className="border-r border-border p-6">
-                      <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive/80">
-                        <span className="h-1.5 w-1.5 rounded-full bg-destructive/70" />
+                      <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-400/80">
+                        <span className="h-1.5 w-1.5 rounded-full bg-orange-400/70" />
                         Before
                       </div>
                       <ul className="space-y-3 text-sm text-muted-foreground">
@@ -232,6 +262,12 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
                         <span className="rounded-md bg-primary/10 px-2.5 py-1 font-mono text-sm text-primary">{bonus.value}</span>
                       </div>
                     ))}
+                    {totalBonusValue > 0 && (
+                      <div className="flex items-center justify-between rounded-xl border border-primary/30 bg-primary/10 px-4 py-3">
+                        <span className="font-medium text-primary">Total bonus value</span>
+                        <span className="font-mono font-bold text-primary">${totalBonusValue.toLocaleString()}+ FREE</span>
+                      </div>
+                    )}
                   </div>
                 </Block>
               </motion.div>
@@ -287,7 +323,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
                   ))}
                 </dl>
                 <div className="px-6 pb-6">
-                  <Button asChild className="w-full glow-primary">
+                  <Button asChild className="w-full min-h-[48px] glow-primary focus-visible:ring-2 focus-visible:ring-primary/50">
                     <a href="/#contact">Book a free consultation</a>
                   </Button>
                 </div>
@@ -302,7 +338,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
                       <Link
                         key={other.id}
                         href={`/services/${other.slug}`}
-                        className="group flex items-center gap-3 rounded-xl border border-border bg-background/40 p-3 text-sm transition-all hover:border-primary/50 hover:bg-card/60"
+                        className="group flex cursor-pointer items-center gap-3 rounded-xl border border-border bg-background/40 p-3 text-sm transition-all duration-200 hover:border-primary/50 hover:bg-card/60 focus-visible:ring-2 focus-visible:ring-primary/40"
                       >
                         <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl border border-border bg-surface/70">
                           <img
@@ -347,11 +383,24 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
             Ready to start your {service.name}?
           </h2>
           <p className="mx-auto mt-4 max-w-xl leading-relaxed text-muted-foreground">{service.benefit}</p>
-          <Button asChild size="lg" className="mt-8 glow-primary">
-            <a href="/#contact">
-              Contact me <ArrowRight className="ml-2 h-4 w-4" />
-            </a>
-          </Button>
+
+          {/* Guarantee strip */}
+          <div className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">First milestone in 14 days — or you don&apos;t pay</span>
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Button asChild size="lg" className="glow-primary">
+              <a href="/#contact">
+                Book a free consultation <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <a href="/services#packages">Compare all packages</a>
+            </Button>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">No commitment. 30-minute call. Free system diagnosis.</p>
         </div>
       </section>
     </SiteShell>
