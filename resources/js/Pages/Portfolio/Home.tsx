@@ -1169,7 +1169,7 @@ function ArticlesSection({ articles }: { articles: Article[] }) {
           </motion.div>
           <motion.div variants={fadeUp}>
             <Button asChild variant="outline">
-              <Link href="/articles">All articles <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link href="/articles">Read how I think about systems <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </motion.div>
         </motion.div>
