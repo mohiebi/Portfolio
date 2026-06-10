@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from "@inertiajs/react";
 import { ArrowLeft, Upload } from "lucide-react";
+import { useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,8 @@ type Props = {
   job: Job;
 };
 
+const MAX_CV_SIZE = 2 * 1024 * 1024;
+
 export default function ApplyForm({ job }: Props) {
   const form = useForm<{
     expected_salary: string;
@@ -18,6 +21,30 @@ export default function ApplyForm({ job }: Props) {
     expected_salary: "",
     cv: null,
   });
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+
+    if (file) {
+      if (file.type !== "application/pdf") {
+        setFileError("Please upload a PDF file.");
+        form.setData("cv", null);
+        event.target.value = "";
+        return;
+      }
+
+      if (file.size > MAX_CV_SIZE) {
+        setFileError("File is too large. Maximum size is 2MB.");
+        form.setData("cv", null);
+        event.target.value = "";
+        return;
+      }
+    }
+
+    setFileError(null);
+    form.setData("cv", file);
+  };
 
   return (
     <SiteShell>
@@ -42,13 +69,13 @@ export default function ApplyForm({ job }: Props) {
                 <Upload className="h-6 w-6 text-muted-foreground" />
                 <p className="text-sm">{form.data.cv?.name ?? "Click to upload your CV"}</p>
                 <p className="text-xs text-muted-foreground">PDF only / up to 2 MB</p>
-                <Input id="cv" type="file" accept="application/pdf" className="sr-only" required onChange={(event) => form.setData("cv", event.target.files?.[0] ?? null)} />
+                <Input id="cv" type="file" accept="application/pdf" className="sr-only" required aria-describedby={fileError || form.errors.cv ? "cv-error" : undefined} onChange={handleFileChange} />
               </label>
-              {form.errors.cv && <p className="text-sm text-destructive">{form.errors.cv}</p>}
+              {(fileError || form.errors.cv) && <p id="cv-error" className="text-sm text-destructive">{fileError ?? form.errors.cv}</p>}
             </div>
             <div className="flex justify-end gap-2">
               <Button asChild variant="ghost"><Link href={`/jobs/${job.id}`}>Cancel</Link></Button>
-              <Button disabled={form.processing}>Submit application</Button>
+              <Button disabled={form.processing || !form.data.cv || !!fileError}>Submit application</Button>
             </div>
           </form>
         </div>

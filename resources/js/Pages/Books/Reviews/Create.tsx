@@ -1,9 +1,11 @@
 import { Head, Link, useForm } from "@inertiajs/react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Star } from "lucide-react";
+import { useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import type { Book } from "@/types";
 
 type Props = {
@@ -15,6 +17,7 @@ export default function ReviewCreate({ book }: Props) {
     review: "",
     rating: "5",
   });
+  const [hoveredRating, setHoveredRating] = useState<number | null>(null);
 
   return (
     <SiteShell>
@@ -28,15 +31,30 @@ export default function ReviewCreate({ book }: Props) {
           <p className="mt-1 text-sm text-muted-foreground">{book.title}</p>
           <form className="mt-6 grid gap-5" onSubmit={(event) => { event.preventDefault(); form.post(`/books/${book.id}/reviews`); }}>
             <div className="grid gap-1.5">
-              <Label htmlFor="rating">Rating</Label>
-              <select
-                id="rating"
-                value={form.data.rating}
-                onChange={(event) => form.setData("rating", event.target.value)}
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {[5, 4, 3, 2, 1].map((value) => <option key={value} value={value}>{value} stars</option>)}
-              </select>
+              <Label id="rating-label">Rating</Label>
+              <div role="radiogroup" aria-labelledby="rating-label" className="flex items-center gap-1" onMouseLeave={() => setHoveredRating(null)}>
+                {[1, 2, 3, 4, 5].map((value) => {
+                  const filled = value <= (hoveredRating ?? Number(form.data.rating));
+                  return (
+                    <label
+                      key={value}
+                      className="cursor-pointer rounded-md p-1 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 has-[:focus-visible]:ring-offset-background"
+                      onMouseEnter={() => setHoveredRating(value)}
+                    >
+                      <input
+                        type="radio"
+                        name="rating"
+                        value={value}
+                        checked={Number(form.data.rating) === value}
+                        onChange={() => form.setData("rating", String(value))}
+                        className="sr-only"
+                      />
+                      <Star aria-hidden="true" className={cn("h-7 w-7 transition-colors", filled ? "fill-primary text-primary" : "text-muted-foreground/40")} />
+                      <span className="sr-only">{value} {value === 1 ? "star" : "stars"}</span>
+                    </label>
+                  );
+                })}
+              </div>
               {form.errors.rating && <p className="text-sm text-destructive">{form.errors.rating}</p>}
             </div>
             <div className="grid gap-1.5">

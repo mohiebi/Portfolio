@@ -2,9 +2,11 @@ import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useState } from "react";
 import { Bath, Bed, Filter, Home, Maximize2, Plus, X } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
+import { PaginationNav } from "@/components/site/PaginationNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import type { Listing, PageProps, PaginatedData } from "@/types";
 
 interface Filters {
@@ -25,13 +27,25 @@ export default function ListingIndex({ listings, filters }: Props) {
   const { auth } = usePage<PageProps>().props;
   const [form, setForm] = useState<Filters>(filters);
 
-  const visit = (next: Filters) => {
-    const merged = { ...form, ...next };
-    setForm(merged);
+  const navigate = (merged: Filters) => {
     const cleaned = Object.fromEntries(
       Object.entries(merged).filter(([, v]) => v !== "" && v != null)
     );
     router.get(route("listing.index"), cleaned, { preserveState: true, preserveScroll: true, replace: true });
+  };
+
+  const debouncedNavigate = useDebouncedCallback(navigate, 300);
+
+  const visit = (next: Filters) => {
+    const merged = { ...form, ...next };
+    setForm(merged);
+    debouncedNavigate(merged);
+  };
+
+  const visitNow = (next: Filters) => {
+    const merged = { ...form, ...next };
+    setForm(merged);
+    navigate(merged);
   };
 
   const clear = () => {
@@ -76,28 +90,30 @@ export default function ListingIndex({ listings, filters }: Props) {
             </div>
 
             <div className="grid gap-1.5">
-              <Label>Beds</Label>
+              <Label htmlFor="beds">Beds</Label>
               <select
+                id="beds"
                 value={form.beds ?? ""}
-                onChange={(e) => visit({ beds: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                onChange={(e) => visitNow({ beds: e.target.value })}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pr-8 text-sm text-foreground shadow-sm"
               >
-                <option value="">Any</option>
-                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
-                <option value="6">6+</option>
+                <option value="" className="bg-background text-foreground">Any</option>
+                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n} className="bg-background text-foreground">{n}</option>)}
+                <option value="6" className="bg-background text-foreground">6+</option>
               </select>
             </div>
 
             <div className="grid gap-1.5">
-              <Label>Baths</Label>
+              <Label htmlFor="baths">Baths</Label>
               <select
+                id="baths"
                 value={form.baths ?? ""}
-                onChange={(e) => visit({ baths: e.target.value })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                onChange={(e) => visitNow({ baths: e.target.value })}
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 pr-8 text-sm text-foreground shadow-sm"
               >
-                <option value="">Any</option>
-                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
-                <option value="6">6+</option>
+                <option value="" className="bg-background text-foreground">Any</option>
+                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n} className="bg-background text-foreground">{n}</option>)}
+                <option value="6" className="bg-background text-foreground">6+</option>
               </select>
             </div>
 
@@ -125,22 +141,7 @@ export default function ListingIndex({ listings, filters }: Props) {
             </div>
           )}
 
-          {listings.last_page > 1 && (
-            <div className="mt-8 flex justify-center gap-1">
-              {listings.links.map((link, i) => (
-                link.url ? (
-                  <Link
-                    key={i}
-                    href={link.url}
-                    className={`rounded-md border px-3 py-1.5 text-sm ${link.active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}
-                    dangerouslySetInnerHTML={{ __html: link.label }}
-                  />
-                ) : (
-                  <span key={i} className="rounded-md border border-border px-3 py-1.5 text-sm text-muted-foreground opacity-40" dangerouslySetInnerHTML={{ __html: link.label }} />
-                )
-              ))}
-            </div>
-          )}
+          <PaginationNav links={listings.links} />
         </div>
       </section>
     </SiteShell>
@@ -158,7 +159,7 @@ function ListingCard({ listing }: { listing: Listing }) {
       className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/40"
     >
       {listing.images && listing.images.length > 0 ? (
-        <img src={listing.images[0].src} alt="Listing" className="h-40 w-full rounded-lg object-cover" />
+        <img src={listing.images[0].src} alt={`${listing.street}, ${listing.city}`} className="h-40 w-full rounded-lg object-cover" />
       ) : (
         <div className="flex h-40 w-full items-center justify-center rounded-lg bg-muted">
           <Home className="h-10 w-10 text-muted-foreground" />

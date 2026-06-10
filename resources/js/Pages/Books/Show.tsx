@@ -2,6 +2,7 @@ import { Head, Link } from "@inertiajs/react";
 import { ArrowLeft, MessageSquarePlus } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
+import { formatRelativeDate } from "@/lib/format";
 import type { Book } from "@/types";
 import { Stars } from "./Index";
 
@@ -43,8 +44,16 @@ export default function BookShow({ book }: Props) {
           <div className="mt-4 space-y-3">
             {(book.reviews ?? []).map((review) => (
               <div key={review.id} className="rounded-xl border border-border bg-card p-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Reader review</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium">Reader review</p>
+                    {review.created_at && (
+                      <>
+                        <span aria-hidden="true" className="text-muted-foreground">·</span>
+                        <p className="text-xs text-muted-foreground">{formatRelativeDate(review.created_at)}</p>
+                      </>
+                    )}
+                  </div>
                   <Stars value={review.rating} />
                 </div>
                 <p className="mt-3 text-sm text-foreground/90">{review.review}</p>

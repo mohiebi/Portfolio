@@ -1,8 +1,10 @@
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-import { Bath, Bed, Home, Maximize2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Bath, Bed, Expand, Home, Maximize2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { SiteShell, PageHeader } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from "@/components/ui/carousel";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Listing, Offer, PageProps } from "@/types";
@@ -34,9 +36,23 @@ export default function ListingShow({ listing, offerMade }: Props) {
   const [interestRate, setInterestRate] = useState(2.5);
   const [duration, setDuration] = useState(25);
   const [offerAmount, setOfferAmount] = useState(listing.price);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
   const { monthly, total, interest } = useMonthlyPayment(offerAmount, interestRate, duration);
   const offerForm = useForm({ amount: listing.price });
+
+  useEffect(() => {
+    if (carouselApi && lightboxOpen) {
+      carouselApi.scrollTo(lightboxIndex, true);
+    }
+  }, [carouselApi, lightboxOpen, lightboxIndex]);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   const submitOffer = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +73,22 @@ export default function ListingShow({ listing, offerMade }: Props) {
           <div>
             {listing.images && listing.images.length > 0 ? (
               <div className="grid grid-cols-2 gap-2">
-                {listing.images.map((img) => (
-                  <img key={img.id} src={img.src} alt="Property" className="rounded-xl object-cover aspect-video w-full" />
+                {listing.images.map((img, index) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    onClick={() => openLightbox(index)}
+                    className="group relative aspect-video overflow-hidden rounded-xl"
+                  >
+                    <img
+                      src={img.src}
+                      alt={`${listing.street}, ${listing.city} — photo ${index + 1} of ${listing.images?.length}`}
+                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity duration-200 group-hover:bg-black/30 group-hover:opacity-100">
+                      <Expand className="h-6 w-6 text-white" aria-hidden="true" />
+                    </span>
+                  </button>
                 ))}
               </div>
             ) : (
@@ -84,17 +114,21 @@ export default function ListingShow({ listing, offerMade }: Props) {
               <p className="text-xs font-mono uppercase tracking-wider text-primary mb-3">Monthly Payment</p>
               <div className="grid gap-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Interest rate ({interestRate}%)</Label>
+                  <Label htmlFor="interest-rate" className="text-sm text-foreground">Interest rate ({interestRate}%)</Label>
                   <input
+                    id="interest-rate"
                     type="range" min={0.1} max={30} step={0.1} value={interestRate}
+                    aria-valuetext={`${interestRate}%`}
                     onChange={(e) => { setInterestRate(parseFloat(e.target.value)); setOfferAmount(listing.price); }}
                     className="mt-1 w-full accent-primary"
                   />
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Duration ({duration} years)</Label>
+                  <Label htmlFor="loan-duration" className="text-sm text-foreground">Duration ({duration} years)</Label>
                   <input
+                    id="loan-duration"
                     type="range" min={3} max={35} step={1} value={duration}
+                    aria-valuetext={`${duration} years`}
                     onChange={(e) => setDuration(parseInt(e.target.value))}
                     className="mt-1 w-full accent-primary"
                   />
@@ -114,6 +148,7 @@ export default function ListingShow({ listing, offerMade }: Props) {
             {user && !offerMade && (
               <div className="rounded-2xl border border-border bg-card p-5">
                 <p className="text-xs font-mono uppercase tracking-wider text-primary mb-3">Make an Offer</p>
+                <p className="mb-3 text-xs text-muted-foreground">Tip: offers within 5–10% of the asking price are most likely to be accepted.</p>
                 <form onSubmit={submitOffer} className="grid gap-3">
                   <Input
                     type="number"
@@ -156,6 +191,33 @@ export default function ListingShow({ listing, offerMade }: Props) {
           </div>
         </div>
       </section>
+
+      {listing.images && listing.images.length > 0 && (
+        <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+          <DialogContent className="max-w-3xl border-border bg-background p-2 sm:p-4">
+            <DialogTitle className="sr-only">{listing.street}, {listing.city} photos</DialogTitle>
+            <Carousel setApi={setCarouselApi} className="w-full">
+              <CarouselContent>
+                {listing.images.map((img, index) => (
+                  <CarouselItem key={img.id}>
+                    <img
+                      src={img.src}
+                      alt={`${listing.street}, ${listing.city} — photo ${index + 1} of ${listing.images?.length}`}
+                      className="aspect-video w-full rounded-lg bg-black object-contain"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {listing.images.length > 1 && (
+                <>
+                  <CarouselPrevious className="left-2" />
+                  <CarouselNext className="right-2" />
+                </>
+              )}
+            </Carousel>
+          </DialogContent>
+        </Dialog>
+      )}
     </SiteShell>
   );
 }

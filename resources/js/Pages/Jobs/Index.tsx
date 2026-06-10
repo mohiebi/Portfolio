@@ -1,14 +1,26 @@
 import { Head, Link, router } from "@inertiajs/react";
-import { Banknote, Briefcase, Building2, Filter, MapPin, Search } from "lucide-react";
+import { useState } from "react";
+import { Banknote, Briefcase, Building2, Filter, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
+import { PaginationNav } from "@/components/site/PaginationNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Job } from "@/types";
+import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
+import { formatRelativeDate } from "@/lib/format";
+import type { Job, PaginatedData } from "@/types";
+
+type Filters = {
+  search?: string;
+  min_salary?: string;
+  max_salary?: string;
+  experience?: string;
+  category?: string;
+};
 
 type Props = {
-  jobs: Job[];
-  filters: Record<string, string | undefined>;
+  jobs: PaginatedData<Job>;
+  filters: Filters;
   options: {
     categories: string[];
     experiences: string[];
@@ -16,33 +28,75 @@ type Props = {
 };
 
 export default function JobsIndex({ jobs, filters, options }: Props) {
+  const [search, setSearch] = useState(filters.search ?? "");
+  const [minSalary, setMinSalary] = useState(filters.min_salary ?? "");
+  const [maxSalary, setMaxSalary] = useState(filters.max_salary ?? "");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
   const visit = (next: Record<string, string>) => {
     router.get("/jobs", { ...filters, ...next }, { preserveScroll: true, preserveState: true, replace: true });
   };
+
+  const debouncedVisit = useDebouncedCallback((next: Record<string, string>) => visit(next), 300);
 
   return (
     <SiteShell>
       <Head title="Job Board" />
       <PageHeader eyebrow="Project / Job Board" title="Find your next role" description="Filter by salary, experience and category." />
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
-        <aside className="h-fit rounded-2xl border border-border bg-card p-5">
+        <Button
+          variant="outline"
+          className="lg:hidden"
+          aria-expanded={filtersOpen}
+          aria-controls="job-filters"
+          onClick={() => setFiltersOpen((open) => !open)}
+        >
+          <SlidersHorizontal className="mr-2 h-4 w-4" /> {filtersOpen ? "Hide filters" : "Show filters"}
+        </Button>
+
+        <aside id="job-filters" className={`h-fit rounded-2xl border border-border bg-card p-5 ${filtersOpen ? "block" : "hidden"} lg:block`}>
           <div className="flex items-center gap-2 text-sm font-medium"><Filter className="h-4 w-4" /> Filters</div>
           <div className="mt-4 grid gap-4">
             <div className="grid gap-1.5">
               <Label htmlFor="search">Search</Label>
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="search" defaultValue={filters.search ?? ""} onChange={(event) => visit({ search: event.target.value })} placeholder="Title or company" className="pl-9" />
+                <Input
+                  id="search"
+                  value={search}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                    debouncedVisit({ search: event.target.value });
+                  }}
+                  placeholder="Title or company"
+                  className="pl-9"
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
                 <Label htmlFor="min_salary">Min salary</Label>
-                <Input id="min_salary" type="number" defaultValue={filters.min_salary ?? ""} onChange={(event) => visit({ min_salary: event.target.value })} />
+                <Input
+                  id="min_salary"
+                  type="number"
+                  value={minSalary}
+                  onChange={(event) => {
+                    setMinSalary(event.target.value);
+                    debouncedVisit({ min_salary: event.target.value });
+                  }}
+                />
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="max_salary">Max salary</Label>
-                <Input id="max_salary" type="number" defaultValue={filters.max_salary ?? ""} onChange={(event) => visit({ max_salary: event.target.value })} />
+                <Input
+                  id="max_salary"
+                  type="number"
+                  value={maxSalary}
+                  onChange={(event) => {
+                    setMaxSalary(event.target.value);
+                    debouncedVisit({ max_salary: event.target.value });
+                  }}
+                />
               </div>
             </div>
             <ChipGroup label="Experience" value={filters.experience ?? ""} options={options.experiences} onChange={(value) => visit({ experience: value })} />
@@ -52,13 +106,16 @@ export default function JobsIndex({ jobs, filters, options }: Props) {
         </aside>
 
         <div>
-          <p className="mb-4 text-sm text-muted-foreground">{jobs.length} {jobs.length === 1 ? "result" : "results"}</p>
-          {jobs.length === 0 ? (
+          <p className="mb-4 text-sm text-muted-foreground">{jobs.total} {jobs.total === 1 ? "result" : "results"}</p>
+          {jobs.data.length === 0 ? (
             <EmptyState icon={Briefcase} title="No matching jobs" description="Try widening your filters or clearing them." />
           ) : (
-            <div className="grid gap-4">
-              {jobs.map((job) => <JobCard key={job.id} job={job} />)}
-            </div>
+            <>
+              <div className="grid gap-4">
+                {jobs.data.map((job) => <JobCard key={job.id} job={job} />)}
+              </div>
+              <PaginationNav links={jobs.links} />
+            </>
           )}
         </div>
       </section>
@@ -80,7 +137,7 @@ function ChipGroup({ label, value, options, onChange }: { label: string; value: 
 
 function Chip({ active, children, onClick }: { active?: boolean; children: React.ReactNode; onClick?: () => void }) {
   return (
-    <button onClick={onClick} className={`rounded-full border px-3 py-1 text-xs capitalize transition-colors ${active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
+    <button onClick={onClick} aria-pressed={active} className={`rounded-full border px-3 py-1 text-xs capitalize transition-colors ${active ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-accent"}`}>
       {children}
     </button>
   );
@@ -91,7 +148,7 @@ export function JobCard({ job }: { job: Job }) {
     <Link href={`/jobs/${job.id}`} className="group flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-card transition-all hover:-translate-y-0.5 hover:border-primary/40 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Building2 className="h-3.5 w-3.5" /> {job.employer?.company_name ?? "Company"} <span>/</span> <span>{job.created_at}</span>
+          <Building2 className="h-3.5 w-3.5" /> {job.employer?.company_name ?? "Company"} <span aria-hidden="true">/</span> <span>{formatRelativeDate(job.created_at)}</span>
         </div>
         <h3 className="mt-1 font-display text-lg font-semibold group-hover:text-primary">{job.title}</h3>
         <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{job.description}</p>
@@ -102,7 +159,7 @@ export function JobCard({ job }: { job: Job }) {
           <span className="rounded-full border border-border bg-background/40 px-2 py-0.5">{job.category}</span>
         </div>
       </div>
-      <span className="inline-flex shrink-0 items-center rounded-md border border-border px-3 py-1.5 text-sm group-hover:border-primary group-hover:text-primary">View</span>
+      <span aria-hidden="true" className="inline-flex shrink-0 items-center rounded-md border border-border px-3 py-1.5 text-sm group-hover:border-primary group-hover:text-primary">View</span>
     </Link>
   );
 }
