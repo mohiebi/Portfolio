@@ -29,7 +29,7 @@ class BookController extends Controller
             default => $books->latest()->withAvgRating()->withReviewCount()
         };
 
-        $books= $books->get();
+        $books= $books->paginate(12)->withQueryString();
         return Inertia::render('Books/Index', [
             'books' => $books,
             'filters' => [

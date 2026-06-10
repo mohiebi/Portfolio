@@ -23,7 +23,7 @@ class JobController extends Controller
             'category'
         );
         return Inertia::render('Jobs/Index', [
-            'jobs' => Job::with('employer')->latest()->filter($filters)->get(),
+            'jobs' => Job::with('employer')->latest()->filter($filters)->paginate(10)->withQueryString(),
             'filters' => $filters,
             'options' => [
                 'categories' => Job::$category,
