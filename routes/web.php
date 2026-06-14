@@ -36,6 +36,10 @@ Route::get('/', function () {
     ]);
 })->name('portfolio');
 
+Route::get('/projects', function () {
+    return Inertia::render('Projects/Index');
+})->name('projects.index');
+
 Route::get('/articles', [ArticleController::class, 'publicIndex'])
     ->name('articles.public.index');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'publicShow'])

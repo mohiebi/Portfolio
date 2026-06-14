@@ -142,6 +142,22 @@ export type ServiceGuarantee = {
   detail: string;
 };
 
+export type ServiceProject = {
+  id?: number;
+  name: string;
+  slug?: string;
+  url: string;
+  tag?: string | null;
+  summary: string;
+  outcome?: string | null;
+  preview?: "web" | "design" | "cash" | "tasks" | "routine" | "jobs" | "books" | "realestate";
+  accent?: string | null;
+  is_published?: boolean;
+  sort_order?: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type Service = {
   id: number;
   slug: string;
@@ -165,6 +181,8 @@ export type Service = {
   ai_capabilities?: string[] | null;
   bonuses?: ServiceBonus[] | null;
   guarantees?: ServiceGuarantee[] | null;
+  sample_projects?: ServiceProject[] | null;
+  sample_projects_count?: number;
   is_published: boolean;
   sort_order: number;
   created_at?: string;

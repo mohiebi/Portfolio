@@ -4,14 +4,15 @@ import {
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
   Building2, Phone, Globe, Copy, MessageCircle, GraduationCap, Briefcase,
   Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
-  CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit,
+  CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit, ExternalLink,
 } from "lucide-react";
 import servicesCoverImg from "@/assets/services cover on main.webp";
 import { motion, useScroll, useTransform, useReducedMotion, type Variants } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
+import { featuredProjects, type PortfolioProject } from "@/lib/projects";
 import type { Article, CaseStudy, Recommendation } from "@/types";
 
 const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
@@ -35,53 +36,6 @@ const skills = [
   { name: "Wallet Integration", icon: Shield },
   { name: "OOP / MVC / DDD", icon: Layers },
   { name: "Clean Architecture", icon: Sparkles },
-];
-
-const projects = [
-  {
-    name: "TaskManager",
-    href: "/taskmanager",
-    tag: "Productivity dashboard",
-    outcome: "Eliminates missed tasks with per-user auth scoping — built and shipped in 2 days",
-    blurb: "Authenticated task system with per-user scoping, real-time toggle states and flash feedback. Demonstrates clean Laravel auth architecture.",
-    features: ["Create / edit / delete tasks", "Toggle completed state", "Auth-scoped per user"],
-    tech: ["Laravel", "Auth", "Form requests", "Tailwind"],
-    accent: "from-emerald-400/25 to-teal-500/10",
-    preview: "tasks" as const,
-  },
-  {
-    name: "BookReview",
-    href: "/books",
-    tag: "Discovery & ratings",
-    outcome: "Turns a flat book list into a searchable, filterable discovery engine with social proof",
-    blurb: "Discovery app with smart filters, average ratings aggregated from threaded reviews, and a fast search experience — pure Eloquent, no JS framework needed.",
-    features: ["Filter by popularity & rating", "Star ratings & review counts", "Detail page with reviews"],
-    tech: ["Laravel", "Eloquent", "Blade", "Tailwind"],
-    accent: "from-amber-400/30 to-orange-500/10",
-    preview: "books" as const,
-  },
-  {
-    name: "Job Board",
-    href: "/jobs",
-    tag: "SaaS-style marketplace",
-    outcome: "A two-sided marketplace connecting employers and applicants — policy-protected, multi-role",
-    blurb: "Full marketplace with filterable listings, CV upload, employer dashboard and Laravel Policies enforcing role-based access. Shows real-world SaaS architecture patterns.",
-    features: ["Salary / experience / category filters", "PDF CV upload", "Employer job management"],
-    tech: ["Laravel", "Policies", "File uploads", "Tailwind"],
-    accent: "from-sky-400/25 to-indigo-500/10",
-    preview: "jobs" as const,
-  },
-  {
-    name: "Real Estate",
-    href: "/listing",
-    tag: "Property marketplace",
-    outcome: "Full property marketplace with bidding, image management and realtor dashboards — production-ready",
-    blurb: "End-to-end real estate platform with advanced filters, buyer offer system with notifications, and a realtor CRUD panel. Storage, Inertia and Policies working together.",
-    features: ["Filter by price, beds, baths, area", "Buyer offer system with notifications", "Realtor CRUD + image management"],
-    tech: ["Laravel", "Inertia", "Policies", "Storage"],
-    accent: "from-rose-400/25 to-pink-500/10",
-    preview: "realestate" as const,
-  },
 ];
 
 function BooksPreview() {
@@ -149,6 +103,104 @@ function TasksPreview() {
           </motion.li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function CashPilotPreview() {
+  const rows = [
+    { label: "Income", value: "+$4,820", tone: "text-emerald-400" },
+    { label: "Bills", value: "-$1,240", tone: "text-rose-300" },
+    { label: "Savings", value: "$980", tone: "text-cyan-300" },
+  ];
+
+  return (
+    <div className="space-y-3 p-4">
+      <div className="grid grid-cols-[1fr_auto] items-end gap-3 rounded-lg border border-border bg-card p-3">
+        <div>
+          <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground">Balance</span>
+          <p className="mt-1 font-display text-xl font-semibold">$8,430</p>
+        </div>
+        <div className="flex h-10 items-end gap-1">
+          {[45, 72, 54, 88, 66].map((height, index) => (
+            <span key={index} className="w-2 rounded-sm bg-primary/70" style={{ height: `${height}%` }} />
+          ))}
+        </div>
+      </div>
+      <ul className="space-y-1.5">
+        {rows.map((row, index) => (
+          <motion.li
+            key={row.label}
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06 }}
+            viewport={{ once: true }}
+            className="flex items-center justify-between rounded-md border border-border bg-background/60 px-2.5 py-1.5"
+          >
+            <span className="text-[11px] text-muted-foreground">{row.label}</span>
+            <span className={`font-mono text-[11px] ${row.tone}`}>{row.value}</span>
+          </motion.li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function RoutinePreview() {
+  const habits = [
+    { label: "Morning focus", complete: true },
+    { label: "Workout", complete: true },
+    { label: "Deep work", complete: false },
+  ];
+
+  return (
+    <div className="space-y-3 p-4">
+      <div className="rounded-lg border border-primary/30 bg-primary/10 p-3">
+        <div className="flex items-center gap-2">
+          <BrainCircuit className="h-4 w-4 text-primary" />
+          <span className="font-mono text-[10px] uppercase tracking-wider text-primary">AI coach</span>
+        </div>
+        <p className="mt-2 text-[11px] leading-5 text-foreground/85">
+          Today: protect your focus block before admin work.
+        </p>
+      </div>
+      <ul className="space-y-1.5">
+        {habits.map((habit, index) => (
+          <motion.li
+            key={habit.label}
+            initial={{ opacity: 0, x: -8 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.06 }}
+            viewport={{ once: true }}
+            className="flex items-center gap-2 rounded-md border border-border bg-card px-2 py-1.5"
+          >
+            <span className={`h-2.5 w-2.5 rounded-full ${habit.complete ? "bg-primary" : "bg-muted"}`} />
+            <span className="text-[11px] text-muted-foreground">{habit.label}</span>
+          </motion.li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function DesignPreview() {
+  return (
+    <div className="space-y-3 p-4">
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="h-16 bg-gradient-to-br from-pink-300/50 via-rose-300/25 to-amber-200/40" />
+        <div className="space-y-2 p-3">
+          <div className="h-2 w-2/3 rounded bg-foreground/80" />
+          <div className="h-1.5 w-full rounded bg-muted" />
+          <div className="h-1.5 w-4/5 rounded bg-muted" />
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-1.5">
+        {["Brand", "Work", "Contact"].map((item) => (
+          <span key={item} className="rounded-md border border-border bg-background/60 px-2 py-1 text-center font-mono text-[9px] text-muted-foreground">
+            {item}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -233,7 +285,10 @@ function RealEstatePreview() {
 
 const previewMap = {
   books: BooksPreview,
+  cash: CashPilotPreview,
+  design: DesignPreview,
   tasks: TasksPreview,
+  routine: RoutinePreview,
   jobs: JobsPreview,
   realestate: RealEstatePreview,
 };
@@ -514,6 +569,8 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
         </section>
       )}
 
+      <ProjectsSection />
+
       <CaseStudiesSection caseStudies={caseStudies} />
 
       {/* ABOUT */}
@@ -627,8 +684,6 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
       </section>
 
 
-      <ProjectsSection />
-
       <ArticlesSection articles={articles} />
 
       {/* CONTACT */}
@@ -641,7 +696,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
           transition={{ duration: 6, repeat: shouldReduceMotion ? 0 : Infinity, ease: "easeInOut" }}
         />
 
-        <div className="relative mx-auto max-w-4xl px-4 py-24 sm:px-6 lg:px-8">
+        <div className="relative mx-auto max-w-5xl px-4 py-20 sm:px-6 lg:px-8">
 
           {/* Section header */}
           <motion.div
@@ -717,10 +772,16 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-4"
+            className="mt-8"
           >
-            <p className="mb-3 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">or reach out directly</p>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="mb-5 flex flex-col gap-2 text-center sm:flex-row sm:items-end sm:justify-between sm:text-left">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/60">or reach out directly</p>
+                <h3 className="mt-1 font-display text-2xl font-semibold">Choose the channel that fits</h3>
+              </div>
+              <p className="max-w-sm text-sm text-muted-foreground">Email is best for scoped project details. LinkedIn works well for quick context.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
               {[
                 { key: "email",    icon: Mail,     label: "Email",    value: "e.mohamadhosein@gmail.com", href: "mailto:e.mohamadhosein@gmail.com", copyable: true  },
                 { key: "linkedin", icon: Linkedin,  label: "LinkedIn", value: "linkedin.com/in/mohiebi",    href: "https://www.linkedin.com/in/mohiebi",             },
@@ -731,21 +792,31 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                   href={c.href}
                   target={c.href.startsWith("http") ? "_blank" : undefined}
                   rel="noreferrer"
-                  className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-border bg-card/50 px-4 py-3.5 transition-all duration-200 hover:border-primary/40 hover:bg-card/80 focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="group relative flex min-h-[190px] cursor-pointer flex-col items-start gap-5 overflow-hidden rounded-3xl border border-border bg-card/65 p-5 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/45 hover:bg-card/85 focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
-                  <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-border/60 bg-background/60 text-primary transition-colors group-hover:border-primary/40">
-                    <c.icon className="h-4 w-4" />
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/70 via-primary/20 to-transparent" aria-hidden />
+                  <div className="flex w-full items-start justify-between gap-4">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:border-primary/50">
+                      <c.icon className="h-5 w-5" />
+                    </div>
+                    <span className="rounded-full border border-border bg-background/50 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      {c.label}
+                    </span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{c.label}</p>
-                    <p className="truncate text-sm font-medium">{c.value}</p>
+                    <p className="break-words text-base font-semibold leading-snug">{c.value}</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {c.key === "email" && "Send scope, timeline, budget, or a rough idea."}
+                      {c.key === "linkedin" && "Good for intros, hiring conversations, and quick context."}
+                      {c.key === "github" && "Browse code, activity, and implementation style."}
+                    </p>
                   </div>
                   {c.copyable ? (
                     <button
                       type="button"
                       onClick={(e) => { e.preventDefault(); copy(c.value, c.key); }}
                       aria-label="Copy email"
-                      className="shrink-0 rounded-md border border-border/60 bg-background/40 px-2 py-1 font-mono text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                      className="mt-auto shrink-0 rounded-lg border border-border bg-background/50 px-3 py-2 font-mono text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
                     >
                       {copied === c.key ? (
                         <span className="inline-flex items-center gap-1 text-success"><Check className="h-3 w-3" />copied</span>
@@ -754,7 +825,10 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                       )}
                     </button>
                   ) : (
-                    <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                    <span className="mt-auto inline-flex items-center gap-2 text-sm font-medium text-primary">
+                      Open profile
+                      <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                    </span>
                   )}
                 </a>
               ))}
@@ -1024,29 +1098,23 @@ function ProjectsSection() {
         >
           <motion.div variants={fadeUp}>
             <p className="font-mono text-xs uppercase tracking-wider text-primary">// Projects</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Runnable Laravel demos</h2>
+            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Featured builds</h2>
             <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-              Three runnable full-stack demos. TaskManager leads the set, followed by BookReview and the Job Board.
+              The top projects now lead with TaskManager, CashPilot, AI Routine Coach, and Mahdieh Design. The full project archive has the rest.
             </p>
           </motion.div>
-          <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
-            {["All", "Productivity", "Backend", "Full-stack"].map((chip, i) => (
-              <span
-                key={chip}
-                className={`rounded-full border px-3 py-1 text-xs font-mono uppercase tracking-wider ${
-                  i === 0
-                    ? "border-primary/50 bg-primary/10 text-primary"
-                    : "border-border bg-background/40 text-muted-foreground"
-                }`}
-              >
-                {chip}
-              </span>
-            ))}
+          <motion.div variants={fadeUp}>
+            <Button asChild variant="outline">
+              <Link href="/projects">
+                View all projects
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
           </motion.div>
         </motion.div>
 
         <div className="mt-12 space-y-10">
-          {projects.map((p, idx) => (
+          {featuredProjects.map((p, idx) => (
             <motion.article
               key={p.name}
               initial={{ opacity: 0, y: 40 }}
@@ -1054,39 +1122,16 @@ function ProjectsSection() {
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
               whileHover={{ y: -4 }}
-              className="group relative grid gap-0 overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-colors hover:border-primary/40 lg:grid-cols-[1.1fr_0.9fr]"
+              className={`group relative grid gap-0 overflow-hidden rounded-3xl border border-border bg-card shadow-card transition-colors hover:border-primary/40 ${
+                idx % 2 === 0 ? "lg:grid-cols-[1.1fr_0.9fr]" : "lg:grid-cols-[0.9fr_1.1fr]"
+              }`}
             >
-              <Link
-                href={p.href}
-                aria-label={`View ${p.name} project`}
-                className={`relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:order-${idx % 2 === 0 ? "last" : "first"} lg:border-l lg:border-t-0`}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${p.accent}`} />
-                <div className="absolute inset-0 bg-grid opacity-30" />
-                <div className="relative flex h-full items-center justify-center p-8">
-                  <motion.div
-                    whileHover={{ scale: 1.02, rotate: 0.5 }}
-                    transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                    className="w-full max-w-sm overflow-hidden rounded-xl border border-border bg-background/95 shadow-2xl backdrop-blur"
-                  >
-                    <div className="flex items-center gap-1.5 border-b border-border px-3 py-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-                      <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-                      <span className="ml-3 font-mono text-[10px] text-muted-foreground">{p.href}</span>
-                    </div>
-                    {(() => {
-                      const Preview = previewMap[p.preview];
-                      return <Preview />;
-                    })()}
-                  </motion.div>
-                </div>
-              </Link>
+              <ProjectPreviewLink project={p} index={idx} />
 
               <div className="relative flex flex-col p-7 sm:p-9">
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-xs uppercase tracking-wider text-primary">{p.tag}</p>
-                  <span className="font-mono text-xs text-muted-foreground">0{idx + 1} / 0{projects.length}</span>
+                  <span className="font-mono text-xs text-muted-foreground">0{idx + 1} / 0{featuredProjects.length}</span>
                 </div>
                 <h3 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{p.name}</h3>
                 {/* Outcome-first — what this solves */}
@@ -1109,7 +1154,10 @@ function ProjectsSection() {
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <Button asChild>
-                    <Link href={p.href}>View Project <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    <ProjectPrimaryLink project={p}>
+                      View Project
+                      {p.external ? <ExternalLink className="ml-2 h-4 w-4" /> : <ArrowRight className="ml-2 h-4 w-4" />}
+                    </ProjectPrimaryLink>
                   </Button>
                   <Button asChild variant="ghost">
                     <a href="#contact">Discuss this project</a>
@@ -1122,6 +1170,65 @@ function ProjectsSection() {
       </div>
     </section>
   );
+}
+
+function ProjectPreviewLink({ project, index }: { project: PortfolioProject; index: number }) {
+  const className = `relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+    index % 2 === 0 ? "lg:order-last" : "lg:order-first"
+  } lg:border-l lg:border-t-0`;
+  const content = <ProjectPreviewMockup project={project} />;
+
+  if (project.external) {
+    return (
+      <a href={project.href} target="_blank" rel="noreferrer" aria-label={`View ${project.name} project`} className={className}>
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={project.href} aria-label={`View ${project.name} project`} className={className}>
+      {content}
+    </Link>
+  );
+}
+
+function ProjectPreviewMockup({ project }: { project: PortfolioProject }) {
+  const Preview = previewMap[project.preview];
+
+  return (
+    <>
+      <div className={`absolute inset-0 bg-gradient-to-br ${project.accent}`} />
+      <div className="absolute inset-0 bg-grid opacity-30" />
+      <div className="relative flex h-full items-center justify-center p-8">
+        <motion.div
+          whileHover={{ scale: 1.02, rotate: 0.5 }}
+          transition={{ type: "spring", stiffness: 200, damping: 18 }}
+          className="w-full max-w-sm overflow-hidden rounded-xl border border-border bg-background/95 shadow-2xl backdrop-blur"
+        >
+          <div className="flex items-center gap-1.5 border-b border-border px-3 py-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
+            <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
+            <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
+            <span className="ml-3 truncate font-mono text-[10px] text-muted-foreground">{project.href}</span>
+          </div>
+          <Preview />
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
+function ProjectPrimaryLink({ project, children }: { project: PortfolioProject; children: ReactNode }) {
+  if (project.external) {
+    return (
+      <a href={project.href} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    );
+  }
+
+  return <Link href={project.href}>{children}</Link>;
 }
 
 function ArticlesSection({ articles }: { articles: Article[] }) {

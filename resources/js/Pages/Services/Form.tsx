@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import type { Service, ServiceBonus, ServiceGuarantee } from "@/types";
+import type { Service, ServiceBonus, ServiceGuarantee, ServiceProject } from "@/types";
 
 type Props = {
   service?: Service;
@@ -36,6 +36,7 @@ type ServiceForm = {
   ai_capabilities_text: string;
   bonuses_text: string;
   guarantees_text: string;
+  sample_projects_text: string;
   is_published: boolean;
   sort_order: number;
 };
@@ -72,6 +73,7 @@ export default function ServiceFormPage({ service }: Props) {
     ai_capabilities_text: listToText(service?.ai_capabilities),
     bonuses_text: bonusesToText(service?.bonuses),
     guarantees_text: guaranteesToText(service?.guarantees),
+    sample_projects_text: sampleProjectsToText(service?.sample_projects),
     is_published: service?.is_published ?? true,
     sort_order: service?.sort_order ?? 0,
   });
@@ -254,6 +256,16 @@ export default function ServiceFormPage({ service }: Props) {
               </Field>
             </div>
 
+            <Field error={(form.errors as any).sample_projects} label="Sample projects">
+              <Textarea
+                id="sample_projects"
+                rows={6}
+                value={form.data.sample_projects_text}
+                onChange={(event) => form.setData("sample_projects_text", event.target.value)}
+                placeholder="Name | URL | Tag | Summary | Outcome | Preview | Accent | Order, one project per line"
+              />
+            </Field>
+
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
               <label className="flex h-10 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm">
                 Published
@@ -310,6 +322,23 @@ function guaranteesToText(value?: ServiceGuarantee[] | null) {
   return (value ?? []).map((guarantee) => `${guarantee.name} | ${guarantee.detail}`).join("\n");
 }
 
+function sampleProjectsToText(value?: ServiceProject[] | null) {
+  return (value ?? [])
+    .map((project) =>
+      [
+        project.name,
+        project.url,
+        project.tag ?? "",
+        project.summary,
+        project.outcome ?? "",
+        project.preview ?? "web",
+        project.accent ?? "",
+        project.sort_order ?? "",
+      ].join(" | "),
+    )
+    .join("\n");
+}
+
 function textToList(value: string) {
   return value
     .split("\n")
@@ -350,6 +379,29 @@ function textToGuarantees(value: string): ServiceGuarantee[] {
     .filter((guarantee) => guarantee.name && guarantee.detail);
 }
 
+function textToSampleProjects(value: string): ServiceProject[] {
+  return value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const [name, url, tag, summary, outcome, preview, accent, sortOrder] = line.split("|").map((part) => part.trim());
+
+      return {
+        name,
+        url,
+        tag: tag || null,
+        summary,
+        outcome: outcome || null,
+        preview: (preview || "web") as ServiceProject["preview"],
+        accent: accent || null,
+        is_published: true,
+        sort_order: sortOrder ? Number(sortOrder) : (index + 1) * 10,
+      };
+    })
+    .filter((project) => project.name && project.url && project.summary);
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -381,6 +433,7 @@ function formPayload(data: ServiceForm) {
     ai_capabilities: textToList(data.ai_capabilities_text),
     bonuses: textToBonuses(data.bonuses_text),
     guarantees: textToGuarantees(data.guarantees_text),
+    sample_projects: textToSampleProjects(data.sample_projects_text),
     is_published: data.is_published ? "1" : "0",
     sort_order: data.sort_order,
   };

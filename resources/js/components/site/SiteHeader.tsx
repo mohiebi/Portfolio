@@ -1,50 +1,35 @@
 import { Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ExternalLink, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { projects, type PortfolioProject } from "@/lib/projects";
 import logoUrl from "@/assets/mohi-logo.svg";
 
 type NavItem = { label: string; to?: string; href?: string; exact?: boolean; sectionId?: string };
 
 const portfolioNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true, sectionId: "top" },
-  { label: "About", href: "/#about", sectionId: "about" },
   { label: "Services", href: "/#services", sectionId: "services" },
   { label: "Recommendations", href: "/#recommendations", sectionId: "recommendations" },
+  { label: "Projects", to: "/projects", href: "/#projects", sectionId: "projects" },
   { label: "Case Studies", href: "/#case-studies", sectionId: "case-studies" },
-  { label: "Projects", href: "/#projects", sectionId: "projects" },
+  { label: "About", href: "/#about", sectionId: "about" },
   { label: "Articles", href: "/#articles", sectionId: "articles" },
   { label: "Contact", href: "/#contact", sectionId: "contact" },
 ];
 
-const projectsNav: NavItem[] = [
-  { label: "Portfolio", to: "/", exact: true },
-  { label: "Tasks Manager", to: "/taskmanager" },
-  { label: "Book Review", to: "/books" },
-  { label: "Job Board", to: "/jobs" },
-  { label: "Services", href: "/#services" },
-  { label: "Case Studies", to: "/case-studies" },
-  { label: "Articles", to: "/articles" },
-  { label: "Contact Me", href: "/#contact" },
-];
-
-function isProjectsRoute(pathname: string) {
+function isProjectContext(pathname: string) {
   return (
     pathname.startsWith("/books") ||
+    pathname.startsWith("/projects") ||
     pathname.startsWith("/taskmanager") ||
     pathname.startsWith("/jobs") ||
     pathname.startsWith("/my-jobs") ||
     pathname.startsWith("/my-job-applications") ||
     pathname.startsWith("/employer") ||
-    pathname.startsWith("/articles") ||
-    pathname.startsWith("/case-studies") ||
-    pathname.startsWith("/services") ||
-    pathname.startsWith("/dashboard/recommendations") ||
-    pathname.startsWith("/dashboard/case-studies") ||
-    pathname.startsWith("/dashboard/articles") ||
-    pathname.startsWith("/dashboard/services") ||
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/profile")
+    pathname.startsWith("/listing") ||
+    pathname.startsWith("/realtor") ||
+    pathname.startsWith("/notification")
   );
 }
 
@@ -53,33 +38,38 @@ export function SiteHeader() {
   const page = usePage();
   const pathname = page.url.split("?")[0];
   const auth = (page.props as any).auth;
-  const onProjects = isProjectsRoute(pathname);
+  const onPortfolioHome = pathname === "/";
+  const onProjectContext = isProjectContext(pathname);
   const hasRecommendations = Array.isArray((page.props as any).recommendations)
     && (page.props as any).recommendations.length > 0;
   const hasCaseStudies = Array.isArray((page.props as any).caseStudies)
     && (page.props as any).caseStudies.length > 0;
-  const nav = onProjects
-    ? projectsNav
-    : portfolioNav.filter((item) => {
-      if (item.sectionId === "recommendations") return hasRecommendations;
-      if (item.sectionId === "case-studies") return hasCaseStudies;
-      if (item.sectionId === "articles") {
-        return Array.isArray((page.props as any).articles)
-          && (page.props as any).articles.length > 0;
-      }
+  const nav = portfolioNav.filter((item) => {
+    if (!onPortfolioHome) return true;
+    if (item.sectionId === "recommendations") return hasRecommendations;
+    if (item.sectionId === "case-studies") return hasCaseStudies;
+    if (item.sectionId === "articles") {
+      return Array.isArray((page.props as any).articles)
+        && (page.props as any).articles.length > 0;
+    }
 
-      return true;
-    });
-  const onPortfolioHome = pathname === "/";
+    return true;
+  });
   const authUrl = (path: "/login" | "/register") => `${path}?redirect=${encodeURIComponent(page.url)}`;
   const [activeSection, setActiveSection] = useState<string>("top");
 
   useEffect(() => {
     if (!onPortfolioHome) return;
-    const ids = ["about", "services", "recommendations", "case-studies", "projects", "articles", "contact"];
+    const ids = ["services", "recommendations", "projects", "case-studies", "about", "articles", "contact"];
     const handler = () => {
       const scrollY = window.scrollY;
       let current = "top";
+
+      if (window.innerHeight + scrollY >= document.documentElement.scrollHeight - 12) {
+        setActiveSection("contact");
+        return;
+      }
+
       for (const id of ids) {
         const el = document.getElementById(id);
         if (el && el.getBoundingClientRect().top + window.scrollY - 100 <= scrollY) {
@@ -96,6 +86,10 @@ export function SiteHeader() {
   const isRouteActive = (item: NavItem) => {
     if (!item.to) return false;
     if (item.exact) return pathname === item.to;
+
+    if (item.to === "/projects") {
+      return onProjectContext;
+    }
 
     if (item.to === "/case-studies") {
       return pathname.startsWith("/case-studies");
@@ -140,15 +134,72 @@ export function SiteHeader() {
       );
     }
     const isActive = onPortfolioHome && item.sectionId === activeSection;
+    const href = item.href ?? (item.to as string);
+    const isExternal = href.startsWith("http");
+
     return (
       <a
         key={item.label}
-        href={item.href ?? (item.to as string)}
+        href={href}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noreferrer" : undefined}
         className={`${baseCls} ${isActive ? activeCls : ""}`}
         onClick={onClick}
       >
         {item.label}
       </a>
+    );
+  };
+
+  const isProjectActive = (project: PortfolioProject) => {
+    if (project.preview === "tasks") return pathname.startsWith("/taskmanager");
+    if (project.preview === "books") return pathname.startsWith("/books");
+    if (project.preview === "jobs") {
+      return (
+        pathname.startsWith("/jobs") ||
+        pathname.startsWith("/my-jobs") ||
+        pathname.startsWith("/my-job-applications") ||
+        pathname.startsWith("/employer")
+      );
+    }
+    if (project.preview === "realestate") {
+      return (
+        pathname.startsWith("/listing") ||
+        pathname.startsWith("/realtor") ||
+        pathname.startsWith("/notification")
+      );
+    }
+
+    return false;
+  };
+
+  const renderProjectPill = (project: PortfolioProject) => {
+    const isActive = isProjectActive(project);
+    const baseCls =
+      "group inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium transition-all";
+    const toneCls = isActive
+      ? "border-primary/60 bg-primary/15 text-primary shadow-card"
+      : "border-border bg-background/45 text-muted-foreground hover:border-primary/45 hover:bg-accent/70 hover:text-foreground";
+    const content = (
+      <>
+        <span className={`h-2.5 w-2.5 rounded-full bg-gradient-to-br ${project.accent}`} />
+        <span>{projectNavLabel(project)}</span>
+        {project.external && <ExternalLink className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" />}
+      </>
+    );
+
+    if (project.external) {
+      return (
+        <a key={project.name} href={project.href} target="_blank" rel="noreferrer" className={`${baseCls} ${toneCls}`}>
+          {content}
+        </a>
+      );
+    }
+
+    return (
+      <Link key={project.name} href={project.href} className={`${baseCls} ${toneCls}`}>
+        {content}
+      </Link>
     );
   };
 
@@ -163,7 +214,7 @@ export function SiteHeader() {
           {nav.map((item) => renderItem(item))}
         </nav>
 
-        {onProjects ? (
+        {onProjectContext ? (
           <div className="hidden items-center gap-2 md:flex">
             {auth?.user ? (
               <div className="flex items-center gap-3">
@@ -205,7 +256,7 @@ export function SiteHeader() {
         <div className="border-t border-border bg-background md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
             {nav.map((item) => renderItem(item, () => setOpen(false)))}
-            {onProjects && (
+            {onProjectContext && (
               <div className="mt-2">
                 {auth?.user ? (
                   <div className="flex flex-col gap-2">
@@ -230,6 +281,35 @@ export function SiteHeader() {
           </div>
         </div>
       )}
+
+      {onProjectContext && (
+        <div className="border-t border-border/60 bg-surface/55">
+          <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto px-4 py-2.5 sm:px-6 lg:px-8">
+            <div className="sticky left-0 z-10 hidden shrink-0 items-center gap-2 rounded-full border border-primary/30 bg-background/90 px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-primary shadow-card backdrop-blur sm:inline-flex">
+              <Sparkles className="h-3.5 w-3.5" />
+              Project shelf
+            </div>
+            <Link
+              href="/projects"
+              className={`inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium transition-all ${
+                pathname.startsWith("/projects")
+                  ? "border-primary/60 bg-primary/15 text-primary shadow-card"
+                  : "border-border bg-background/45 text-muted-foreground hover:border-primary/45 hover:bg-accent/70 hover:text-foreground"
+              }`}
+            >
+              All Projects
+            </Link>
+            {projects.map((project) => renderProjectPill(project))}
+          </div>
+        </div>
+      )}
     </header>
   );
+}
+
+function projectNavLabel(project: PortfolioProject) {
+  if (project.name === "AI Routine Coach") return "AI Coach";
+  if (project.name === "Mahdieh Design") return "Mahdieh";
+
+  return project.name;
 }

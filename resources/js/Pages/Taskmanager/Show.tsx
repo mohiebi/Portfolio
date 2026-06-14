@@ -289,7 +289,7 @@ export default function TaskShow({ task }: Props) {
                           className={`grid h-7 w-7 place-items-center rounded-full border transition-colors ${
                             subtaskStatus === "done"
                               ? "border-success bg-success text-success-foreground"
-                              : "border-border bg-background hover:border-primary"
+                              : "border-border bg-background hover:border-primary hover:bg-primary/10"
                           }`}
                           aria-label={subtaskStatus === "done" ? "Mark subtask open" : "Mark subtask done"}
                         >

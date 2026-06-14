@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
 import { Mail, Linkedin, FileDown, Github } from "lucide-react";
+import { featuredProjects, type PortfolioProject } from "@/lib/projects";
 
 export function SiteFooter() {
   return (
@@ -21,9 +22,12 @@ export function SiteFooter() {
         <div className="w-full">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Projects</h4>
           <ul className="mt-3 space-y-2 text-sm">
-            <li><Link href="/books" className="hover:text-foreground text-muted-foreground">BookReview</Link></li>
-            <li><Link href="/taskmanager" className="hover:text-foreground text-muted-foreground">TaskManager</Link></li>
-            <li><Link href="/jobs" className="hover:text-foreground text-muted-foreground">Job Board</Link></li>
+            <li><Link href="/projects" className="hover:text-foreground text-muted-foreground">All projects</Link></li>
+            {featuredProjects.map((project) => (
+              <li key={project.name}>
+                <ProjectFooterLink project={project} />
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -43,5 +47,23 @@ export function SiteFooter() {
         </div>
       </div>
     </footer>
+  );
+}
+
+function ProjectFooterLink({ project }: { project: PortfolioProject }) {
+  const className = "hover:text-foreground text-muted-foreground";
+
+  if (project.external) {
+    return (
+      <a href={project.href} target="_blank" rel="noreferrer" className={className}>
+        {project.name}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={project.href} className={className}>
+      {project.name}
+    </Link>
   );
 }

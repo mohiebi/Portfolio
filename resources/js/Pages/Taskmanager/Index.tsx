@@ -653,21 +653,21 @@ function TaskCard({
                       event.stopPropagation();
                       onToggleSubtask(task, subtask);
                     }}
-                    className="grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md py-0.5 text-left transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-70"
+                    className="group -mx-1 grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-70"
                     aria-label={subtaskStatus === "done" ? `Mark ${subtask.title} open` : `Mark ${subtask.title} done`}
                   >
                     <span
-                      className={`grid h-3.5 w-3.5 place-items-center rounded-full border ${
+                      className={`grid h-3.5 w-3.5 place-items-center rounded-full border transition-colors ${
                         subtaskStatus === "done"
                           ? "border-success bg-success text-success-foreground"
-                          : "border-[#2a3b5a] bg-[#071224]"
+                          : "border-[#2a3b5a] bg-[#071224] group-hover:border-primary"
                       }`}
                     >
                       {subtaskStatus === "done" ? <Check className="h-2.5 w-2.5" /> : null}
                     </span>
                     <span
-                      className={`truncate text-xs leading-4 ${
-                        subtaskStatus === "done" ? "text-[#8090ad] line-through" : "text-[#d8e7ff]"
+                      className={`truncate text-xs leading-4 transition-colors ${
+                        subtaskStatus === "done" ? "text-[#8090ad] line-through" : "text-[#d8e7ff] group-hover:text-primary"
                       }`}
                     >
                       {subtask.title}

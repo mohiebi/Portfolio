@@ -82,6 +82,9 @@ export default function ServicesIndex({ services }: Props) {
                       <span className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1">
                         <Clock className="h-3.5 w-3.5" /> {service.timeline}
                       </span>
+                      <span className="rounded-md border border-border px-2 py-1">
+                        Samples: {service.sample_projects_count ?? 0}
+                      </span>
                       <span className="rounded-md border border-border px-2 py-1">Order: {service.sort_order}</span>
                     </div>
                     <div className="mt-4 flex flex-wrap gap-1.5">

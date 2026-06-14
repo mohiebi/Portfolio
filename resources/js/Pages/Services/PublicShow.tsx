@@ -6,7 +6,10 @@ import {
   BrainCircuit,
   Check,
   Clock,
+  CreditCard,
+  ExternalLink,
   Gift,
+  Paintbrush,
   Rocket,
   Settings2,
   ShieldCheck,
@@ -20,7 +23,7 @@ import {
 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
-import type { Service } from "@/types";
+import type { Service, ServiceProject } from "@/types";
 import launchImg from "@/assets/launch.webp";
 import operationsImg from "@/assets/service-operations.webp";
 import aiImg from "@/assets/service-ai.webp";
@@ -34,6 +37,16 @@ type Props = {
 
 const coverIcon = { launch: Rocket, operations: Settings2, ai: BrainCircuit } as const;
 const coverImg = { launch: launchImg, operations: operationsImg, ai: aiImg } as const;
+const sampleAccent = {
+  cash: "from-lime-400/25 to-cyan-500/10",
+  design: "from-fuchsia-400/25 to-amber-400/10",
+  web: "from-emerald-400/25 to-sky-500/10",
+  tasks: "from-emerald-400/25 to-sky-500/10",
+  routine: "from-indigo-400/25 to-cyan-500/10",
+  jobs: "from-sky-400/25 to-emerald-500/10",
+  books: "from-amber-400/25 to-rose-500/10",
+  realestate: "from-teal-400/25 to-sky-500/10",
+} as const;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -47,6 +60,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
     const num = parseInt(b.value.replace(/[^0-9]/g, ""), 10);
     return acc + (isNaN(num) ? 0 : num);
   }, 0);
+  const sampleProjects = service.sample_projects ?? [];
 
   return (
     <SiteShell>
@@ -245,6 +259,18 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
               </Block>
             </motion.div>
 
+            {sampleProjects.length > 0 && (
+              <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ duration: 0.4 }}>
+                <Block title="Sample builds" icon={Zap}>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {sampleProjects.map((project) => (
+                      <SampleProjectCard key={project.id ?? project.slug ?? project.name} project={project} />
+                    ))}
+                  </div>
+                </Block>
+              </motion.div>
+            )}
+
             {(service.bonuses ?? []).length > 0 && (
               <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ duration: 0.4 }}>
                 <Block title="Bonuses included" icon={Gift}>
@@ -406,6 +432,132 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
         </div>
       </section>
     </SiteShell>
+  );
+}
+
+function SampleProjectCard({ project }: { project: ServiceProject }) {
+  const accent = resolveSampleAccent(project);
+
+  return (
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card/60 shadow-card transition-colors hover:border-primary/40">
+      <div className={`relative aspect-[16/9] overflow-hidden bg-gradient-to-br ${accent}`}>
+        <div className="absolute inset-0 bg-grid opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/40" />
+        <ProjectPreview project={project} />
+      </div>
+      <div className="p-5">
+        {project.tag && (
+          <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{project.tag}</p>
+        )}
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <h3 className="font-display text-xl font-semibold">{project.name}</h3>
+          <a
+            href={project.url}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`Open ${project.name}`}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-border bg-background/50 text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{project.summary}</p>
+        {project.outcome && (
+          <div className="mt-4 rounded-xl border border-primary/20 bg-primary/8 px-3.5 py-3 text-sm text-primary">
+            {project.outcome}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function resolveSampleAccent(project: ServiceProject) {
+  const accent = project.accent ?? "";
+
+  if ((Object.values(sampleAccent) as string[]).includes(accent)) {
+    return accent;
+  }
+
+  return sampleAccent[project.preview ?? "web"];
+}
+
+function ProjectPreview({ project }: { project: ServiceProject }) {
+  if (project.preview === "cash") {
+    return (
+      <div className="absolute inset-0 grid place-items-center p-6">
+        <div className="w-full max-w-[18rem] overflow-hidden rounded-2xl border border-white/10 bg-background/90 shadow-2xl">
+          <div className="flex items-center gap-1.5 border-b border-border px-4 py-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            <span className="ml-3 font-mono text-[10px] text-muted-foreground">cashpilot.mohiebi.com</span>
+          </div>
+          <div className="space-y-3 p-4">
+            <div className="rounded-xl border border-border bg-card/70 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Balance</p>
+              <div className="mt-2 flex items-end justify-between">
+                <p className="font-display text-2xl font-semibold">$8,430</p>
+                <div className="flex items-end gap-1">
+                  {[24, 34, 30, 42, 36].map((height, index) => (
+                    <span key={index} className="w-2 rounded-full bg-primary" style={{ height }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            {["Income", "Bills", "Savings"].map((label, index) => (
+              <div key={label} className="flex items-center justify-between rounded-lg border border-border bg-background/60 px-3 py-2 font-mono text-[11px]">
+                <span className="text-muted-foreground">{label}</span>
+                <span className={index === 1 ? "text-rose-300" : "text-primary"}>{index === 1 ? "-$1,240" : index === 0 ? "+$4,820" : "$980"}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (project.preview === "design") {
+    return (
+      <div className="absolute inset-0 grid place-items-center p-6">
+        <div className="w-full max-w-[18rem] overflow-hidden rounded-2xl border border-white/10 bg-background/90 shadow-2xl">
+          <div className="flex items-center gap-1.5 border-b border-border px-4 py-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            <span className="ml-3 font-mono text-[10px] text-muted-foreground">mahdiehdesign.com</span>
+          </div>
+          <div className="grid gap-3 p-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/15 text-primary">
+                <Paintbrush className="h-5 w-5" />
+              </div>
+              <div className="space-y-2">
+                <span className="block h-2.5 w-28 rounded-full bg-foreground/80" />
+                <span className="block h-2 w-20 rounded-full bg-muted-foreground/35" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <span className="h-20 rounded-xl bg-fuchsia-300/25" />
+              <span className="h-20 rounded-xl bg-amber-300/25" />
+              <span className="h-20 rounded-xl bg-sky-300/20" />
+            </div>
+            <div className="rounded-xl border border-border bg-card/70 p-3">
+              <span className="block h-2 w-full rounded-full bg-muted-foreground/25" />
+              <span className="mt-2 block h-2 w-4/5 rounded-full bg-muted-foreground/20" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 grid place-items-center p-6">
+      <div className="grid h-20 w-20 place-items-center rounded-2xl border border-border bg-background/80 text-primary shadow-2xl">
+        <CreditCard className="h-8 w-8" />
+      </div>
+    </div>
   );
 }
 
