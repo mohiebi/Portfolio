@@ -486,12 +486,10 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                 </p>
               </div>
               <a
-                href="https://www.linkedin.com/in/mohiebi/details/recommendations/"
-                target="_blank"
-                rel="noreferrer"
+                href="/recommendations/all"
                 className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
               >
-                <Linkedin className="h-3.5 w-3.5" /> View on LinkedIn
+                All recommendations
               </a>
             </motion.div>
 
@@ -1435,10 +1433,12 @@ function RecommendationShowcaseCard({
           {active && (
             <div className="flex flex-wrap items-center gap-2">
               <a
-                href={`/recommendations/all#recommendation-${recommendation.id}`}
-                className="inline-flex w-full justify-center rounded-full border border-border bg-background/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary sm:w-auto"
+                href="https://www.linkedin.com/in/mohiebi/details/recommendations/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-background/40 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary sm:w-auto"
               >
-                All recommendations
+                <Linkedin className="h-3 w-3" /> View on LinkedIn
               </a>
             </div>
           )}
