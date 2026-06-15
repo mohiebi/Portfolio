@@ -1,10 +1,11 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
-import { Check, Circle, Clock, ListChecks, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, Circle, Clock, ListChecks, Plus, Trash2 } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusMessage } from "@/components/site/StatusMessage";
+import { formatDeadlineDate, getDeadlineState, sortByDeadline } from "@/lib/taskDeadline";
 import type { Task } from "@/types";
 
 type Props = {
@@ -589,18 +590,24 @@ function TaskCard({
 }) {
   const status = getTaskStatus(task);
   const focusing = status === "in_progress";
-  const subtasks = task.subtasks ?? [];
+  const subtasks = useMemo(() => sortByDeadline(task.subtasks ?? []), [task.subtasks]);
+  const deadlineState = getDeadlineState(task);
+
+  const cardStateClass =
+    deadlineState === "overdue"
+      ? "border-destructive/70 bg-destructive/10 shadow-[0_0_0_1px_oklch(0.62_0.21_25_/_0.2),0_16px_38px_-24px_oklch(0.62_0.21_25_/_0.85)] animate-pulse-glow-danger"
+      : deadlineState === "due-soon"
+        ? "border-warning/70 bg-warning/10 shadow-[0_0_0_1px_oklch(0.82_0.14_85_/_0.2),0_16px_38px_-24px_oklch(0.82_0.14_85_/_0.85)] animate-pulse-glow-warning"
+        : focusing
+          ? "border-primary/70 bg-primary/10 shadow-[0_0_0_1px_oklch(0.72_0.16_158_/_0.18),0_16px_38px_-24px_oklch(0.72_0.16_158_/_0.85)]"
+          : "border-[#1e2b45] bg-[#071224]";
 
   return (
     <div
       draggable={!working}
       onDragStart={(event) => onDragStart(event, task)}
       onDragEnd={onDragEnd}
-      className={`group relative grid grid-cols-[1rem_1.5rem_minmax(0,1fr)_3.5rem] items-center gap-2 overflow-hidden rounded-2xl border px-3 py-3 ${
-        focusing
-          ? "border-primary/70 bg-primary/10 shadow-[0_0_0_1px_oklch(0.72_0.16_158_/_0.18),0_16px_38px_-24px_oklch(0.72_0.16_158_/_0.85)]"
-          : "border-[#1e2b45] bg-[#071224]"
-      }`}
+      className={`group relative grid grid-cols-[1rem_1.5rem_minmax(0,1fr)_3.5rem] items-center gap-2 overflow-hidden rounded-2xl border px-3 py-3 transition-[border-color,background-color,box-shadow] duration-300 ${cardStateClass}`}
     >
       <div className={`grid h-7 w-3 cursor-grab grid-cols-2 place-content-center gap-x-0.5 gap-y-0.5 self-center opacity-65 transition-opacity group-hover:opacity-100 ${focusing ? "text-primary" : "text-[#7c8eaa]"}`}>
         {Array.from({ length: 8 }).map((_, index) => (
@@ -642,6 +649,7 @@ function TaskCard({
               {subtasks.map((subtask) => {
                 const subtaskStatus = getTaskStatus(subtask);
                 const subtaskWorking = workingSubtaskIds.includes(subtask.id);
+                const subtaskDeadlineState = getDeadlineState(subtask);
 
                 return (
                   <button
@@ -653,7 +661,14 @@ function TaskCard({
                       event.stopPropagation();
                       onToggleSubtask(task, subtask);
                     }}
-                    className="group -mx-1 grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-70"
+                    title={subtask.deadline ? `Due ${formatDeadlineDate(subtask.deadline)}` : undefined}
+                    className={`group -mx-1 grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md border-l-2 px-1 py-0.5 text-left transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-70 ${
+                      subtaskDeadlineState === "overdue"
+                        ? "border-l-destructive/70 bg-destructive/5"
+                        : subtaskDeadlineState === "due-soon"
+                          ? "border-l-warning/70 bg-warning/5"
+                          : "border-l-transparent"
+                    }`}
                     aria-label={subtaskStatus === "done" ? `Mark ${subtask.title} open` : `Mark ${subtask.title} done`}
                   >
                     <span
@@ -665,12 +680,16 @@ function TaskCard({
                     >
                       {subtaskStatus === "done" ? <Check className="h-2.5 w-2.5" /> : null}
                     </span>
-                    <span
-                      className={`truncate text-xs leading-4 transition-colors ${
-                        subtaskStatus === "done" ? "text-[#8090ad] line-through" : "text-[#d8e7ff] group-hover:text-primary"
-                      }`}
-                    >
-                      {subtask.title}
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span
+                        className={`truncate text-xs leading-4 transition-colors ${
+                          subtaskStatus === "done" ? "text-[#8090ad] line-through" : "text-[#d8e7ff] group-hover:text-primary"
+                        }`}
+                      >
+                        {subtask.title}
+                      </span>
+                      {subtaskDeadlineState === "overdue" && <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-destructive" />}
+                      {subtaskDeadlineState === "due-soon" && <CalendarClock className="h-2.5 w-2.5 shrink-0 text-warning" />}
                     </span>
                   </button>
                 );
@@ -678,8 +697,28 @@ function TaskCard({
             </div>
           </div>
         )}
-        <div className="mt-2 flex items-center gap-1.5 text-xs leading-none text-[#9bb1ce]">
-          <Clock className="h-3 w-3" /> {formatTaskDate(task.created_at)}
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-none text-[#9bb1ce]">
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-3 w-3" /> {formatTaskDate(task.created_at)}
+          </span>
+          {task.deadline && (
+            <span
+              className={`flex items-center gap-1.5 font-medium ${
+                deadlineState === "overdue"
+                  ? "text-destructive"
+                  : deadlineState === "due-soon"
+                    ? "text-warning"
+                    : "text-[#9bb1ce]"
+              }`}
+            >
+              {deadlineState === "overdue" ? (
+                <AlertTriangle className="h-3 w-3" />
+              ) : (
+                <CalendarClock className="h-3 w-3" />
+              )}
+              {formatDeadlineDate(task.deadline)}
+            </span>
+          )}
         </div>
       </div>
       {!demoMode && (
@@ -717,7 +756,7 @@ function Stat({ label, value, accent }: { label: string; value: number; accent?:
 }
 
 function groupTasks(tasks: Task[]): Record<TaskStatus, Task[]> {
-  return tasks.reduce<Record<TaskStatus, Task[]>>(
+  const groups = tasks.reduce<Record<TaskStatus, Task[]>>(
     (groups, task) => {
       groups[getTaskStatus(task)].push(task);
 
@@ -729,6 +768,12 @@ function groupTasks(tasks: Task[]): Record<TaskStatus, Task[]> {
       done: [],
     },
   );
+
+  return {
+    open: sortByDeadline(groups.open),
+    in_progress: sortByDeadline(groups.in_progress),
+    done: sortByDeadline(groups.done),
+  };
 }
 
 function getTaskStatus(task: Task): TaskStatus {

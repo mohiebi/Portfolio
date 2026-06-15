@@ -1,11 +1,13 @@
 import { Head, Link, useForm } from "@inertiajs/react";
 import { type FormEvent, useState } from "react";
-import { ArrowLeft, Check, Circle, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CalendarClock, Check, Circle, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusMessage } from "@/components/site/StatusMessage";
+import { type DeadlineState, formatDeadlineDate, getDeadlineState, sortByDeadline, toDateInputValue } from "@/lib/taskDeadline";
 import type { Task } from "@/types";
 
 type Props = {
@@ -28,15 +30,18 @@ export default function TaskShow({ task }: Props) {
   const [currentTask, setCurrentTask] = useState(task);
   const [newTitle, setNewTitle] = useState("");
   const [newDetails, setNewDetails] = useState("");
+  const [newDeadline, setNewDeadline] = useState("");
   const [editingSubtaskId, setEditingSubtaskId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDetails, setEditDetails] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
   const [workingSubtaskIds, setWorkingSubtaskIds] = useState<number[]>([]);
   const [creating, setCreating] = useState(false);
   const [subtaskError, setSubtaskError] = useState<string | null>(null);
-  const subtasks = currentTask.subtasks ?? [];
+  const subtasks = sortByDeadline(currentTask.subtasks ?? []);
   const completedSubtasks = subtasks.filter((subtask) => getTaskStatus(subtask) === "done").length;
   const status = getTaskStatus(currentTask);
+  const deadlineState = getDeadlineState(currentTask);
 
   const setSubtaskWorking = (subtaskId: number, working: boolean) => {
     setWorkingSubtaskIds((current) =>
@@ -63,6 +68,7 @@ export default function TaskShow({ task }: Props) {
           body: {
             title,
             long_description: newDetails.trim(),
+            deadline: newDeadline || null,
           },
         },
       );
@@ -70,6 +76,7 @@ export default function TaskShow({ task }: Props) {
       setCurrentTask(updatedTask);
       setNewTitle("");
       setNewDetails("");
+      setNewDeadline("");
     } catch (error) {
       setSubtaskError(getMessage(error));
     } finally {
@@ -81,6 +88,7 @@ export default function TaskShow({ task }: Props) {
     setEditingSubtaskId(subtask.id);
     setEditTitle(subtask.title);
     setEditDetails(subtask.long_description ?? "");
+    setEditDeadline(toDateInputValue(subtask.deadline));
     setSubtaskError(null);
   };
 
@@ -88,6 +96,7 @@ export default function TaskShow({ task }: Props) {
     setEditingSubtaskId(null);
     setEditTitle("");
     setEditDetails("");
+    setEditDeadline("");
   };
 
   const handleSaveSubtask = async (subtask: Task) => {
@@ -106,6 +115,7 @@ export default function TaskShow({ task }: Props) {
           body: {
             title,
             long_description: editDetails.trim(),
+            deadline: editDeadline || null,
           },
         },
       );
@@ -175,7 +185,10 @@ export default function TaskShow({ task }: Props) {
         <article className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <StatusBadge status={status} />
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge status={status} />
+                <DeadlineBadge deadline={currentTask.deadline} state={deadlineState} />
+              </div>
               <h1 className="mt-3 font-display text-3xl font-semibold">{currentTask.title}</h1>
             </div>
           </div>
@@ -241,6 +254,18 @@ export default function TaskShow({ task }: Props) {
               placeholder="Details, context, or notes..."
               disabled={creating}
             />
+            <div className="grid gap-1.5 sm:w-fit">
+              <Label htmlFor="new-subtask-deadline" className="text-xs text-muted-foreground">Deadline (optional)</Label>
+              <Input
+                id="new-subtask-deadline"
+                type="date"
+                aria-label="New subtask deadline"
+                value={newDeadline}
+                onChange={(event) => setNewDeadline(event.target.value)}
+                disabled={creating}
+                className="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:filter"
+              />
+            </div>
           </form>
 
           <div className="mt-6 grid gap-3">
@@ -253,9 +278,17 @@ export default function TaskShow({ task }: Props) {
                 const subtaskStatus = getTaskStatus(subtask);
                 const editing = editingSubtaskId === subtask.id;
                 const working = workingSubtaskIds.includes(subtask.id);
+                const subtaskDeadlineState = getDeadlineState(subtask);
+
+                const cardStateClass =
+                  subtaskDeadlineState === "overdue"
+                    ? "border-destructive/60 bg-destructive/5"
+                    : subtaskDeadlineState === "due-soon"
+                      ? "border-warning/60 bg-warning/5"
+                      : "border-border bg-background/35";
 
                 return (
-                  <div key={subtask.id} className="rounded-xl border border-border bg-background/35 p-4">
+                  <div key={subtask.id} className={`rounded-xl border p-4 transition-colors duration-300 ${cardStateClass}`}>
                     {editing ? (
                       <div className="grid gap-3">
                         <Input
@@ -271,6 +304,18 @@ export default function TaskShow({ task }: Props) {
                           onChange={(event) => setEditDetails(event.target.value)}
                           disabled={working}
                         />
+                        <div className="grid gap-1.5 sm:w-fit">
+                          <Label htmlFor={`edit-subtask-deadline-${subtask.id}`} className="text-xs text-muted-foreground">Deadline (optional)</Label>
+                          <Input
+                            id={`edit-subtask-deadline-${subtask.id}`}
+                            type="date"
+                            aria-label="Subtask deadline"
+                            value={editDeadline}
+                            onChange={(event) => setEditDeadline(event.target.value)}
+                            disabled={working}
+                            className="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:filter"
+                          />
+                        </div>
                         <div className="flex justify-end gap-2">
                           <Button type="button" variant="ghost" onClick={cancelEditing} disabled={working}>
                             <X className="mr-2 h-4 w-4" /> Cancel
@@ -302,6 +347,24 @@ export default function TaskShow({ task }: Props) {
                           {subtask.long_description && (
                             <p className="mt-1 whitespace-pre-line text-sm leading-6 text-muted-foreground">
                               {subtask.long_description}
+                            </p>
+                          )}
+                          {subtask.deadline && (
+                            <p
+                              className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${
+                                subtaskDeadlineState === "overdue"
+                                  ? "text-destructive"
+                                  : subtaskDeadlineState === "due-soon"
+                                    ? "text-warning"
+                                    : "text-muted-foreground"
+                              }`}
+                            >
+                              {subtaskDeadlineState === "overdue" ? (
+                                <AlertTriangle className="h-3 w-3" />
+                              ) : (
+                                <CalendarClock className="h-3 w-3" />
+                              )}
+                              {formatDeadlineDate(subtask.deadline)}
                             </p>
                           )}
                         </div>
@@ -346,6 +409,24 @@ function StatusBadge({ status }: { status: TaskStatus }) {
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs ${className}`}>
       {status === "done" ? <Check className="h-3 w-3" /> : null}
       {label}
+    </span>
+  );
+}
+
+function DeadlineBadge({ deadline, state }: { deadline?: string | null; state: DeadlineState }) {
+  if (!deadline) return null;
+
+  const className = state === "overdue"
+    ? "bg-destructive/15 text-destructive animate-pulse-glow-danger"
+    : state === "due-soon"
+      ? "bg-warning/15 text-warning animate-pulse-glow-warning"
+      : "bg-muted text-muted-foreground";
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${className}`}>
+      {state === "overdue" ? <AlertTriangle className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
+      {state === "overdue" ? "Overdue " : "Due "}
+      {formatDeadlineDate(deadline)}
     </span>
   );
 }

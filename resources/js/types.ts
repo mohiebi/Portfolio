@@ -61,6 +61,7 @@ export type Task = {
   title: string;
   description?: string | null;
   long_description?: string | null;
+  deadline?: string | null;
   complete: boolean;
   status?: "open" | "in_progress" | "done";
   subtasks?: Task[];

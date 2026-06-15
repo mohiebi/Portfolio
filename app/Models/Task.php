@@ -16,10 +16,11 @@ class Task extends Model
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_DONE = 'done';
 
-    protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status'];
+    protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status', 'deadline'];
 
     protected $casts = [
         'complete' => 'boolean',
+        'deadline' => 'datetime',
     ];
 
     public function toggleComplete(): void

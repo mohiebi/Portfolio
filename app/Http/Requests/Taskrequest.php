@@ -27,6 +27,7 @@ class Taskrequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'long_description' => ['nullable', 'string'],
+            'deadline' => ['nullable', 'date'],
             'complete' => ['sometimes', 'boolean'],
             'status' => ['sometimes', Rule::in([
                 Task::STATUS_OPEN,

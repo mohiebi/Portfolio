@@ -145,4 +145,32 @@
 
   .glow-primary { box-shadow: var(--shadow-glow); }
   .shadow-card { box-shadow: var(--shadow-card); }
+
+  .animate-pulse-glow-warning { animation: pulse-glow-warning 2.6s ease-in-out infinite; }
+  .animate-pulse-glow-danger { animation: pulse-glow-danger 2.2s ease-in-out infinite; }
+}
+
+@keyframes pulse-glow-warning {
+  0%, 100% {
+    box-shadow: 0 0 0 1px oklch(0.82 0.14 85 / 0.2), 0 16px 38px -28px oklch(0.82 0.14 85 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 1px oklch(0.82 0.14 85 / 0.55), 0 16px 38px -18px oklch(0.82 0.14 85 / 0.75);
+  }
+}
+
+@keyframes pulse-glow-danger {
+  0%, 100% {
+    box-shadow: 0 0 0 1px oklch(0.62 0.21 25 / 0.25), 0 16px 38px -28px oklch(0.62 0.21 25 / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 1px oklch(0.62 0.21 25 / 0.6), 0 16px 38px -16px oklch(0.62 0.21 25 / 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-glow-warning,
+  .animate-pulse-glow-danger {
+    animation: none;
+  }
 }
