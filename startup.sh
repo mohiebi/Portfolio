@@ -19,3 +19,7 @@ if [ -d "${PUBLIC_ROOT}" ]; then
     service nginx reload || true
   fi
 fi
+
+if [ -x /opt/startup/startup.sh ]; then
+  exec /opt/startup/startup.sh
+fi
