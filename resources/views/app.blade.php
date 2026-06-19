@@ -26,6 +26,7 @@
     <meta name="twitter:image" content="{{ asset('img/og-preview.webp') }}">
     <meta name="twitter:image:alt" content="Mohi — Backend Systems, AI & Web3 Engineer">
     @routes
+    {{-- Required for the Inertia app shell to load the compiled React assets. --}}
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.tsx'])
     @inertiaHead
