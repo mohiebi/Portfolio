@@ -9,7 +9,7 @@ export function SiteFooter() {
         <div className="col-span-2 lg:col-span-2">
           <div className="font-display text-lg font-semibold">Mohi</div>
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground lg:mx-0">
-            Web developer crafting Laravel and NestJS backends with Vue frontends. Available for freelance and full-time work.
+            Back-end / full-stack engineer specializing in Laravel, Symfony, and NestJS — with AI integration and Web3 experience. Available for freelance and full-time work.
           </p>
           <a
             href="/CV/mohi-cv.pdf"

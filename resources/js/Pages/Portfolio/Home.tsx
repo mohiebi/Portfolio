@@ -340,9 +340,9 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
     <SiteShell>
       <Head title="Mohi - Back-End / Full-Stack Engineer">
         {[
-          <meta key="description" name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and SaaS platforms." />,
+          <meta key="description" name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms." />,
           <meta key="og:title" property="og:title" content="Mohi - Back-End / Full-Stack Engineer" />,
-          <meta key="og:description" property="og:description" content="PHP, Node.js, Symfony, Laravel, NestJS, Vue.js, APIs, Web3 wallet integrations, and scalable backend services." />,
+          <meta key="og:description" property="og:description" content="PHP, Node.js, Symfony, Laravel, NestJS, Vue.js, APIs, Web3 wallet integrations, AI-gated backend services, and scalable production systems." />,
         ]}
       </Head>
       {/* HERO */}
@@ -390,7 +390,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
 
             <motion.p variants={fadeUp} className="mt-5 max-w-xl text-lg text-muted-foreground">
               Hi, I'm <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> - a back-end / full-stack engineer with
-              3+ years delivering production systems across fintech, blockchain, and SaaS platforms.
+              3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms.
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
@@ -589,9 +589,9 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             </p>
             <p className="mt-3 text-muted-foreground">
               That's how I approach every engagement — diagnose the real bottleneck, build the system that removes it, ship it clean.
-              With <span className="text-foreground">3+ years</span> across fintech, blockchain, and SaaS, I've delivered
+              With <span className="text-foreground">3+ years</span> across fintech, blockchain, and AI-integrated platforms, I've delivered
               <span className="text-foreground"> 1,500+ commits/year</span> on production systems using
-              <span className="text-foreground"> Laravel, Symfony, NestJS</span> and <span className="text-foreground">Vue.js</span> — and built Web3 pipelines processing 1,000+ daily transactions.
+              <span className="text-foreground"> Laravel, Symfony, NestJS</span> and <span className="text-foreground">Vue.js</span> — built Web3 pipelines processing 1,000+ daily transactions, and shipped AI-gated backend services including a custom non-custodial crypto payment system.
             </p>
             <p className="hidden">
               Highly motivated developer with 3+ years of professional experience, specialized in
@@ -646,15 +646,15 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                 </div>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">Full-Stack Developer</span> / ABC Hosting Ltd.
-                  <span className="block text-xs text-muted-foreground">Nov 2025 - Present / Belize City, Belize</span>
+                  <span className="block text-xs text-muted-foreground">Dec 2025 – Present / Belize City, Belize</span>
                 </p>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">Full-Stack Developer</span> / Mintme.com
-                  <span className="block text-xs text-muted-foreground">Jun 2024 - Dec 2025 / Belize City, Belize</span>
+                  <span className="block text-xs text-muted-foreground">Jun 2024 – Nov 2025 / Belize City, Belize</span>
                 </p>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">AI Integration Developer</span> / ProAce CRM Project
-                  <span className="block text-xs text-muted-foreground">Jun 2025 - Mar 2026 / Canada, Remote</span>
+                  <span className="block text-xs text-muted-foreground">Jun 2025 – Dec 2025 / Canada, Remote</span>
                 </p>
                 <p className="mt-2 text-sm">
                   <span className="text-foreground font-medium">Web Developer</span> / Health Tourism Development Center (HTDC)
