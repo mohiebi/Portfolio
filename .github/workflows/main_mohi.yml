@@ -53,19 +53,29 @@ jobs:
 
       - name: Prepare Laravel deployment package
         run: |
-          mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+          rm -rf deployment release.zip
+          mkdir -p storage/app/public storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache deployment
           chmod +x startup.sh
-          zip -r release.zip . \
-            -x ".git/*" \
-            -x ".github/*" \
-            -x ".env" \
-            -x "auth.json" \
-            -x "node_modules/*" \
-            -x "release.zip" \
-            -x "tests/*" \
-            -x "storage/logs/*" \
-            -x "storage/framework/views/*.php" \
-            -x "storage/framework/cache/data/*"
+          rsync -a ./ deployment/ \
+            --exclude=".git" \
+            --exclude=".github" \
+            --exclude=".env" \
+            --exclude="auth.json" \
+            --exclude="deployment" \
+            --exclude="node_modules" \
+            --exclude="release.zip" \
+            --exclude="tests" \
+            --exclude="storage/logs/*" \
+            --exclude="storage/framework/views/*.php" \
+            --exclude="storage/framework/cache/data/*"
+          rsync -a public/ deployment/
+          cp public/index.php deployment/index.php
+          sed -i "s#__DIR__.'/../storage#__DIR__.'/storage#g" deployment/index.php
+          sed -i "s#__DIR__.'/../vendor#__DIR__.'/vendor#g" deployment/index.php
+          sed -i "s#__DIR__.'/../bootstrap#__DIR__.'/bootstrap#g" deployment/index.php
+          printf '%s\n' '<!doctype html><meta http-equiv="refresh" content="0; url=/index.php"><script>location.replace("/index.php" + location.search + location.hash)</script>' > deployment/hostingstart.html
+          cd deployment
+          zip -r ../release.zip .
 
       - name: Deploy to Azure Web App
         id: deploy
