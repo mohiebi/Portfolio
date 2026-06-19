@@ -18,3 +18,5 @@ if [ -d "${PUBLIC_ROOT}" ]; then
     service nginx reload || true
   fi
 fi
+
+exec /bin/init_container.sh
