@@ -7,6 +7,8 @@ NGINX_CONFIG="${APP_ROOT}/default"
 
 if [ -f "${APP_ROOT}/artisan" ]; then
   cd "${APP_ROOT}"
+  rm -f public/hot
+  php artisan optimize:clear --no-interaction
   php artisan migrate --force --no-interaction
   php artisan app:seed-once --no-interaction
 fi
