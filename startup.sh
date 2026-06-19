@@ -20,6 +20,5 @@ if [ -d "${PUBLIC_ROOT}" ]; then
   fi
 fi
 
-if [ -x /opt/startup/startup.sh ]; then
-  exec /opt/startup/startup.sh
-fi
+service php8.4-fpm start || service php-fpm start || php-fpm -D || true
+exec nginx -g "daemon off;"
