@@ -4,6 +4,7 @@ set -e
 APP_ROOT="/home/site/wwwroot"
 PUBLIC_ROOT="${APP_ROOT}/public"
 NGINX_CONFIG="${APP_ROOT}/default"
+NGINX_CONF_D="/etc/nginx/conf.d/default.conf"
 
 if [ -f "${APP_ROOT}/artisan" ]; then
   cd "${APP_ROOT}"
@@ -13,10 +14,10 @@ if [ -f "${APP_ROOT}/artisan" ]; then
 fi
 
 if [ -d "${PUBLIC_ROOT}" ]; then
-  if [ -f "${NGINX_CONFIG}" ] && [ -f /etc/nginx/sites-available/default ]; then
-    cp "${NGINX_CONFIG}" /etc/nginx/sites-available/default
-    service nginx reload || true
+  if [ -f "${NGINX_CONFIG}" ] && [ -f "${NGINX_CONF_D}" ]; then
+    cp "${NGINX_CONFIG}" "${NGINX_CONF_D}"
   fi
 fi
 
-exec /bin/init_container.sh
+php-fpm -D
+exec nginx -g "daemon off;"
