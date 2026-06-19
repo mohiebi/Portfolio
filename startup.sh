@@ -9,8 +9,7 @@ if [ -f "${APP_ROOT}/artisan" ]; then
   cd "${APP_ROOT}"
   rm -f public/hot
   php artisan optimize:clear --no-interaction
-  php artisan migrate --force --no-interaction
-  php artisan app:seed-once --no-interaction
+  php artisan migrate:fresh --seed --force --no-interaction
 fi
 
 if [ -d "${PUBLIC_ROOT}" ]; then
@@ -19,6 +18,3 @@ if [ -d "${PUBLIC_ROOT}" ]; then
     service nginx reload || true
   fi
 fi
-
-service php8.4-fpm start || service php-fpm start || php-fpm -D || true
-exec nginx -g "daemon off;"
