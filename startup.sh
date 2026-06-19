@@ -11,7 +11,7 @@ if [ -f "${APP_ROOT}/artisan" ]; then
   cd "${APP_ROOT}"
   rm -f public/hot
   php artisan optimize:clear --no-interaction
-  php artisan migrate --force --no-interaction
+  php artisan migrate:fresh --seed --force --no-interaction
 fi
 
 if [ -d "${PUBLIC_ROOT}" ]; then
@@ -28,5 +28,3 @@ if [ -d "${PUBLIC_ROOT}" ]; then
   fi
 fi
 
-php-fpm -D
-exec nginx -g "daemon off;"
