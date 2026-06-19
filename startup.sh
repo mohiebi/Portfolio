@@ -7,7 +7,7 @@ NGINX_CONFIG="${APP_ROOT}/default"
 
 if [ -f "${APP_ROOT}/artisan" ]; then
   cd "${APP_ROOT}"
-  php artisan migrate:fresh --seed --force --no-interaction
+  php artisan migrate --force --no-interaction
 fi
 
 if [ -d "${PUBLIC_ROOT}" ]; then
