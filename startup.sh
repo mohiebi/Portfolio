@@ -27,3 +27,6 @@ if [ -d "${PUBLIC_ROOT}" ]; then
     service nginx reload || true
   fi
 fi
+
+php-fpm -D
+exec nginx -g "daemon off;"
