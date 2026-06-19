@@ -3,15 +3,11 @@ set -e
 
 APP_ROOT="/home/site/wwwroot"
 PUBLIC_ROOT="${APP_ROOT}/public"
+NGINX_CONFIG="${APP_ROOT}/default"
 
 if [ -d "${PUBLIC_ROOT}" ]; then
-  if [ -f /etc/nginx/sites-available/default ]; then
-    sed -i "s#${APP_ROOT}#${PUBLIC_ROOT}#g" /etc/nginx/sites-available/default
+  if [ -f "${NGINX_CONFIG}" ] && [ -f /etc/nginx/sites-available/default ]; then
+    cp "${NGINX_CONFIG}" /etc/nginx/sites-available/default
     service nginx reload || true
-  fi
-
-  if [ -f /etc/apache2/sites-available/000-default.conf ]; then
-    sed -i "s#DocumentRoot .*#DocumentRoot ${PUBLIC_ROOT}#g" /etc/apache2/sites-available/000-default.conf
-    service apache2 reload || true
   fi
 fi
