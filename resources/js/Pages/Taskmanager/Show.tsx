@@ -175,41 +175,41 @@ export default function TaskShow({ task }: Props) {
   return (
     <SiteShell>
       <Head title={currentTask.title} />
-      <section className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-3xl px-3 py-6 sm:px-6 sm:py-10 lg:px-8">
         <Link href="/taskmanager" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to tasks
         </Link>
         <div className="mt-6">
           <StatusMessage />
         </div>
-        <article className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <article className="mt-5 rounded-2xl border border-border bg-card p-4 sm:mt-6 sm:p-8">
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={status} />
                 <DeadlineBadge deadline={currentTask.deadline} state={deadlineState} />
               </div>
-              <h1 className="mt-3 font-display text-3xl font-semibold">{currentTask.title}</h1>
+              <h1 className="mt-3 break-words font-display text-2xl font-semibold sm:text-3xl">{currentTask.title}</h1>
             </div>
           </div>
 
           {currentTask.long_description && (
-            <div className="mt-6 whitespace-pre-line rounded-xl border border-border bg-background/40 p-5 text-sm leading-relaxed text-foreground/90">
+            <div className="mt-5 whitespace-pre-line break-words rounded-xl border border-border bg-background/40 p-4 text-sm leading-relaxed text-foreground/90 sm:mt-6 sm:p-5">
               {currentTask.long_description}
             </div>
           )}
 
-          <div className="mt-8 flex flex-wrap gap-2">
-            <Button asChild variant="outline">
-              <Link href={`/taskmanager/${currentTask.id}/edit`}><Pencil className="mr-2 h-4 w-4" /> Edit</Link>
+          <div className="mt-6 grid grid-cols-2 gap-2 sm:mt-8 sm:flex sm:flex-wrap">
+            <Button asChild variant="outline" className="w-full sm:w-auto">
+              <Link href={`/taskmanager/${currentTask.id}/edit`}><Pencil className="h-4 w-4" /> Edit</Link>
             </Button>
-            <Button variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => form.delete(`/taskmanager/${currentTask.id}`)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Delete
+            <Button variant="ghost" className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto" onClick={() => form.delete(`/taskmanager/${currentTask.id}`)}>
+              <Trash2 className="h-4 w-4" /> Delete
             </Button>
           </div>
         </article>
 
-        <section className="mt-6 rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <section className="mt-5 rounded-2xl border border-border bg-card p-4 sm:mt-6 sm:p-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-display text-xl font-semibold">Subtasks</h2>
@@ -242,8 +242,8 @@ export default function TaskShow({ task }: Props) {
                 placeholder="Add a subtask"
                 disabled={creating}
               />
-              <Button type="submit" disabled={!newTitle.trim() || creating}>
-                <Plus className="mr-2 h-4 w-4" /> Add
+              <Button type="submit" className="w-full sm:w-auto" disabled={!newTitle.trim() || creating}>
+                <Plus className="h-4 w-4" /> Add
               </Button>
             </div>
             <Textarea
@@ -254,7 +254,7 @@ export default function TaskShow({ task }: Props) {
               placeholder="Details, context, or notes..."
               disabled={creating}
             />
-            <div className="grid gap-1.5 sm:w-fit">
+            <div className="grid gap-1.5 sm:w-52">
               <Label htmlFor="new-subtask-deadline" className="text-xs text-muted-foreground">Deadline (optional)</Label>
               <Input
                 id="new-subtask-deadline"
@@ -288,7 +288,7 @@ export default function TaskShow({ task }: Props) {
                       : "border-border bg-background/35";
 
                 return (
-                  <div key={subtask.id} className={`rounded-xl border p-4 transition-colors duration-300 ${cardStateClass}`}>
+                  <div key={subtask.id} className={`rounded-xl border p-3 transition-colors duration-300 sm:p-4 ${cardStateClass}`}>
                     {editing ? (
                       <div className="grid gap-3">
                         <Input
@@ -304,7 +304,7 @@ export default function TaskShow({ task }: Props) {
                           onChange={(event) => setEditDetails(event.target.value)}
                           disabled={working}
                         />
-                        <div className="grid gap-1.5 sm:w-fit">
+                        <div className="grid gap-1.5 sm:w-52">
                           <Label htmlFor={`edit-subtask-deadline-${subtask.id}`} className="text-xs text-muted-foreground">Deadline (optional)</Label>
                           <Input
                             id={`edit-subtask-deadline-${subtask.id}`}
@@ -316,61 +316,63 @@ export default function TaskShow({ task }: Props) {
                             className="[&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:filter"
                           />
                         </div>
-                        <div className="flex justify-end gap-2">
-                          <Button type="button" variant="ghost" onClick={cancelEditing} disabled={working}>
-                            <X className="mr-2 h-4 w-4" /> Cancel
+                        <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+                          <Button type="button" variant="ghost" className="w-full sm:w-auto" onClick={cancelEditing} disabled={working}>
+                            <X className="h-4 w-4" /> Cancel
                           </Button>
-                          <Button type="button" onClick={() => void handleSaveSubtask(subtask)} disabled={!editTitle.trim() || working}>
-                            <Save className="mr-2 h-4 w-4" /> Save
+                          <Button type="button" className="w-full sm:w-auto" onClick={() => void handleSaveSubtask(subtask)} disabled={!editTitle.trim() || working}>
+                            <Save className="h-4 w-4" /> Save
                           </Button>
                         </div>
                       </div>
                     ) : (
-                      <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
-                        <button
-                          type="button"
-                          disabled={working}
-                          onClick={() => void handleToggleSubtask(subtask)}
-                          className={`grid h-7 w-7 place-items-center rounded-full border transition-colors ${
-                            subtaskStatus === "done"
-                              ? "border-success bg-success text-success-foreground"
-                              : "border-border bg-background hover:border-primary hover:bg-primary/10"
-                          }`}
-                          aria-label={subtaskStatus === "done" ? "Mark subtask open" : "Mark subtask done"}
-                        >
-                          {subtaskStatus === "done" ? <Check className="h-4 w-4" /> : <Circle className="h-4 w-4 opacity-0" />}
-                        </button>
-                        <div className="min-w-0">
-                          <p className={`font-semibold leading-5 ${subtaskStatus === "done" ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                            {subtask.title}
-                          </p>
-                          {subtask.long_description && (
-                            <p className="mt-1 whitespace-pre-line text-sm leading-6 text-muted-foreground">
-                              {subtask.long_description}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 flex-1 items-start gap-3">
+                          <button
+                            type="button"
+                            disabled={working}
+                            onClick={() => void handleToggleSubtask(subtask)}
+                            className={`grid h-7 w-7 shrink-0 place-items-center rounded-full border transition-colors ${
+                              subtaskStatus === "done"
+                                ? "border-success bg-success text-success-foreground"
+                                : "border-border bg-background hover:border-primary hover:bg-primary/10"
+                            }`}
+                            aria-label={subtaskStatus === "done" ? "Mark subtask open" : "Mark subtask done"}
+                          >
+                            {subtaskStatus === "done" ? <Check className="h-4 w-4" /> : <Circle className="h-4 w-4 opacity-0" />}
+                          </button>
+                          <div className="min-w-0 flex-1">
+                            <p className={`break-words font-semibold leading-5 ${subtaskStatus === "done" ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                              {subtask.title}
                             </p>
-                          )}
-                          {subtask.deadline && (
-                            <p
-                              className={`mt-2 flex items-center gap-1.5 text-xs font-medium ${
-                                subtaskDeadlineState === "overdue"
-                                  ? "text-destructive"
-                                  : subtaskDeadlineState === "due-soon"
-                                    ? "text-warning"
-                                    : "text-muted-foreground"
-                              }`}
-                            >
-                              {subtaskDeadlineState === "overdue" ? (
-                                <AlertTriangle className="h-3 w-3" />
-                              ) : (
-                                <CalendarClock className="h-3 w-3" />
-                              )}
-                              {formatDeadlineDate(subtask.deadline)}
-                            </p>
-                          )}
+                            {subtask.long_description && (
+                              <p className="mt-1 whitespace-pre-line break-words text-sm leading-6 text-muted-foreground">
+                                {subtask.long_description}
+                              </p>
+                            )}
+                            {subtask.deadline && (
+                              <p
+                                className={`mt-2 flex min-w-0 items-center gap-1.5 text-xs font-medium ${
+                                  subtaskDeadlineState === "overdue"
+                                    ? "text-destructive"
+                                    : subtaskDeadlineState === "due-soon"
+                                      ? "text-warning"
+                                      : "text-muted-foreground"
+                                }`}
+                              >
+                                {subtaskDeadlineState === "overdue" ? (
+                                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                                ) : (
+                                  <CalendarClock className="h-3 w-3 shrink-0" />
+                                )}
+                                <span className="truncate">{formatDeadlineDate(subtask.deadline)}</span>
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex shrink-0 items-center justify-end gap-1">
                           <Button type="button" variant="ghost" size="sm" onClick={() => startEditing(subtask)} disabled={working}>
-                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                            <Pencil className="h-4 w-4" /> Edit
                           </Button>
                           <Button
                             type="button"
