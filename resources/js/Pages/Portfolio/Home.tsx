@@ -1150,16 +1150,20 @@ function ProjectsSection() {
                   ))}
                 </div>
 
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <Button asChild>
-                    <ProjectPrimaryLink project={p}>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                  <ProjectPrimaryLink
+                    project={p}
+                    className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:w-auto"
+                  >
                       View Project
                       {p.external ? <ExternalLink className="ml-2 h-4 w-4" /> : <ArrowRight className="ml-2 h-4 w-4" />}
-                    </ProjectPrimaryLink>
-                  </Button>
-                  <Button asChild variant="ghost">
-                    <a href="#contact">Discuss this project</a>
-                  </Button>
+                  </ProjectPrimaryLink>
+                  <a
+                    href="#contact"
+                    className="inline-flex min-h-[44px] w-full items-center justify-center rounded-xl border border-border bg-background/55 px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 sm:w-auto"
+                  >
+                    Discuss this project
+                  </a>
                 </div>
               </div>
             </motion.article>
@@ -1217,16 +1221,16 @@ function ProjectPreviewMockup({ project }: { project: PortfolioProject }) {
   );
 }
 
-function ProjectPrimaryLink({ project, children }: { project: PortfolioProject; children: ReactNode }) {
+function ProjectPrimaryLink({ project, children, className }: { project: PortfolioProject; children: ReactNode; className: string }) {
   if (project.external) {
     return (
-      <a href={project.href} target="_blank" rel="noreferrer">
+      <a href={project.href} target="_blank" rel="noreferrer" className={className}>
         {children}
       </a>
     );
   }
 
-  return <Link href={project.href}>{children}</Link>;
+  return <Link href={project.href} className={className}>{children}</Link>;
 }
 
 function ArticlesSection({ articles }: { articles: Article[] }) {

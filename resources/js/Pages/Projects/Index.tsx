@@ -543,37 +543,37 @@ function RoutineCoachShowcase() {
 
 function DesignShowcase() {
   return (
-    <div className="absolute inset-0 p-4 sm:p-7">
+    <div className="absolute inset-0 p-3 sm:p-5">
       <div className="relative h-full overflow-hidden rounded-[1.6rem] border border-[#ff8a76]/20 bg-[#17130f] shadow-2xl">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_32%_24%,rgba(255,128,111,0.16),transparent_28%),radial-gradient(circle_at_78%_62%,rgba(245,158,11,0.08),transparent_34%)]" />
         <div className="absolute -right-20 top-8 h-72 w-72 rounded-full border border-[#ff8a76]/10 bg-[radial-gradient(circle,rgba(255,128,111,0.16),transparent_64%)]" />
 
-        <div className="relative grid h-full gap-4 p-4 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="flex min-h-[390px] flex-col overflow-hidden rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85">
-            <div className="flex items-center justify-between border-b border-[#ff8a76]/15 px-5 py-4">
-              <span className="font-display text-lg text-[#ff7f6f]">Mahdieh<span className="text-[#f3ddd1]">Design</span></span>
-              <div className="hidden items-center gap-5 font-mono text-[9px] uppercase tracking-wider text-[#c4b2a8] sm:flex">
+        <div className="relative grid h-full min-h-0 gap-3 p-3 lg:grid-cols-[minmax(0,1.05fr)_minmax(230px,0.95fr)]">
+          <div className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85">
+            <div className="flex items-center justify-between gap-4 border-b border-[#ff8a76]/15 px-4 py-3">
+              <span className="shrink-0 whitespace-nowrap font-display text-base text-[#ff7f6f]">Mahdieh<span className="text-[#f3ddd1]">Design</span></span>
+              <div className="hidden min-w-0 items-center justify-end gap-4 overflow-hidden font-mono text-[8px] uppercase tracking-wider text-[#c4b2a8] xl:flex">
                 <span>Work</span>
                 <span>Services</span>
                 <span>Process</span>
                 <span>Contact</span>
               </div>
             </div>
-            <div className="relative flex flex-1 flex-col justify-center p-7">
+            <div className="relative flex min-h-0 flex-1 flex-col justify-center p-5">
               <div className="absolute right-0 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full border border-[#f3ddd1]/10 bg-[radial-gradient(circle,rgba(255,128,111,0.18),transparent_58%)]" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#b99b8d]">Brand and visual design</p>
-              <h4 className="relative mt-5 max-w-sm font-display text-5xl leading-[0.95] text-[#f3ddd1]">
+              <p className="relative truncate font-mono text-[9px] uppercase tracking-[0.22em] text-[#b99b8d]">Brand and visual design</p>
+              <h4 className="relative mt-4 max-w-sm font-display text-3xl leading-[0.98] text-[#f3ddd1] xl:text-4xl">
                 Strategy meets <span className="text-[#ff806f]">aesthetics</span>, in service of growth.
               </h4>
-              <p className="relative mt-5 max-w-xs text-sm leading-6 text-[#c8b9af]">
+              <p className="relative mt-4 max-w-xs text-xs leading-5 text-[#c8b9af]">
                 A public portfolio, case-study archive, bilingual brief flow, and authenticated content dashboard.
               </p>
-              <span className="relative mt-7 inline-flex w-fit items-center gap-2 rounded-lg border border-[#ff806f]/35 px-4 py-2 text-xs text-[#f3ddd1]">
+              <span className="relative mt-5 inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-lg border border-[#ff806f]/35 px-3 py-2 text-[11px] text-[#f3ddd1]">
                 View selected work
                 <ArrowRight className="h-3.5 w-3.5 text-[#ff806f]" />
               </span>
-              <div className="relative mt-auto flex items-center justify-between border-t border-[#ff806f]/15 pt-5 text-[10px] uppercase tracking-wider text-[#b99b8d]">
-                <span>Selected clients</span>
+              <div className="relative mt-auto grid grid-cols-4 items-center gap-3 border-t border-[#ff806f]/15 pt-4 text-[9px] uppercase tracking-wider text-[#b99b8d]">
+                <span className="truncate">Clients</span>
                 <span>AIKO</span>
                 <span>Arex.</span>
                 <span>AKT</span>
@@ -581,59 +581,59 @@ function DesignShowcase() {
             </div>
           </div>
 
-          <div className="grid min-h-[390px] gap-4">
-            <div className="rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85 p-5">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="font-display text-2xl text-[#f3ddd1]">Case studies</p>
-                  <p className="mt-1 text-xs text-[#9f8e84]">Selected work archive</p>
+          <div className="grid min-h-0 gap-3 lg:grid-rows-[minmax(0,1fr)_auto]">
+            <div className="min-w-0 rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85 p-4">
+              <div className="flex min-w-0 items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-display text-xl text-[#f3ddd1]">Case studies</p>
+                  <p className="mt-1 truncate text-[11px] text-[#9f8e84]">Selected work archive</p>
                 </div>
-                <span className="text-[10px] text-[#ff806f]">Popular</span>
+                <span className="shrink-0 text-[10px] text-[#ff806f]">Popular</span>
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {[
-                  ["Aiko Real Estate Group", "bg-emerald-300/12"],
-                  ["Arex Digital Facilitator", "bg-violet-300/12"],
-                  ["Sepid Premium Nuts", "bg-amber-300/14"],
-                  ["AKT Corporate Office", "bg-slate-300/10"],
+                  ["Aiko Real Estate", "bg-emerald-300/12"],
+                  ["Arex Digital", "bg-violet-300/12"],
+                  ["Sepid Nuts", "bg-amber-300/14"],
+                  ["AKT Office", "bg-slate-300/10"],
                 ].map(([item, bg]) => (
-                  <div key={item} className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-                    <div className={`h-16 rounded-lg ${bg}`} />
-                    <p className="mt-2 truncate text-xs text-[#f3ddd1]">{item}</p>
-                    <p className="mt-1 text-[10px] text-[#ff806f]">View case study</p>
+                  <div key={item} className="min-w-0 rounded-xl border border-white/10 bg-white/[0.035] p-2.5">
+                    <div className={`h-14 rounded-lg ${bg}`} />
+                    <p className="mt-2 truncate text-[11px] text-[#f3ddd1]">{item}</p>
+                    <p className="mt-1 truncate text-[9px] text-[#ff806f]">View case study</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85 p-5">
-                <div className="flex items-center justify-between">
-                  <p className="font-display text-xl text-[#f3ddd1]">Project brief</p>
-                  <span className="text-[10px] text-[#ff806f]">English</span>
+            <div className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+              <div className="min-w-0 rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85 p-4">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <p className="truncate font-display text-lg text-[#f3ddd1]">Project brief</p>
+                  <span className="shrink-0 text-[10px] text-[#ff806f]">EN</span>
                 </div>
-                <div className="mt-4 grid gap-2">
-                  {["About your brand", "Project goals", "Scope and deliverables"].map((item, index) => (
-                    <div key={item} className="rounded-lg border border-white/10 bg-black/15 p-3">
+                <div className="mt-3 grid gap-2">
+                  {["About brand", "Project goals", "Scope"].map((item, index) => (
+                    <div key={item} className="grid grid-cols-[1.5rem_minmax(0,1fr)] items-center gap-2 rounded-lg border border-white/10 bg-black/15 p-2.5">
                       <p className="font-mono text-[10px] text-[#ff806f]">0{index + 1}</p>
-                      <p className="mt-1 truncate text-xs text-[#f3ddd1]">{item}</p>
+                      <p className="truncate text-[11px] text-[#f3ddd1]">{item}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-[#1d1812]/85 p-5">
-                <p className="font-display text-xl text-[#f3ddd1]">Dashboard</p>
-                <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="min-w-0 rounded-2xl border border-white/10 bg-[#1d1812]/85 p-4">
+                <p className="truncate font-display text-lg text-[#f3ddd1]">Dashboard</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   {[
                     ["12", "Projects"],
-                    ["23", "Testimonials"],
+                    ["23", "Reviews"],
                     ["32", "Briefs"],
                     ["4", "Services"],
                   ].map(([value, label]) => (
-                    <div key={label} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                      <p className="font-display text-xl text-[#f3ddd1]">{value}</p>
-                      <p className="text-[10px] text-[#9f8e84]">{label}</p>
+                    <div key={label} className="min-w-0 rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
+                      <p className="font-display text-lg text-[#f3ddd1]">{value}</p>
+                      <p className="truncate text-[9px] text-[#9f8e84]">{label}</p>
                     </div>
                   ))}
                 </div>
