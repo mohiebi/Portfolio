@@ -256,15 +256,30 @@ export default function ServiceFormPage({ service }: Props) {
               </Field>
             </div>
 
-            <Field error={(form.errors as any).sample_projects} label="Sample projects">
-              <Textarea
-                id="sample_projects"
-                rows={6}
-                value={form.data.sample_projects_text}
-                onChange={(event) => form.setData("sample_projects_text", event.target.value)}
-                placeholder="Name | URL | Tag | Summary | Outcome | Preview | Accent | Order, one project per line"
-              />
-            </Field>
+            <div id="package-projects" className="scroll-mt-28 rounded-2xl border border-primary/25 bg-primary/5 p-4 sm:p-5">
+              <div className="mb-4">
+                <p className="font-mono text-xs uppercase tracking-wider text-primary">Package projects</p>
+                <h2 className="mt-1 font-display text-xl font-semibold">Projects attached to this package</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Add one project per line. These appear as sample projects on the public package page.
+                </p>
+                <div className="mt-4 rounded-xl border border-border bg-background/45 p-3">
+                  <p className="text-xs font-medium text-muted-foreground">Format</p>
+                  <code className="mt-1 block overflow-x-auto whitespace-nowrap font-mono text-xs text-primary">
+                    Name | URL | Tag | Summary | Outcome | Preview | Accent | Order
+                  </code>
+                </div>
+              </div>
+              <Field error={(form.errors as any).sample_projects} label="Sample projects">
+                <Textarea
+                  id="sample_projects"
+                  rows={9}
+                  value={form.data.sample_projects_text}
+                  onChange={(event) => form.setData("sample_projects_text", event.target.value)}
+                  placeholder="Name | URL | Tag | Summary | Outcome | Preview | Accent | Order, one project per line"
+                />
+              </Field>
+            </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
               <label className="flex h-10 items-center gap-3 rounded-md border border-border bg-background px-3 text-sm">

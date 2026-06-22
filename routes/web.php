@@ -24,6 +24,7 @@ use App\Http\Controllers\TaskmanagerController;
 use App\Models\Article;
 use App\Models\CaseStudy;
 use App\Models\Recommendation;
+use App\Models\Service;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -62,7 +63,27 @@ Route::get('/recommendations/all', function () {
 })->name('recommendations.public');
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $packageSlugs = [
+        'launch-sprint',
+        'operations-system-sprint',
+        'ai-operations-platform',
+    ];
+
+    return Inertia::render('Dashboard', [
+        'services' => Service::query()
+            ->select(['id', 'slug', 'name', 'badge', 'cover', 'is_published', 'sort_order'])
+            ->whereIn('slug', $packageSlugs)
+            ->withCount('sampleProjects')
+            ->get()
+            ->sortBy(fn (Service $service) => array_search($service->slug, $packageSlugs, true))
+            ->values()
+            ->whenEmpty(fn () => Service::query()
+                ->select(['id', 'slug', 'name', 'badge', 'cover', 'is_published', 'sort_order'])
+                ->ordered()
+                ->withCount('sampleProjects')
+                ->limit(3)
+                ->get()),
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

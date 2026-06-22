@@ -325,17 +325,13 @@ function UserGreeting({
 }) {
   const baseClassName = `${className} text-foreground`;
 
-  if (user.is_admin) {
-    return (
-      <Link
-        href="/dashboard"
-        className={`${baseClassName} rounded-md transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
-        onClick={onClick}
-      >
-        Hi {user.name}
-      </Link>
-    );
-  }
-
-  return <span className={baseClassName}>Hi {user.name}</span>;
+  return (
+    <Link
+      href={user.is_admin ? "/dashboard" : "/profile"}
+      className={`${baseClassName} rounded-md transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
+      onClick={onClick}
+    >
+      Hi {user.name}
+    </Link>
+  );
 }
