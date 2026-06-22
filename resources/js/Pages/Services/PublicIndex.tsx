@@ -588,17 +588,21 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
   const Icon = coverIcon[service.cover];
 
   return (
-    <motion.article
+    <motion.div
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: index * 0.07 }}
-      className={`group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl border bg-card/70 shadow-card backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.3)] focus-within:ring-2 focus-within:ring-primary/40 ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card/70 shadow-card backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.3)] ${
         service.badge ? "border-primary/50 ring-1 ring-primary/20" : "border-border hover:border-primary/40"
       }`}
     >
-      <div className={`relative overflow-hidden bg-gradient-to-br ${service.accent}`}>
+      <Link
+        href={`/services/${service.slug}`}
+        className={`group/image relative block overflow-hidden bg-gradient-to-br ${service.accent} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
+        aria-label={`View ${service.name}`}
+      >
         {service.badge && (
           <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
             <div className="flex items-center gap-1.5 rounded-b-2xl bg-primary px-5 py-2 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
@@ -617,10 +621,10 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
           loading="lazy"
           width={768}
           height={768}
-          className="relative w-full object-contain transition-transform duration-500 group-hover:scale-105"
+          className="relative w-full object-contain transition-transform duration-500 group-hover/image:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
-      </div>
+      </Link>
 
       {/* Icon straddling */}
       <div className="relative px-7">
@@ -631,7 +635,14 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
 
       <div className="flex flex-1 flex-col p-7 pt-8">
         <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{service.tagline}</p>
-        <h3 className="mt-1.5 font-display text-2xl font-semibold">{service.name}</h3>
+        <h3 className="mt-1.5 font-display text-2xl font-semibold">
+          <Link
+            href={`/services/${service.slug}`}
+            className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          >
+            {service.name}
+          </Link>
+        </h3>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{service.benefit}</p>
 
         {/* Price with agency anchor */}
@@ -674,19 +685,16 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
           </ul>
         </div>
 
-        <div className="mt-auto flex gap-2 pt-7">
-          <Button asChild variant="outline" className="flex-1 min-h-[44px] group/btn focus-visible:ring-2 focus-visible:ring-primary/50">
+        <div className="mt-auto pt-7">
+          <Button asChild className="min-h-[44px] w-full focus-visible:ring-2 focus-visible:ring-primary/50">
             <Link href={`/services/${service.slug}`}>
-              Details
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+            View package
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
-          </Button>
-          <Button asChild className="flex-1 min-h-[44px] focus-visible:ring-2 focus-visible:ring-primary/50">
-            <a href={CALENDLY_URL} target="_blank" rel="noreferrer">Get started</a>
           </Button>
         </div>
       </div>
-    </motion.article>
+    </motion.div>
   );
 }
 

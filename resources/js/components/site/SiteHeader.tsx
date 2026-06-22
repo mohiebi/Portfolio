@@ -218,7 +218,7 @@ export function SiteHeader() {
           <div className="hidden items-center gap-2 md:flex">
             {auth?.user ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-foreground">Hi {auth.user.name}</span>
+                <UserGreeting user={auth.user} className="text-sm" />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -260,7 +260,7 @@ export function SiteHeader() {
               <div className="mt-2">
                 {auth?.user ? (
                   <div className="flex flex-col gap-2">
-                    <span className="text-sm text-foreground px-3 py-2">Hi {auth.user.name}</span>
+                    <UserGreeting user={auth.user} className="px-3 py-2 text-sm" onClick={() => setOpen(false)} />
                     <Button
                       variant="outline"
                       size="sm"
@@ -312,4 +312,30 @@ function projectNavLabel(project: PortfolioProject) {
   if (project.name === "Mahdieh Design") return "Mahdieh";
 
   return project.name;
+}
+
+function UserGreeting({
+  user,
+  className = "",
+  onClick,
+}: {
+  user: { name: string; is_admin?: boolean };
+  className?: string;
+  onClick?: () => void;
+}) {
+  const baseClassName = `${className} text-foreground`;
+
+  if (user.is_admin) {
+    return (
+      <Link
+        href="/dashboard"
+        className={`${baseClassName} rounded-md transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring`}
+        onClick={onClick}
+      >
+        Hi {user.name}
+      </Link>
+    );
+  }
+
+  return <span className={baseClassName}>Hi {user.name}</span>;
 }

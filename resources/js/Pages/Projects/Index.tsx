@@ -93,11 +93,16 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.5, delay: index * 0.04 }}
-      className="group relative grid overflow-hidden rounded-3xl border border-border bg-card/75 shadow-card transition-colors hover:border-primary/60 lg:grid-cols-[0.92fr_1.08fr]"
+      className="group/card relative grid overflow-hidden rounded-3xl border border-border bg-card/75 shadow-card transition-colors hover:border-primary/60 lg:grid-cols-[0.92fr_1.08fr]"
     >
-      <div className={`relative min-h-[320px] overflow-hidden bg-gradient-to-br ${project.accent}`}>
-        <ProjectImage project={project} />
-      </div>
+      <ProjectCardLink
+        project={project}
+        className={`group/image relative block min-h-[320px] overflow-hidden bg-gradient-to-br ${project.accent} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset`}
+      >
+        <div className="absolute inset-0 transition-transform duration-500 group-hover/image:scale-[1.02]">
+          <ProjectImage project={project} />
+        </div>
+      </ProjectCardLink>
 
       <div className="flex min-h-full flex-col p-6 sm:p-8 lg:p-10">
         <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -144,16 +149,33 @@ function ProjectCard({ project, index }: { project: PortfolioProject; index: num
           </div>
         </div>
 
-        <div className="mt-auto flex flex-wrap items-center gap-3 pt-8">
-          <Button asChild>
-            <ProjectPrimaryLink project={project}>
-              View project
-              {project.external ? <ExternalLink className="ml-2 h-4 w-4" /> : <ArrowRight className="ml-2 h-4 w-4" />}
-            </ProjectPrimaryLink>
-          </Button>
+        <div className="mt-auto flex justify-center pt-8">
+          <ProjectCardLink
+            project={project}
+            className="inline-flex h-10 w-full max-w-full items-center justify-center gap-2 whitespace-nowrap rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-1/2"
+          >
+            View project
+            {project.external ? <ExternalLink className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+          </ProjectCardLink>
         </div>
       </div>
     </motion.article>
+  );
+}
+
+function ProjectCardLink({ project, children, className }: { project: PortfolioProject; children: ReactNode; className: string }) {
+  if (project.external) {
+    return (
+      <a href={project.href} target="_blank" rel="noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={project.href} className={className}>
+      {children}
+    </Link>
   );
 }
 
@@ -340,16 +362,4 @@ function ProjectVisualContent({ project }: { project: PortfolioProject }) {
       ))}
     </div>
   );
-}
-
-function ProjectPrimaryLink({ project, children }: { project: PortfolioProject; children: ReactNode }) {
-  if (project.external) {
-    return (
-      <a href={project.href} target="_blank" rel="noreferrer">
-        {children}
-      </a>
-    );
-  }
-
-  return <Link href={project.href}>{children}</Link>;
 }
