@@ -543,39 +543,101 @@ function RoutineCoachShowcase() {
 
 function DesignShowcase() {
   return (
-    <div className="absolute inset-0 p-5 sm:p-8">
-      <div className="grid h-full gap-4 lg:grid-cols-[1.05fr_0.95fr]">
-        <ChromeFrame title="mahdiehdesign.com">
-          <div className="relative min-h-[260px] bg-[#191510] p-6">
-            <div className="absolute right-8 top-8 h-44 w-44 rounded-full border border-[#ff806f]/30 bg-[radial-gradient(circle,rgba(255,128,111,0.24),transparent_62%)]" />
-            <p className="font-mono text-[10px] uppercase tracking-wider text-[#ff9a88]">Brand and visual design</p>
-            <p className="mt-8 max-w-xs font-display text-4xl leading-tight text-[#f3ddd1]">
-              Strategy meets <span className="text-[#ff806f]">aesthetics</span>.
-            </p>
-            <span className="mt-8 inline-flex rounded-lg border border-[#ff806f]/30 px-4 py-2 text-xs text-[#f3ddd1]">View selected work</span>
-          </div>
-        </ChromeFrame>
-        <div className="grid gap-4">
-          <div className="rounded-2xl border border-[#ff806f]/25 bg-[#191510]/85 p-5">
-            <p className="font-display text-2xl text-[#f3ddd1]">Case studies</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {["Aiko Real Estate", "Arex Facilitator", "Sepid Nuts", "AKT Office"].map((item, index) => (
-                <div key={item} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                  <div className={`h-16 rounded-lg ${index % 2 === 0 ? "bg-emerald-300/10" : "bg-violet-300/10"}`} />
-                  <p className="mt-2 truncate text-xs text-[#f3ddd1]">{item}</p>
-                </div>
-              ))}
+    <div className="absolute inset-0 p-4 sm:p-7">
+      <div className="relative h-full overflow-hidden rounded-[1.6rem] border border-[#ff8a76]/20 bg-[#17130f] shadow-2xl">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_32%_24%,rgba(255,128,111,0.16),transparent_28%),radial-gradient(circle_at_78%_62%,rgba(245,158,11,0.08),transparent_34%)]" />
+        <div className="absolute -right-20 top-8 h-72 w-72 rounded-full border border-[#ff8a76]/10 bg-[radial-gradient(circle,rgba(255,128,111,0.16),transparent_64%)]" />
+
+        <div className="relative grid h-full gap-4 p-4 lg:grid-cols-[1.08fr_0.92fr]">
+          <div className="flex min-h-[390px] flex-col overflow-hidden rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85">
+            <div className="flex items-center justify-between border-b border-[#ff8a76]/15 px-5 py-4">
+              <span className="font-display text-lg text-[#ff7f6f]">Mahdieh<span className="text-[#f3ddd1]">Design</span></span>
+              <div className="hidden items-center gap-5 font-mono text-[9px] uppercase tracking-wider text-[#c4b2a8] sm:flex">
+                <span>Work</span>
+                <span>Services</span>
+                <span>Process</span>
+                <span>Contact</span>
+              </div>
+            </div>
+            <div className="relative flex flex-1 flex-col justify-center p-7">
+              <div className="absolute right-0 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full border border-[#f3ddd1]/10 bg-[radial-gradient(circle,rgba(255,128,111,0.18),transparent_58%)]" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#b99b8d]">Brand and visual design</p>
+              <h4 className="relative mt-5 max-w-sm font-display text-5xl leading-[0.95] text-[#f3ddd1]">
+                Strategy meets <span className="text-[#ff806f]">aesthetics</span>, in service of growth.
+              </h4>
+              <p className="relative mt-5 max-w-xs text-sm leading-6 text-[#c8b9af]">
+                A public portfolio, case-study archive, bilingual brief flow, and authenticated content dashboard.
+              </p>
+              <span className="relative mt-7 inline-flex w-fit items-center gap-2 rounded-lg border border-[#ff806f]/35 px-4 py-2 text-xs text-[#f3ddd1]">
+                View selected work
+                <ArrowRight className="h-3.5 w-3.5 text-[#ff806f]" />
+              </span>
+              <div className="relative mt-auto flex items-center justify-between border-t border-[#ff806f]/15 pt-5 text-[10px] uppercase tracking-wider text-[#b99b8d]">
+                <span>Selected clients</span>
+                <span>AIKO</span>
+                <span>Arex.</span>
+                <span>AKT</span>
+              </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-[#191510]/85 p-5">
-            <p className="font-display text-xl text-[#f3ddd1]">Dashboard</p>
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {["12", "23", "32", "4"].map((value) => (
-                <div key={value} className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-center">
-                  <p className="font-display text-xl text-[#f3ddd1]">{value}</p>
-                  <p className="text-[10px] text-muted-foreground">Published</p>
+
+          <div className="grid min-h-[390px] gap-4">
+            <div className="rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85 p-5">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="font-display text-2xl text-[#f3ddd1]">Case studies</p>
+                  <p className="mt-1 text-xs text-[#9f8e84]">Selected work archive</p>
                 </div>
-              ))}
+                <span className="text-[10px] text-[#ff806f]">Popular</span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                {[
+                  ["Aiko Real Estate Group", "bg-emerald-300/12"],
+                  ["Arex Digital Facilitator", "bg-violet-300/12"],
+                  ["Sepid Premium Nuts", "bg-amber-300/14"],
+                  ["AKT Corporate Office", "bg-slate-300/10"],
+                ].map(([item, bg]) => (
+                  <div key={item} className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                    <div className={`h-16 rounded-lg ${bg}`} />
+                    <p className="mt-2 truncate text-xs text-[#f3ddd1]">{item}</p>
+                    <p className="mt-1 text-[10px] text-[#ff806f]">View case study</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-[#ff8a76]/20 bg-[#1d1812]/85 p-5">
+                <div className="flex items-center justify-between">
+                  <p className="font-display text-xl text-[#f3ddd1]">Project brief</p>
+                  <span className="text-[10px] text-[#ff806f]">English</span>
+                </div>
+                <div className="mt-4 grid gap-2">
+                  {["About your brand", "Project goals", "Scope and deliverables"].map((item, index) => (
+                    <div key={item} className="rounded-lg border border-white/10 bg-black/15 p-3">
+                      <p className="font-mono text-[10px] text-[#ff806f]">0{index + 1}</p>
+                      <p className="mt-1 truncate text-xs text-[#f3ddd1]">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-[#1d1812]/85 p-5">
+                <p className="font-display text-xl text-[#f3ddd1]">Dashboard</p>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {[
+                    ["12", "Projects"],
+                    ["23", "Testimonials"],
+                    ["32", "Briefs"],
+                    ["4", "Services"],
+                  ].map(([value, label]) => (
+                    <div key={label} className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                      <p className="font-display text-xl text-[#f3ddd1]">{value}</p>
+                      <p className="text-[10px] text-[#9f8e84]">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
