@@ -35,7 +35,7 @@ export default function ProjectsIndex() {
       <Head title="Projects">
         <meta
           name="description"
-          content="Portfolio projects by MohammadHosein Ebrahimi, including TaskManager, CashPilot, AI Routine Coach, Mahdieh Design, Job Board, BookReview, and Real Estate."
+          content="Portfolio projects by Mohi, including TaskManager, CashPilot, AI Routine Coach, Mahdieh Design, Job Board, BookReview, and Real Estate."
         />
       </Head>
 

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Mohi — Backend Systems, AI & Web3 Engineer | Laravel · Node.js</title>
     <meta name="description" content="I build backend systems, automate workflows and integrate AI — using Laravel, Node.js, Symfony, NestJS and Web3. Available for freelance and remote work.">
-    <meta name="author" content="MohammadHosein Ebrahimi">
+    <meta name="author" content="Mohi">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" type="image/svg+xml" href="/img/mohi-logo.svg">

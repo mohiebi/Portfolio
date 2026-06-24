@@ -1,4 +1,4 @@
-# MohammadHosein Ebrahimi Portfolio
+# Mohi Portfolio
 
 This repository contains my personal portfolio website and a set of interactive full-stack sample projects. It is built as a working product rather than a static resume: the site combines a polished portfolio homepage, database-backed content areas, business service pages, project showcases, authentication, and runnable Laravel/Inertia demo applications.
 
@@ -45,7 +45,7 @@ The portfolio presents my work as a backend-focused full-stack engineer across L
 
 ## Portfolio Website
 
-The homepage introduces MohammadHosein Ebrahimi as a backend-focused full-stack engineer and guides visitors through services, recommendations, featured builds, case studies, background, writing, and contact options.
+The homepage introduces Mohi as a backend-focused full-stack engineer and guides visitors through services, recommendations, featured builds, case studies, background, writing, and contact options.
 
 It includes:
 

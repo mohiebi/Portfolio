@@ -37,7 +37,7 @@ const german: Record<string, string> = {
   "Switch to English": "Zu Englisch wechseln",
   "Mohi home": "Mohi Startseite",
   "Mohi logo": "Mohi-Logo",
-  "MohammadHosein Ebrahimi portrait": "Porträt von MohammadHosein Ebrahimi",
+  "Mohi portrait": "Porträt von Mohi",
   "Modern AI-enabled business systems infrastructure": "Moderne Infrastruktur für KI-gestützte Geschäftssysteme",
   "Launch Sprint, Operations System and AI Operations Platform":
     "Launch-Sprint, Operations-System und KI-Operations-Plattform",

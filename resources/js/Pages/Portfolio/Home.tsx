@@ -396,12 +396,12 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             <motion.p variants={fadeUp} className="mt-5 max-w-xl text-lg text-muted-foreground">
               {locale === "de" ? (
                 <>
-                  Hallo, ich bin <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> — ein Back-End-/Full-Stack-Entwickler
+                  Hallo, ich bin <span className="text-foreground font-medium">Mohi</span> — ein Back-End-/Full-Stack-Entwickler
                   mit über 3 Jahren Erfahrung mit produktiven Systemen in Fintech, Blockchain und KI-integrierten Plattformen.
                 </>
               ) : (
                 <>
-                  Hi, I&apos;m <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> — a back-end / full-stack engineer with
+                  Hi, I&apos;m <span className="text-foreground font-medium">Mohi</span> — a back-end / full-stack engineer with
                   3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms.
                 </>
               )}
@@ -453,7 +453,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             >
               <img
                 src={portraitUrl}
-                alt="MohammadHosein Ebrahimi portrait"
+                alt="Mohi portrait"
                 className="aspect-[4/5] w-full object-cover"
               />
               <div className="absolute bottom-3 left-4 right-4 rounded-xl border border-border bg-background/80 px-4 py-3 backdrop-blur">
