@@ -2,8 +2,9 @@ import { Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import { ExternalLink, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { projects, type PortfolioProject } from "@/lib/projects";
+import { getProjects, type PortfolioProject } from "@/lib/projects";
 import logoUrl from "@/assets/mohi-logo.svg";
+import { useI18n, type Locale } from "@/i18n";
 
 type NavItem = { label: string; to?: string; href?: string; exact?: boolean; sectionId?: string };
 
@@ -34,6 +35,8 @@ function isProjectContext(pathname: string) {
 }
 
 export function SiteHeader() {
+  const { locale, setLocale } = useI18n();
+  const projects = getProjects(locale);
   const [open, setOpen] = useState(false);
   const page = usePage();
   const pathname = page.url.split("?")[0];
@@ -214,6 +217,8 @@ export function SiteHeader() {
           {nav.map((item) => renderItem(item))}
         </nav>
 
+        <div className="hidden items-center gap-3 md:flex">
+          <LanguageSwitcher locale={locale} onChange={setLocale} />
         {onProjectContext ? (
           <div className="hidden items-center gap-2 md:flex">
             {auth?.user ? (
@@ -240,8 +245,9 @@ export function SiteHeader() {
             )}
           </div>
         ) : (
-          <div className="hidden md:block w-[1px]" />
+          <div className="hidden md:block" />
         )}
+        </div>
 
         <button
           aria-label="Toggle menu"
@@ -255,6 +261,10 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-border bg-background md:hidden">
           <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between border-b border-border pb-3">
+              <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Language</span>
+              <LanguageSwitcher locale={locale} onChange={setLocale} />
+            </div>
             {nav.map((item) => renderItem(item, () => setOpen(false)))}
             {onProjectContext && (
               <div className="mt-2">
@@ -304,6 +314,39 @@ export function SiteHeader() {
         </div>
       )}
     </header>
+  );
+}
+
+function LanguageSwitcher({
+  locale,
+  onChange,
+}: {
+  locale: Locale;
+  onChange: (locale: Locale) => void;
+}) {
+  return (
+    <div
+      className="inline-flex items-center rounded-full border border-border bg-background/60 p-1"
+      role="group"
+      aria-label="Language"
+    >
+      {(["en", "de"] as Locale[]).map((item) => (
+        <button
+          key={item}
+          type="button"
+          onClick={() => onChange(item)}
+          aria-pressed={locale === item}
+          aria-label={item === "en" ? "Switch to English" : "Auf Deutsch wechseln"}
+          className={`rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+            locale === item
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {item}
+        </button>
+      ))}
+    </div>
   );
 }
 

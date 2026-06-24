@@ -4,6 +4,7 @@ import { ArrowRight, Briefcase, Calendar, Cpu, Globe, Layers, MapPin, Sparkles }
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { CaseStudy } from "@/types";
+import { localizedRecords, useI18n } from "@/i18n";
 
 type Props = {
   caseStudies: CaseStudy[];
@@ -17,6 +18,8 @@ const coverIcon = {
 } as const;
 
 export default function PublicCaseStudiesIndex({ caseStudies }: Props) {
+  const { locale } = useI18n();
+  caseStudies = localizedRecords(caseStudies, locale);
   return (
     <SiteShell>
       <Head title="Case Studies" />

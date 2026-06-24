@@ -21,6 +21,7 @@ class Article extends Model
         'reading_time',
         'is_published',
         'sort_order',
+        'translations',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class Article extends Model
         'reading_time' => 'integer',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'translations' => 'array',
     ];
 
     protected $appends = [

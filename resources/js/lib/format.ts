@@ -7,8 +7,12 @@ const RELATIVE_UNITS: Array<{ unit: Intl.RelativeTimeFormatUnit; seconds: number
   { unit: "minute", seconds: 60 },
 ];
 
-const relativeFormatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-const dateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+function activeLocale(): "de-DE" | "en-US" {
+  if (typeof window === "undefined") return "en-US";
+
+  const requested = new URL(window.location.href).searchParams.get("lang");
+  return requested === "de" || window.localStorage.getItem("mohi.locale") === "de" ? "de-DE" : "en-US";
+}
 
 /**
  * Formats a date as a relative string (e.g. "3 days ago") for recent dates,
@@ -22,9 +26,12 @@ export function formatRelativeDate(date: string | null | undefined): string {
 
   const diffSeconds = (target.getTime() - Date.now()) / 1000;
   const absSeconds = Math.abs(diffSeconds);
+  const locale = activeLocale();
+  const relativeFormatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const dateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
   if (absSeconds < 60) {
-    return "just now";
+    return locale === "de-DE" ? "gerade eben" : "just now";
   }
 
   for (const { unit, seconds } of RELATIVE_UNITS) {

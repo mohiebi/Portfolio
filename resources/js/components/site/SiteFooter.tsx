@@ -1,8 +1,11 @@
 import { Link } from "@inertiajs/react";
 import { Mail, Linkedin, FileDown, Github } from "lucide-react";
-import { featuredProjects, type PortfolioProject } from "@/lib/projects";
+import { getFeaturedProjects, type PortfolioProject } from "@/lib/projects";
+import { useI18n } from "@/i18n";
 
 export function SiteFooter() {
+  const { locale } = useI18n();
+  const featuredProjects = getFeaturedProjects(locale);
   return (
     <footer className="mt-24 border-t border-border bg-surface/40">
       <div className="mx-auto grid max-w-7xl grid-cols-2 justify-items-center gap-x-8 gap-y-10 px-4 py-12 text-center sm:px-6 lg:grid-cols-4 lg:justify-items-stretch lg:px-8 lg:text-left">
@@ -42,7 +45,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-2 px-4 py-5 text-center text-xs text-muted-foreground sm:px-6 lg:flex-row lg:justify-between lg:px-8 lg:text-left">
-          <p>&copy; {new Date().getFullYear()} Mohi. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Mohi. {locale === "de" ? "Alle Rechte vorbehalten." : "All rights reserved."}</p>
           <p className="font-mono">Laravel &middot; NestJS &middot; Vue &middot; Tailwind</p>
         </div>
       </div>

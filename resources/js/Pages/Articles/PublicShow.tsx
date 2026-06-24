@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { Article } from "@/types";
+import { localizedRecord, localeForIntl, useI18n, type Locale } from "@/i18n";
 
 type Props = {
   article: Article;
@@ -12,6 +13,9 @@ type Props = {
 };
 
 export default function PublicArticleShow({ article, nextArticle }: Props) {
+  const { locale } = useI18n();
+  article = localizedRecord(article, locale);
+  nextArticle = nextArticle ? localizedRecord(nextArticle, locale) : nextArticle;
   const [readingProgress, setReadingProgress] = useState(0);
 
   useEffect(() => {
@@ -82,7 +86,7 @@ export default function PublicArticleShow({ article, nextArticle }: Props) {
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 font-mono text-xs text-muted-foreground"
               >
-                <CalendarDays className="h-3 w-3 text-primary" /> {formatDate(article.published_at)}
+                <CalendarDays className="h-3 w-3 text-primary" /> {formatDate(article.published_at, locale)}
               </motion.span>
             )}
           </div>
@@ -195,7 +199,7 @@ export default function PublicArticleShow({ article, nextArticle }: Props) {
                 {article.published_at && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <CalendarDays className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    <span>{formatDate(article.published_at)}</span>
+                    <span>{formatDate(article.published_at, locale)}</span>
                   </div>
                 )}
               </div>
@@ -333,8 +337,8 @@ function parseBody(body: string): Block[] {
   return blocks;
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: Locale): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(date);
+  return new Intl.DateTimeFormat(localeForIntl(locale), { month: "short", day: "numeric", year: "numeric" }).format(date);
 }

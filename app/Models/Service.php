@@ -35,6 +35,7 @@ class Service extends Model
         'guarantees',
         'is_published',
         'sort_order',
+        'translations',
     ];
 
     protected $casts = [
@@ -46,6 +47,7 @@ class Service extends Model
         'guarantees' => 'array',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'translations' => 'array',
     ];
 
     public function scopePublished(Builder $query): Builder

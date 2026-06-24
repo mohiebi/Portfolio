@@ -23,11 +23,13 @@ import {
 import type { ComponentType, ReactNode } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
-import { projects, type PortfolioProject } from "@/lib/projects";
-
-const featuredCount = projects.filter((project) => project.featured).length;
+import { getProjects, type PortfolioProject } from "@/lib/projects";
+import { useI18n } from "@/i18n";
 
 export default function ProjectsIndex() {
+  const { locale } = useI18n();
+  const projects = getProjects(locale);
+  const featuredCount = projects.filter((project) => project.featured).length;
   return (
     <SiteShell>
       <Head title="Projects">
@@ -71,7 +73,7 @@ export default function ProjectsIndex() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="space-y-8">
           {projects.map((project, index) => (
-            <ProjectCard key={project.name} project={project} index={index} />
+            <ProjectCard key={project.name} project={project} index={index} featuredCount={featuredCount} />
           ))}
         </div>
 
@@ -92,7 +94,7 @@ export default function ProjectsIndex() {
   );
 }
 
-function ProjectCard({ project, index }: { project: PortfolioProject; index: number }) {
+function ProjectCard({ project, index, featuredCount }: { project: PortfolioProject; index: number; featuredCount: number }) {
   const isFeatured = index < featuredCount;
   const theme = projectTheme[project.preview];
   const Icon = theme.icon;

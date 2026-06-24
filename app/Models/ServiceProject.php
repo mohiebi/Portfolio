@@ -22,11 +22,13 @@ class ServiceProject extends Model
         'accent',
         'is_published',
         'sort_order',
+        'translations',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'translations' => 'array',
     ];
 
     public function service(): BelongsTo

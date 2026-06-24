@@ -28,6 +28,7 @@ class CaseStudy extends Model
         'highlights',
         'is_published',
         'sort_order',
+        'translations',
     ];
 
     protected $casts = [
@@ -37,6 +38,7 @@ class CaseStudy extends Model
         'highlights' => 'array',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'translations' => 'array',
     ];
 
     public function scopePublished(Builder $query): Builder

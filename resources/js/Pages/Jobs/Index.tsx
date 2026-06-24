@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { formatRelativeDate } from "@/lib/format";
 import type { Job, PaginatedData } from "@/types";
+import { useI18n } from "@/i18n";
 
 type Filters = {
   search?: string;
@@ -28,6 +29,7 @@ type Props = {
 };
 
 export default function JobsIndex({ jobs, filters, options }: Props) {
+  const { locale } = useI18n();
   const [search, setSearch] = useState(filters.search ?? "");
   const [minSalary, setMinSalary] = useState(filters.min_salary ?? "");
   const [maxSalary, setMaxSalary] = useState(filters.max_salary ?? "");
@@ -106,7 +108,11 @@ export default function JobsIndex({ jobs, filters, options }: Props) {
         </aside>
 
         <div>
-          <p className="mb-4 text-sm text-muted-foreground">{jobs.total} {jobs.total === 1 ? "result" : "results"}</p>
+          <p className="mb-4 text-sm text-muted-foreground">
+            {locale === "de"
+              ? `${jobs.total} ${jobs.total === 1 ? "Ergebnis" : "Ergebnisse"}`
+              : `${jobs.total} ${jobs.total === 1 ? "result" : "results"}`}
+          </p>
           {jobs.data.length === 0 ? (
             <EmptyState icon={Briefcase} title="No matching jobs" description="Try widening your filters or clearing them." />
           ) : (

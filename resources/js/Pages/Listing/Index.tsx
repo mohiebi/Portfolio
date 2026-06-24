@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import type { Listing, PageProps, PaginatedData } from "@/types";
+import { localeForIntl, useI18n, type Locale } from "@/i18n";
 
 interface Filters {
   priceFrom?: string;
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function ListingIndex({ listings, filters }: Props) {
+  const { locale } = useI18n();
   const { auth } = usePage<PageProps>().props;
   const [form, setForm] = useState<Filters>(filters);
 
@@ -131,13 +133,17 @@ export default function ListingIndex({ listings, filters }: Props) {
         </aside>
 
         <div>
-          <p className="mb-4 text-sm text-muted-foreground">{listings.total} {listings.total === 1 ? "property" : "properties"} found</p>
+          <p className="mb-4 text-sm text-muted-foreground">
+            {locale === "de"
+              ? `${listings.total} ${listings.total === 1 ? "Immobilie" : "Immobilien"} gefunden`
+              : `${listings.total} ${listings.total === 1 ? "property" : "properties"} found`}
+          </p>
 
           {listings.data.length === 0 ? (
             <EmptyState icon={Home} title="No properties found" description="Try widening your filters." />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {listings.data.map((listing) => <ListingCard key={listing.id} listing={listing} />)}
+              {listings.data.map((listing) => <ListingCard key={listing.id} listing={listing} locale={locale} />)}
             </div>
           )}
 
@@ -148,11 +154,11 @@ export default function ListingIndex({ listings, filters }: Props) {
   );
 }
 
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(price);
+function formatPrice(price: number, locale: Locale): string {
+  return new Intl.NumberFormat(localeForIntl(locale), { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(price);
 }
 
-function ListingCard({ listing }: { listing: Listing }) {
+function ListingCard({ listing, locale }: { listing: Listing; locale: Locale }) {
   return (
     <Link
       href={route("listing.show", { listing: listing.id })}
@@ -166,12 +172,12 @@ function ListingCard({ listing }: { listing: Listing }) {
         </div>
       )}
       <div>
-        <p className="text-xl font-bold">{formatPrice(listing.price)}</p>
+        <p className="text-xl font-bold">{formatPrice(listing.price, locale)}</p>
         <p className="mt-0.5 text-sm text-muted-foreground">{listing.street}, {listing.city} {listing.code}</p>
       </div>
       <div className="flex gap-4 text-sm text-muted-foreground">
-        <span className="inline-flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {listing.beds} beds</span>
-        <span className="inline-flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {listing.baths} baths</span>
+        <span className="inline-flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {listing.beds} {locale === "de" ? "Schlafzimmer" : "beds"}</span>
+        <span className="inline-flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {listing.baths} {locale === "de" ? "Bäder" : "baths"}</span>
         <span className="inline-flex items-center gap-1"><Maximize2 className="h-3.5 w-3.5" /> {listing.area} m²</span>
       </div>
     </Link>

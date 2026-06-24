@@ -85,6 +85,7 @@ export type Recommendation = {
   sort_order: number;
   created_at?: string;
   updated_at?: string;
+  translations?: Record<string, Partial<Recommendation>> | null;
 };
 
 export type CaseStudyImpact = {
@@ -113,6 +114,7 @@ export type CaseStudy = {
   sort_order: number;
   created_at?: string;
   updated_at?: string;
+  translations?: Record<string, Partial<CaseStudy>> | null;
 };
 
 export type Article = {
@@ -130,6 +132,7 @@ export type Article = {
   sort_order: number;
   created_at?: string;
   updated_at?: string;
+  translations?: Record<string, Partial<Article>> | null;
 };
 
 export type ServiceBonus = {
@@ -157,6 +160,7 @@ export type ServiceProject = {
   sort_order?: number;
   created_at?: string;
   updated_at?: string;
+  translations?: Record<string, Partial<ServiceProject>> | null;
 };
 
 export type Service = {
@@ -188,6 +192,7 @@ export type Service = {
   sort_order: number;
   created_at?: string;
   updated_at?: string;
+  translations?: Record<string, Partial<Service>> | null;
 };
 
 export type JobApplication = {

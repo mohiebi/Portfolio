@@ -12,8 +12,9 @@ import { useRef, useState, type ReactNode } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
-import { featuredProjects, type PortfolioProject } from "@/lib/projects";
+import { getFeaturedProjects, type PortfolioProject } from "@/lib/projects";
 import type { Article, CaseStudy, Recommendation } from "@/types";
+import { localizedRecords, localeForIntl, useI18n, type Locale } from "@/i18n";
 
 const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
 
@@ -310,6 +311,10 @@ type Props = {
 };
 
 export default function HomePage({ articles = [], caseStudies = [], recommendations = [] }: Props) {
+  const { locale } = useI18n();
+  articles = localizedRecords(articles, locale);
+  caseStudies = localizedRecords(caseStudies, locale);
+  recommendations = localizedRecords(recommendations, locale);
   const shouldReduceMotion = useReducedMotion();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -389,8 +394,17 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
             </motion.h1>
 
             <motion.p variants={fadeUp} className="mt-5 max-w-xl text-lg text-muted-foreground">
-              Hi, I'm <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> - a back-end / full-stack engineer with
-              3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms.
+              {locale === "de" ? (
+                <>
+                  Hallo, ich bin <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> — ein Back-End-/Full-Stack-Entwickler
+                  mit über 3 Jahren Erfahrung mit produktiven Systemen in Fintech, Blockchain und KI-integrierten Plattformen.
+                </>
+              ) : (
+                <>
+                  Hi, I&apos;m <span className="text-foreground font-medium">MohammadHosein Ebrahimi</span> — a back-end / full-stack engineer with
+                  3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms.
+                </>
+              )}
             </motion.p>
 
             <motion.div variants={fadeUp} className="mt-7 flex flex-wrap items-center gap-3">
@@ -521,6 +535,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                         recommendation={recommendation}
                         active={isCenter}
                         accent={recommendationAccent(index)}
+                        locale={locale}
                       />
                     </motion.div>
                   );
@@ -535,7 +550,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                         key={recommendation.id}
                         type="button"
                         onClick={() => setActiveRecommendationIndex(index)}
-                        aria-label={`Show recommendation ${index + 1}`}
+                        aria-label={locale === "de" ? `Empfehlung ${index + 1} anzeigen` : `Show recommendation ${index + 1}`}
                         className={`h-1.5 rounded-full transition-all ${
                           index === activeRecommendationIndex ? "w-8 bg-primary" : "w-3 bg-border hover:bg-muted-foreground/40"
                         }`}
@@ -582,16 +597,42 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
           >
             <p className="font-mono text-xs uppercase tracking-wider text-primary">// About</p>
             <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
-              I cut a client's page load time by 85% — here's how I work
+              {locale === "de"
+                ? "Ich habe die Ladezeit einer Kundenseite um 85 % reduziert — so arbeite ich"
+                : "I cut a client's page load time by 85% — here's how I work"}
             </h2>
             <p className="mt-5 text-muted-foreground">
-              A legacy PHP stack was costing a business customers every day. I migrated it to Vue.js, rebuilt the backend architecture, and shipped it in weeks. <span className="text-foreground font-medium">85% faster. Zero downtime. Still running.</span>
+              {locale === "de" ? (
+                <>
+                  Ein veralteter PHP-Stack kostete ein Unternehmen täglich Kunden. Ich migrierte ihn zu Vue.js, baute die Backend-Architektur neu auf
+                  und lieferte innerhalb weniger Wochen. <span className="text-foreground font-medium">85 % schneller. Keine Ausfallzeit. Läuft bis heute.</span>
+                </>
+              ) : (
+                <>
+                  A legacy PHP stack was costing a business customers every day. I migrated it to Vue.js, rebuilt the backend architecture, and shipped
+                  it in weeks. <span className="text-foreground font-medium">85% faster. Zero downtime. Still running.</span>
+                </>
+              )}
             </p>
             <p className="mt-3 text-muted-foreground">
-              That's how I approach every engagement — diagnose the real bottleneck, build the system that removes it, ship it clean.
-              With <span className="text-foreground">3+ years</span> across fintech, blockchain, and AI-integrated platforms, I've delivered
-              <span className="text-foreground"> 1,500+ commits/year</span> on production systems using
-              <span className="text-foreground"> Laravel, Symfony, NestJS</span> and <span className="text-foreground">Vue.js</span> — built Web3 pipelines processing 1,000+ daily transactions, and shipped AI-gated backend services including a custom non-custodial crypto payment system.
+              {locale === "de" ? (
+                <>
+                  So gehe ich jedes Projekt an: den echten Engpass erkennen, das passende System entwickeln und sauber ausliefern. Mit{" "}
+                  <span className="text-foreground">über 3 Jahren Erfahrung</span> in Fintech, Blockchain und KI-integrierten Plattformen habe ich{" "}
+                  <span className="text-foreground">über 1.500 Commits pro Jahr</span> auf Produktivsystemen mit{" "}
+                  <span className="text-foreground">Laravel, Symfony, NestJS</span> und <span className="text-foreground">Vue.js</span> geliefert,
+                  Web3-Pipelines für mehr als 1.000 tägliche Transaktionen entwickelt und KI-gestützte Backend-Dienste umgesetzt — darunter ein eigenes
+                  Non-Custodial-Krypto-Zahlungssystem.
+                </>
+              ) : (
+                <>
+                  That&apos;s how I approach every engagement — diagnose the real bottleneck, build the system that removes it, ship it clean. With{" "}
+                  <span className="text-foreground">3+ years</span> across fintech, blockchain, and AI-integrated platforms, I&apos;ve delivered{" "}
+                  <span className="text-foreground">1,500+ commits/year</span> on production systems using{" "}
+                  <span className="text-foreground">Laravel, Symfony, NestJS</span> and <span className="text-foreground">Vue.js</span> — built Web3
+                  pipelines processing 1,000+ daily transactions, and shipped AI-gated backend services including a custom non-custodial crypto payment system.
+                </>
+              )}
             </p>
             <p className="hidden">
               Highly motivated developer with 3+ years of professional experience, specialized in
@@ -682,7 +723,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
       </section>
 
 
-      <ArticlesSection articles={articles} />
+      <ArticlesSection articles={articles} locale={locale} />
 
       {/* CONTACT */}
       <section id="contact" className="relative overflow-hidden border-t border-border/60 bg-surface/40">
@@ -1084,6 +1125,8 @@ function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: numb
 }
 
 function ProjectsSection() {
+  const { locale } = useI18n();
+  const featuredProjects = getFeaturedProjects(locale);
   return (
     <section id="projects" className="scroll-mt-20 border-t border-border/60 bg-surface/30">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
@@ -1175,6 +1218,8 @@ function ProjectsSection() {
 }
 
 function ProjectPreviewLink({ project, index }: { project: PortfolioProject; index: number }) {
+  const { locale } = useI18n();
+  const ariaLabel = locale === "de" ? `Projekt ${project.name} ansehen` : `View ${project.name} project`;
   const className = `relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
     index % 2 === 0 ? "lg:order-last" : "lg:order-first"
   } lg:border-l lg:border-t-0`;
@@ -1182,14 +1227,14 @@ function ProjectPreviewLink({ project, index }: { project: PortfolioProject; ind
 
   if (project.external) {
     return (
-      <a href={project.href} target="_blank" rel="noreferrer" aria-label={`View ${project.name} project`} className={className}>
+      <a href={project.href} target="_blank" rel="noreferrer" aria-label={ariaLabel} className={className}>
         {content}
       </a>
     );
   }
 
   return (
-    <Link href={project.href} aria-label={`View ${project.name} project`} className={className}>
+    <Link href={project.href} aria-label={ariaLabel} className={className}>
       {content}
     </Link>
   );
@@ -1233,7 +1278,7 @@ function ProjectPrimaryLink({ project, children, className }: { project: Portfol
   return <Link href={project.href} className={className}>{children}</Link>;
 }
 
-function ArticlesSection({ articles }: { articles: Article[] }) {
+function ArticlesSection({ articles, locale }: { articles: Article[]; locale: Locale }) {
   if (articles.length === 0) {
     return null;
   }
@@ -1313,7 +1358,7 @@ function ArticlesSection({ articles }: { articles: Article[] }) {
                   <div className="mt-auto flex items-center justify-between pt-5">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                       <CalendarDays className="h-3.5 w-3.5 text-primary" />
-                      {article.published_at ? formatArticleDate(article.published_at) : "Published note"}
+                      {article.published_at ? formatArticleDate(article.published_at, locale) : "Published note"}
                     </div>
                     <span className="inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
                       Read <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -1329,11 +1374,11 @@ function ArticlesSection({ articles }: { articles: Article[] }) {
   );
 }
 
-function formatArticleDate(value: string) {
+function formatArticleDate(value: string, locale: Locale) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeForIntl(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -1372,10 +1417,12 @@ function RecommendationShowcaseCard({
   accent,
   active,
   recommendation,
+  locale,
 }: {
   accent: string;
   active: boolean;
   recommendation: Recommendation;
+  locale: Locale;
 }) {
   const shouldReduceMotion = useReducedMotion();
   const longRecommendation = isLongRecommendation(recommendation.body);
@@ -1428,7 +1475,7 @@ function RecommendationShowcaseCard({
                 {[recommendation.role, recommendation.company].filter(Boolean).join(" | ")}
               </p>
               <p className="mt-0.5 break-words font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
-                {recommendation.recommended_at ? formatRecommendationDate(recommendation.recommended_at) : "LinkedIn recommendation"}
+                {recommendation.recommended_at ? formatRecommendationDate(recommendation.recommended_at, locale) : "LinkedIn recommendation"}
                 {recommendation.relationship && ` - ${recommendation.relationship}`}
               </p>
             </div>
@@ -1480,11 +1527,11 @@ function getRecommendationInitials(name: string) {
     .toUpperCase();
 }
 
-function formatRecommendationDate(value: string) {
+function formatRecommendationDate(value: string, locale: Locale) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeForIntl(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",

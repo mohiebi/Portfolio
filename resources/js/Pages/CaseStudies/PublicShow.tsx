@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Briefcase, Calendar, Check, MapPin, Sparkles } f
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { CaseStudy } from "@/types";
+import { localizedRecord, useI18n } from "@/i18n";
 
 type Props = {
   caseStudy: CaseStudy;
@@ -11,6 +12,9 @@ type Props = {
 };
 
 export default function PublicCaseStudyShow({ caseStudy, nextCaseStudy }: Props) {
+  const { locale } = useI18n();
+  caseStudy = localizedRecord(caseStudy, locale);
+  nextCaseStudy = nextCaseStudy ? localizedRecord(nextCaseStudy, locale) : nextCaseStudy;
   return (
     <SiteShell>
       <Head title={`${caseStudy.title} - Case Study`} />

@@ -22,12 +22,14 @@ class Recommendation extends Model
         'recommended_at',
         'is_published',
         'sort_order',
+        'translations',
     ];
 
     protected $casts = [
         'recommended_at' => 'date:Y-m-d',
         'is_published' => 'boolean',
         'sort_order' => 'integer',
+        'translations' => 'array',
     ];
 
     protected $appends = [

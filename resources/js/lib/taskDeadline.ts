@@ -5,8 +5,12 @@ export type DeadlineState = "overdue" | "due-soon" | null;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RELATIVE_DAY_LIMIT = 6;
 
-const relativeDayFormatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-const absoluteDateFormatter = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+function activeLocale(): "de-DE" | "en-US" {
+  if (typeof window === "undefined") return "en-US";
+
+  const requested = new URL(window.location.href).searchParams.get("lang");
+  return requested === "de" || window.localStorage.getItem("mohi.locale") === "de" ? "de-DE" : "en-US";
+}
 
 function dateOnly(value: string): string {
   return value.slice(0, 10);
@@ -67,6 +71,9 @@ export function toDateInputValue(value?: string | null): string {
 export function formatDeadlineDate(value: string): string {
   const days = daysFromToday(value);
   if (days === null) return "";
+  const locale = activeLocale();
+  const relativeDayFormatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const absoluteDateFormatter = new Intl.DateTimeFormat(locale, { dateStyle: "medium" });
 
   if (Math.abs(days) <= RELATIVE_DAY_LIMIT) {
     return relativeDayFormatter.format(days, "day");

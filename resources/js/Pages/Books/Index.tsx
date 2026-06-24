@@ -6,6 +6,7 @@ import { PaginationNav } from "@/components/site/PaginationNav";
 import { Input } from "@/components/ui/input";
 import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import type { Book, PaginatedData } from "@/types";
+import { useI18n } from "@/i18n";
 
 type Props = {
   books: PaginatedData<Book>;
@@ -38,6 +39,7 @@ export function Stars({ value }: { value: number }) {
 }
 
 export default function BooksIndex({ books, filters: current }: Props) {
+  const { locale } = useI18n();
   const [search, setSearch] = useState(current.title ?? "");
 
   const visit = (next: Record<string, string>) => {
@@ -87,7 +89,11 @@ export default function BooksIndex({ books, filters: current }: Props) {
           </div>
         ) : (
           <>
-            <p className="mt-6 text-sm text-muted-foreground">{books.total} {books.total === 1 ? "book" : "books"} found</p>
+            <p className="mt-6 text-sm text-muted-foreground">
+              {locale === "de"
+                ? `${books.total} ${books.total === 1 ? "Buch" : "Bücher"} gefunden`
+                : `${books.total} ${books.total === 1 ? "book" : "books"} found`}
+            </p>
             <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {books.data.map((book) => (
                 <Link

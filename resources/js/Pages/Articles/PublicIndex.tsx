@@ -4,12 +4,15 @@ import { ArrowRight, CalendarDays, Clock, FileText, Tag } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import type { Article } from "@/types";
+import { localizedRecords, localeForIntl, useI18n, type Locale } from "@/i18n";
 
 type Props = {
   articles: Article[];
 };
 
 export default function PublicArticlesIndex({ articles }: Props) {
+  const { locale } = useI18n();
+  articles = localizedRecords(articles, locale);
   return (
     <SiteShell>
       <Head title="Articles" />
@@ -49,7 +52,7 @@ export default function PublicArticlesIndex({ articles }: Props) {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {articles.map((article, index) => (
-              <ArticleCard key={article.id} article={article} index={index} />
+              <ArticleCard key={article.id} article={article} index={index} locale={locale} />
             ))}
           </div>
         )}
@@ -68,7 +71,7 @@ export default function PublicArticlesIndex({ articles }: Props) {
   );
 }
 
-function ArticleCard({ article, index }: { article: Article; index: number }) {
+function ArticleCard({ article, index, locale }: { article: Article; index: number; locale: Locale }) {
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -94,7 +97,7 @@ function ArticleCard({ article, index }: { article: Article; index: number }) {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">{article.excerpt}</p>
         <div className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <CalendarDays className="h-3.5 w-3.5 text-primary" />
-          {article.published_at ? formatArticleDate(article.published_at) : "Published note"}
+          {article.published_at ? formatArticleDate(article.published_at, locale) : "Published note"}
         </div>
         <div className="mt-auto pt-7">
           <Button asChild variant="outline" className="group/btn">
@@ -109,11 +112,11 @@ function ArticleCard({ article, index }: { article: Article; index: number }) {
   );
 }
 
-function formatArticleDate(value: string) {
+function formatArticleDate(value: string, locale: Locale) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeForIntl(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",

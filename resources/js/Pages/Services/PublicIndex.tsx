@@ -29,6 +29,7 @@ import heroImg from "@/assets/dark2.webp";
 import launchImg from "@/assets/launch.webp";
 import operationsImg from "@/assets/service-operations.webp";
 import aiImg from "@/assets/service-ai.webp";
+import { localizedRecords, useI18n } from "@/i18n";
 
 const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
 
@@ -91,6 +92,8 @@ const fadeUp = {
 };
 
 export default function PublicServicesIndex({ services }: Props) {
+  const { locale } = useI18n();
+  services = localizedRecords(services, locale);
   const featuredService = services.find((service) => service.badge) ?? services[0];
   const totalBonusValue = (featuredService?.bonuses ?? []).reduce((acc, b) => {
     const num = parseInt(b.value.replace(/[^0-9]/g, ""), 10);

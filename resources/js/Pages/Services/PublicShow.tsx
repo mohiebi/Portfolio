@@ -27,6 +27,7 @@ import type { Service, ServiceProject } from "@/types";
 import launchImg from "@/assets/launch.webp";
 import operationsImg from "@/assets/service-operations.webp";
 import aiImg from "@/assets/service-ai.webp";
+import { localizedRecord, localizedRecords, useI18n } from "@/i18n";
 
 const CALENDLY_URL = "https://calendly.com/e-mohamadhosein/30min";
 
@@ -54,6 +55,10 @@ const fadeUp = {
 };
 
 export default function PublicServiceShow({ service, otherServices }: Props) {
+  const { locale } = useI18n();
+  service = localizedRecord(service, locale);
+  service.sample_projects = localizedRecords(service.sample_projects ?? [], locale);
+  otherServices = localizedRecords(otherServices, locale);
   const Icon = coverIcon[service.cover];
   const half = Math.ceil((service.deliverables ?? []).length / 2);
   const totalBonusValue = (service.bonuses ?? []).reduce((acc, b) => {

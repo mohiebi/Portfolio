@@ -3,12 +3,15 @@ import { ArrowLeft, ExternalLink, Linkedin, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 import { SiteShell } from "@/components/site/SiteShell";
 import type { Recommendation } from "@/types";
+import { localizedRecords, localeForIntl, useI18n, type Locale } from "@/i18n";
 
 type Props = {
   recommendations: Recommendation[];
 };
 
 export default function PublicRecommendationsPage({ recommendations }: Props) {
+  const { locale } = useI18n();
+  recommendations = localizedRecords(recommendations, locale);
   return (
     <SiteShell>
       <Head title="LinkedIn Recommendations" />
@@ -74,7 +77,7 @@ export default function PublicRecommendationsPage({ recommendations }: Props) {
                           {[recommendation.role, recommendation.company].filter(Boolean).join(" | ")}
                         </p>
                         <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/80">
-                          {recommendation.recommended_at ? formatRecommendationDate(recommendation.recommended_at) : "LinkedIn recommendation"}
+                          {recommendation.recommended_at ? formatRecommendationDate(recommendation.recommended_at, locale) : "LinkedIn recommendation"}
                           {recommendation.relationship && ` - ${recommendation.relationship}`}
                         </p>
                       </div>
@@ -139,11 +142,11 @@ function getRecommendationInitials(name: string) {
     .toUpperCase();
 }
 
-function formatRecommendationDate(value: string) {
+function formatRecommendationDate(value: string, locale: Locale) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(localeForIntl(locale), {
     month: "short",
     day: "numeric",
     year: "numeric",
