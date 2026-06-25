@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build
 
 # ── Stage 2: production image ─────────────────────────────────────────────────
-FROM php:8.3-fpm-bookworm AS app
+FROM php:8.4-fpm-bookworm AS app
 
 # System deps + PHP extensions
 # tokenizer / ctype / fileinfo are already compiled into PHP — do not reinstall
