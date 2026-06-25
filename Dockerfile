@@ -69,6 +69,7 @@ RUN rm -f public/hot public/hostingstart.html
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php.ini /usr/local/etc/php/conf.d/production.ini
+COPY docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 EXPOSE 8080
 
