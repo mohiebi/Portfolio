@@ -79,11 +79,18 @@ jobs:
             # Pull latest image
             docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
 
-            # Restart app container only (keeps DB running)
-            docker compose -f compose.prod.yaml up -d --no-deps --force-recreate app
+            # Start MariaDB if not already running (no-op if already up)
+            docker compose -f compose.prod.yaml up -d mariadb
 
-            # Wait for app to be healthy
-            sleep 5
+            # Wait for MariaDB to be healthy before touching the app
+            echo "Waiting for MariaDB..."
+            until docker exec portfolio-mariadb healthcheck.sh --connect --innodb_initialized 2>/dev/null; do
+              sleep 3
+            done
+            echo "MariaDB ready."
+
+            # Recreate only the app container with the new image
+            docker compose -f compose.prod.yaml up -d --no-deps --force-recreate app
 
             # Run migrations
             docker exec portfolio-app php artisan migrate --force --no-interaction
