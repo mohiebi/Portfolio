@@ -7,31 +7,31 @@ COPY . .
 RUN npm run build
 
 # ── Stage 2: production image ─────────────────────────────────────────────────
-FROM php:8.3-fpm-alpine AS app
+FROM php:8.3-fpm-bookworm AS app
 
 # System deps + PHP extensions
-RUN apk add --no-cache \
+# tokenizer / ctype / fileinfo are already compiled into PHP — do not reinstall
+RUN apt-get update && apt-get install -y --no-install-recommends \
         nginx \
         supervisor \
         libzip-dev \
-        icu-dev \
+        libicu-dev \
         libxml2-dev \
         libpng-dev \
-        oniguruma-dev \
+        libonig-dev \
         curl \
+        unzip \
     && docker-php-ext-install -j$(nproc) \
         pdo_mysql \
         mbstring \
         bcmath \
-        tokenizer \
-        ctype \
-        fileinfo \
         zip \
         intl \
         xml \
         gd \
         opcache \
-    && rm -rf /var/cache/apk/*
+    && docker-php-ext-enable opcache \
+    && rm -rf /var/lib/apt/lists/*
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
