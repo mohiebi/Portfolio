@@ -13,7 +13,7 @@
             'case-studies' => ['en' => 'Case Studies', 'de' => 'Fallstudien'],
             'recommendations' => ['en' => 'LinkedIn Recommendations', 'de' => 'LinkedIn-Empfehlungen'],
             'services' => ['en' => 'Service Packages', 'de' => 'Leistungspakete'],
-            'taskmanager' => ['en' => 'taskmanager', 'de' => 'taskmanager'],
+            'taskmanager' => ['en' => 'Task Manager', 'de' => 'Aufgaben-Manager'],
             'books' => ['en' => 'BookReview Project', 'de' => 'BookReview-Projekt'],
             'jobs' => ['en' => 'Job Board Project', 'de' => 'Jobbörsen-Projekt'],
             'listing' => ['en' => 'Real Estate Listings', 'de' => 'Immobilienangebote'],
