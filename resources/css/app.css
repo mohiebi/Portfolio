@@ -129,6 +129,27 @@
     filter: invert(1) brightness(1.6);
     opacity: 0.85;
   }
+
+  :where(a[href], button, [role="button"]) {
+    transition-duration: 180ms;
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  :where(a[href], button, [role="button"]):focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px oklch(0.72 0.16 158 / 0.38);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :where(a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"])):hover {
+    transform: translateY(-1px);
+  }
+
+  :where(a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"])):active {
+    transform: translateY(0) scale(0.985);
+  }
 }
 
 @layer utilities {
@@ -169,6 +190,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :where(a[href], button, [role="button"]) {
+    transition-duration: 1ms;
+  }
+
+  :where(a[href], button, [role="button"]):hover,
+  :where(a[href], button, [role="button"]):active {
+    transform: none;
+  }
+
   .animate-pulse-glow-warning,
   .animate-pulse-glow-danger {
     animation: none;

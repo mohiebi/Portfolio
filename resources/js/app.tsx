@@ -4,18 +4,13 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route, type Config } from 'ziggy-js';
-import { currentLocale, LanguageProvider, translateText } from './i18n';
+import { DocumentTitleSync } from './components/site/DocumentTitleSync';
+import { currentLocale, LanguageProvider } from './i18n';
+import { formatDocumentTitle } from './lib/documentTitle';
 
 createInertiaApp({
     title: (title) => {
-        if (!title) return 'Mohi';
-
-        const localizedTitle = translateText(title, currentLocale());
-        const pageTitle = localizedTitle
-            .replace(/^Mohi\s*[-—]\s*/i, '')
-            .replace(/\s*[-—]\s*Mohi$/i, '');
-
-        return `Mohi - ${pageTitle}`;
+        return formatDocumentTitle(title, currentLocale());
     },
     resolve: (name) =>
         resolvePageComponent(
@@ -30,6 +25,7 @@ createInertiaApp({
             route(name, params, absolute, ziggyConfig);
         createRoot(el).render(
             <LanguageProvider>
+                <DocumentTitleSync initialPage={props.initialPage} />
                 <App {...props} />
             </LanguageProvider>,
         );
