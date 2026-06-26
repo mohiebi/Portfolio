@@ -69,7 +69,7 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
 
   return (
     <SiteShell>
-      <Head title={`${service.name} - Services`}>
+      <Head title={`${service.name} - ${locale === "de" ? "Leistungen" : "Services"}`}>
         {[<meta key="description" name="description" content={service.benefit} />]}
       </Head>
 

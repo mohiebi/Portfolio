@@ -21,7 +21,7 @@ export default function RealtorEdit({ listing }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Edit Listing" />
+      <Head title="Edit Real Estate Listing" />
       <PageHeader eyebrow="Realtor Dashboard" title="Edit Listing" />
       <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="rounded-2xl border border-border bg-card p-6">

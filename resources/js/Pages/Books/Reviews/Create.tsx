@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { Book } from "@/types";
+import { useI18n } from "@/i18n";
 
 type Props = {
   book: Book;
 };
 
 export default function ReviewCreate({ book }: Props) {
+  const { locale } = useI18n();
   const form = useForm({
     review: "",
     rating: "5",
@@ -21,7 +23,7 @@ export default function ReviewCreate({ book }: Props) {
 
   return (
     <SiteShell>
-      <Head title={`Review ${book.title}`} />
+      <Head title={locale === "de" ? `Rezension: ${book.title}` : `Review ${book.title}`} />
       <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <Link href={`/books/${book.id}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to book

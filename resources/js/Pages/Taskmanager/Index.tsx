@@ -248,7 +248,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
 
   return (
     <SiteShell>
-      <Head title="TaskManager" />
+      <Head title="taskmanager" />
       <PageHeader eyebrow="Project / TaskManager" title="Your tasks" description="A focused dashboard for what's on your plate.">
         <Button asChild><Link href={newTaskHref}><Plus className="mr-2 h-4 w-4" /> New task</Link></Button>
       </PageHeader>

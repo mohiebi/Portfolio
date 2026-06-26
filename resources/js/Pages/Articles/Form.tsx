@@ -45,7 +45,7 @@ export default function ArticleFormPage({ article }: Props) {
     cover_filename: null,
   });
 
-  const title = editing ? "Edit article" : "New article";
+  const title = editing ? "Edit Article" : "New Article";
   const generatedSlug = useMemo(() => slugify(form.data.title), [form.data.title]);
 
   const submit = (event: FormEvent) => {

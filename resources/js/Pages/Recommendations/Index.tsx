@@ -18,7 +18,7 @@ export default function RecommendationsIndex({ recommendations }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Recommendations" />
+      <Head title="Manage Recommendations" />
       <PageHeader
         eyebrow="Portfolio content"
         title="Recommendations"

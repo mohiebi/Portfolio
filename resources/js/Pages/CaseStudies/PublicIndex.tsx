@@ -22,7 +22,7 @@ export default function PublicCaseStudiesIndex({ caseStudies }: Props) {
   caseStudies = localizedRecords(caseStudies, locale);
   return (
     <SiteShell>
-      <Head title="Case Studies" />
+      <Head title="Case Study Library" />
 
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />

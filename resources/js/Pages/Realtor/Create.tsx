@@ -13,7 +13,7 @@ export default function RealtorCreate() {
 
   return (
     <SiteShell>
-      <Head title="Create Listing" />
+      <Head title="Create Real Estate Listing" />
       <PageHeader eyebrow="Realtor Dashboard" title="Create New Listing" />
       <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="rounded-2xl border border-border bg-card p-6">

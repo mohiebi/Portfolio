@@ -49,11 +49,42 @@ const german: Record<string, string> = {
   "All projects": "Alle Projekte",
   "Email": "E-Mail",
   "All rights reserved.": "Alle Rechte vorbehalten.",
-  "Mohi - Back-End / Full-Stack Engineer": "Mohi — Back-End-/Full-Stack-Entwickler",
-  "Projects - Mohi": "Projekte — Mohi",
-  "Articles - Mohi": "Artikel — Mohi",
-  "Case Studies - Mohi": "Fallstudien — Mohi",
-  "LinkedIn Recommendations - Mohi": "LinkedIn-Empfehlungen — Mohi",
+  "Back-End / Full-Stack Engineer": "Back-End-/Full-Stack-Entwickler",
+  "Portfolio Projects": "Portfolio-Projekte",
+  "Technical Articles": "Technische Artikel",
+  "Manage Articles": "Artikel verwalten",
+  "New Article": "Neuer Artikel",
+  "Edit Article": "Artikel bearbeiten",
+  "Case Study Library": "Fallstudien-Bibliothek",
+  "Manage Case Studies": "Fallstudien verwalten",
+  "New Case Study": "Neue Fallstudie",
+  "Edit Case Study": "Fallstudie bearbeiten",
+  "LinkedIn Recommendations": "LinkedIn-Empfehlungen",
+  "Manage Recommendations": "Empfehlungen verwalten",
+  "New Recommendation": "Neue Empfehlung",
+  "Edit Recommendation": "Empfehlung bearbeiten",
+  "Service Packages": "Leistungspakete",
+  "Manage Services": "Leistungen verwalten",
+  "New Service": "Neue Leistung",
+  "Edit Service": "Leistung bearbeiten",
+  "TaskManager Project": "TaskManager-Projekt",
+  "BookReview Project": "BookReview-Projekt",
+  "Job Board Project": "Jobbörsen-Projekt",
+  "New Task": "Neue Aufgabe",
+  "Edit Task": "Aufgabe bearbeiten",
+  "Account Dashboard": "Konto-Dashboard",
+  "User Profile": "Benutzerprofil",
+  "Notifications": "Benachrichtigungen",
+  "My Job Applications": "Meine Bewerbungen",
+  "My Job Posts": "Meine Stellenanzeigen",
+  "Post a Job": "Stelle veröffentlichen",
+  "Edit Job Post": "Stellenanzeige bearbeiten",
+  "My Real Estate Listings": "Meine Immobilienangebote",
+  "Create Real Estate Listing": "Immobilienangebot erstellen",
+  "Edit Real Estate Listing": "Immobilienangebot bearbeiten",
+  "Listing Images": "Bilder des Immobilienangebots",
+  "Listing Offers": "Anfragen zum Immobilienangebot",
+  "Create employer account": "Arbeitgeberkonto erstellen",
   "// About": "// Über mich",
   "// Services": "// Leistungen",
   "// Recommendations": "// Empfehlungen",
@@ -659,7 +690,7 @@ function isLocale(value: string | null): value is Locale {
   return value !== null && SUPPORTED_LOCALES.includes(value as Locale);
 }
 
-function initialLocale(): Locale {
+export function currentLocale(): Locale {
   if (typeof window === "undefined") return "en";
 
   const fromUrl = new URL(window.location.href).searchParams.get("lang");
@@ -669,8 +700,16 @@ function initialLocale(): Locale {
   return isLocale(stored) ? stored : "en";
 }
 
+function initialLocale(): Locale {
+  return currentLocale();
+}
+
 function translate(locale: Locale, source: string): string {
   return dictionaries[locale][source] ?? source;
+}
+
+export function translateText(source: string, locale: Locale = currentLocale()): string {
+  return translate(locale, source);
 }
 
 function splitWhitespace(value: string) {

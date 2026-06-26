@@ -32,7 +32,7 @@ export default function ProjectsIndex() {
   const featuredCount = projects.filter((project) => project.featured).length;
   return (
     <SiteShell>
-      <Head title="Projects">
+      <Head title="Portfolio Projects">
         <meta
           name="description"
           content="Portfolio projects by Mohi, including TaskManager, CashPilot, AI Routine Coach, Mahdieh Design, Job Board, BookReview, and Real Estate."

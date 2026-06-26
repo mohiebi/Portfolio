@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Job } from "@/types";
+import { useI18n } from "@/i18n";
 
 type Props = {
   job: Job;
@@ -14,6 +15,7 @@ type Props = {
 const MAX_CV_SIZE = 2 * 1024 * 1024;
 
 export default function ApplyForm({ job }: Props) {
+  const { locale } = useI18n();
   const form = useForm<{
     expected_salary: string;
     cv: File | null;
@@ -48,7 +50,7 @@ export default function ApplyForm({ job }: Props) {
 
   return (
     <SiteShell>
-      <Head title={`Apply to ${job.title}`} />
+      <Head title={locale === "de" ? `Bewerbung: ${job.title}` : `Apply to ${job.title}`} />
       <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <Link href={`/jobs/${job.id}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to job

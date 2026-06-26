@@ -18,7 +18,7 @@ export default function ArticlesIndex({ articles }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Articles" />
+      <Head title="Manage Articles" />
       <PageHeader
         eyebrow="Portfolio content"
         title="Articles"

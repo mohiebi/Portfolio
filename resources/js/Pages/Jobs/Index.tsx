@@ -43,7 +43,7 @@ export default function JobsIndex({ jobs, filters, options }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Job Board" />
+      <Head title="Job Board Project" />
       <PageHeader eyebrow="Project / Job Board" title="Find your next role" description="Filter by salary, experience and category." />
       <section className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[280px_1fr] lg:px-8">
         <Button

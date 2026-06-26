@@ -78,7 +78,7 @@ export default function ServiceFormPage({ service }: Props) {
     sort_order: service?.sort_order ?? 0,
   });
 
-  const title = editing ? "Edit service" : "New service";
+  const title = editing ? "Edit Service" : "New Service";
   const generatedSlug = useMemo(() => slugify(form.data.name), [form.data.name]);
 
   const submit = (event: FormEvent) => {

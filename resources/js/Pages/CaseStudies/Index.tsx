@@ -18,7 +18,7 @@ export default function CaseStudiesIndex({ caseStudies }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Case Studies" />
+      <Head title="Manage Case Studies" />
       <PageHeader
         eyebrow="Portfolio content"
         title="Case Studies"

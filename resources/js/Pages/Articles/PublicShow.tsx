@@ -32,7 +32,7 @@ export default function PublicArticleShow({ article, nextArticle }: Props) {
 
   return (
     <SiteShell>
-      <Head title={`${article.title} - Article`} />
+      <Head title={`${article.title} - ${locale === "de" ? "Artikel" : "Article"}`} />
 
       {/* Reading progress */}
       <div className="fixed left-0 top-0 z-50 h-0.5 w-full bg-border/30">

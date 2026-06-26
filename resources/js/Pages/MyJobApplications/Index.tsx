@@ -13,7 +13,7 @@ export default function MyJobApplications({ applications }: Props) {
 
   return (
     <SiteShell>
-      <Head title="My applications" />
+      <Head title="My Job Applications" />
       <PageHeader eyebrow="Job Board" title="My applications" description="Track the jobs you have applied to." />
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {applications.length === 0 ? (

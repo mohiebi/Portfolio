@@ -47,7 +47,7 @@ export default function RecommendationFormPage({ recommendation }: Props) {
     image_filename: null,
   });
 
-  const title = editing ? "Edit recommendation" : "New recommendation";
+  const title = editing ? "Edit Recommendation" : "New Recommendation";
   const imageInitials = useMemo(() => getInitials(form.data.name), [form.data.name]);
 
   const submit = (event: FormEvent) => {

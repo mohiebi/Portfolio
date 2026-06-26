@@ -63,7 +63,7 @@ export default function CaseStudyFormPage({ caseStudy }: Props) {
     sort_order: caseStudy?.sort_order ?? 0,
   });
 
-  const title = editing ? "Edit case study" : "New case study";
+  const title = editing ? "Edit Case Study" : "New Case Study";
   const generatedSlug = useMemo(() => slugify(form.data.title), [form.data.title]);
 
   const submit = (event: FormEvent) => {

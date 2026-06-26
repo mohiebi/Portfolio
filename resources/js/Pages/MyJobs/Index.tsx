@@ -11,7 +11,7 @@ type Props = {
 export default function MyJobs({ jobs }: Props) {
   return (
     <SiteShell>
-      <Head title="My jobs" />
+      <Head title="My Job Posts" />
       <PageHeader eyebrow="Employer" title="My jobs" description="Manage your listings, view applicants, and edit details.">
         <Button asChild><Link href="/my-jobs/create"><Plus className="mr-2 h-4 w-4" /> Post a job</Link></Button>
       </PageHeader>

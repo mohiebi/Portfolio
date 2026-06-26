@@ -102,7 +102,7 @@ export default function PublicServicesIndex({ services }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Services - Business Systems, Automation & AI">
+      <Head title="Service Packages">
         {[
           <meta
             key="description"

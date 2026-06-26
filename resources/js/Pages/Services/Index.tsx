@@ -20,7 +20,7 @@ export default function ServicesIndex({ services }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Services" />
+      <Head title="Manage Services" />
       <PageHeader
         eyebrow="Portfolio content"
         title="Services"

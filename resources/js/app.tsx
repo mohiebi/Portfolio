@@ -4,10 +4,19 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route, type Config } from 'ziggy-js';
-import { LanguageProvider } from './i18n';
+import { currentLocale, LanguageProvider, translateText } from './i18n';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - Mohi` : 'Mohi'),
+    title: (title) => {
+        if (!title) return 'Mohi';
+
+        const localizedTitle = translateText(title, currentLocale());
+        const pageTitle = localizedTitle
+            .replace(/^Mohi\s*[-—]\s*/i, '')
+            .replace(/\s*[-—]\s*Mohi$/i, '');
+
+        return `Mohi - ${pageTitle}`;
+    },
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.tsx`,

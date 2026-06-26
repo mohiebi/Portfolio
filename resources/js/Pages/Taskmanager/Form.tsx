@@ -34,7 +34,7 @@ export default function TaskForm({ task }: Props) {
 
   return (
     <SiteShell>
-      <Head title={editing ? "Edit task" : "New task"} />
+      <Head title={editing ? "Edit Task" : "New Task"} />
       <section className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
         <Link href="/taskmanager" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to tasks

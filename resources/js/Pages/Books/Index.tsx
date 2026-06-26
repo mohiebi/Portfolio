@@ -50,7 +50,7 @@ export default function BooksIndex({ books, filters: current }: Props) {
 
   return (
     <SiteShell>
-      <Head title="BookReview" />
+      <Head title="BookReview Project" />
       <PageHeader eyebrow="Project / BookReview" title="Browse books" description="Search the catalog and filter by popularity or rating." />
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

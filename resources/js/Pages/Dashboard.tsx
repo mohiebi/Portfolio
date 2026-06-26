@@ -125,7 +125,7 @@ export default function Dashboard({ services = [] }: DashboardProps) {
 
   return (
     <SiteShell>
-      <Head title="Dashboard" />
+      <Head title="Account Dashboard" />
 
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-grid opacity-20 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" />

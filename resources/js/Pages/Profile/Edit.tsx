@@ -14,7 +14,7 @@ export default function ProfilePage() {
 
   return (
     <SiteShell>
-      <Head title="Profile" />
+      <Head title="User Profile" />
       <PageHeader eyebrow="Account" title="Profile" description="Manage your personal info, password and account." />
       <section className="mx-auto grid max-w-3xl gap-6 px-4 py-8 sm:px-6 lg:px-8">
         <StatusMessage />

@@ -46,7 +46,7 @@ export default function RealtorIndex({ listings, filters }: Props) {
 
   return (
     <SiteShell>
-      <Head title="My Listings" />
+      <Head title="My Real Estate Listings" />
       <PageHeader eyebrow="Realtor Dashboard" title="Your Listings">
         <Link href={route("realtor.listing.create")}>
           <Button><Plus className="mr-2 h-4 w-4" /> New Listing</Button>

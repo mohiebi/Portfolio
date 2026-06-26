@@ -17,7 +17,7 @@ export default function PublicCaseStudyShow({ caseStudy, nextCaseStudy }: Props)
   nextCaseStudy = nextCaseStudy ? localizedRecord(nextCaseStudy, locale) : nextCaseStudy;
   return (
     <SiteShell>
-      <Head title={`${caseStudy.title} - Case Study`} />
+      <Head title={`${caseStudy.title} - ${locale === "de" ? "Fallstudie" : "Case Study"}`} />
 
       <section className={`relative overflow-hidden border-b border-border/60 bg-gradient-to-br ${caseStudy.accent}`}>
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />

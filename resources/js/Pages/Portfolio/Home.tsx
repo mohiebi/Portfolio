@@ -343,7 +343,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
 
   return (
     <SiteShell>
-      <Head title="Mohi - Back-End / Full-Stack Engineer">
+      <Head title="Back-End / Full-Stack Engineer">
         {[
           <meta key="description" name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms." />,
           <meta key="og:title" property="og:title" content="Mohi - Back-End / Full-Stack Engineer" />,

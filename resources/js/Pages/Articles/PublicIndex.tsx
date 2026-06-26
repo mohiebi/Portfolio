@@ -15,7 +15,7 @@ export default function PublicArticlesIndex({ articles }: Props) {
   articles = localizedRecords(articles, locale);
   return (
     <SiteShell>
-      <Head title="Articles" />
+      <Head title="Technical Articles" />
 
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
