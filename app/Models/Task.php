@@ -15,6 +15,8 @@ class Task extends Model
     public const STATUS_OPEN = 'open';
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_DONE = 'done';
+    public const DONE_BOARD_TTL_HOURS = 48;
+    public const DONE_RETENTION_DAYS = 7;
 
     protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status', 'deadline'];
 
@@ -100,6 +102,32 @@ class Task extends Model
     public function scopeTopLevel($query)
     {
         return $query->whereNull('parent_id');
+    }
+
+    public function scopeDone($query)
+    {
+        return $query->where(function ($query) {
+            $query->where('status', self::STATUS_DONE)
+                ->orWhere('complete', true);
+        });
+    }
+
+    public function scopeVisibleOnTaskBoard($query)
+    {
+        return $query->where(function ($query) {
+            $query->where(function ($query) {
+                $query->where('status', '!=', self::STATUS_DONE)
+                    ->where('complete', false);
+            })->orWhere('updated_at', '>', now()->subHours(self::DONE_BOARD_TTL_HOURS));
+        });
+    }
+
+    public function scopePrunableDone($query)
+    {
+        return $query
+            ->topLevel()
+            ->done()
+            ->where('updated_at', '<=', now()->subDays(self::DONE_RETENTION_DAYS));
     }
 
     public function parent(): BelongsTo

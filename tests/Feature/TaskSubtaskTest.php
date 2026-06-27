@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class TaskSubtaskTest extends TestCase
@@ -220,5 +221,79 @@ class TaskSubtaskTest extends TestCase
 
         $this->assertDatabaseMissing('tasks', ['id' => $parent->id]);
         $this->assertDatabaseMissing('tasks', ['id' => $subtask->id]);
+    }
+
+    public function test_done_tasks_older_than_48_hours_are_hidden_from_the_board(): void
+    {
+        $user = User::factory()->create();
+
+        $openTask = Task::factory()->for($user)->create([
+            'title' => 'Visible open task',
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+            'created_at' => now()->subDays(10),
+            'updated_at' => now()->subDays(10),
+        ]);
+        $recentDoneTask = Task::factory()->for($user)->create([
+            'title' => 'Recently completed task',
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'created_at' => now()->subHours(47),
+            'updated_at' => now()->subHours(47),
+        ]);
+        $oldDoneTask = Task::factory()->for($user)->create([
+            'title' => 'Hidden completed task',
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'created_at' => now()->subHours(49),
+            'updated_at' => now()->subHours(49),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Taskmanager/Index')
+                ->has('tasks', 2)
+                ->where('tasks.0.id', $recentDoneTask->id)
+                ->where('tasks.1.id', $openTask->id)
+            );
+
+        $this->assertDatabaseHas('tasks', ['id' => $oldDoneTask->id]);
+    }
+
+    public function test_prune_done_command_removes_only_week_old_top_level_done_tasks(): void
+    {
+        $user = User::factory()->create();
+
+        $oldDoneTask = Task::factory()->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDays(8),
+        ]);
+        $oldDoneSubtask = Task::factory()->for($user)->create([
+            'parent_id' => $oldDoneTask->id,
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDays(8),
+        ]);
+        $recentDoneTask = Task::factory()->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDays(6),
+        ]);
+        $oldOpenTask = Task::factory()->for($user)->create([
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+            'updated_at' => now()->subDays(8),
+        ]);
+
+        $this->artisan('tasks:prune-done')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseMissing('tasks', ['id' => $oldDoneTask->id]);
+        $this->assertDatabaseMissing('tasks', ['id' => $oldDoneSubtask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $recentDoneTask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $oldOpenTask->id]);
     }
 }

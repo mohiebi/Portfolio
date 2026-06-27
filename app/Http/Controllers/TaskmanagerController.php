@@ -17,6 +17,7 @@ class TaskmanagerController extends Controller
         $tasks = auth()->check()
             ? auth()->user()->tasks()
                 ->topLevel()
+                ->visibleOnTaskBoard()
                 ->with('subtasks')
                 ->latest()
                 ->get()
@@ -303,17 +304,6 @@ class TaskmanagerController extends Controller
                 'status' => Task::STATUS_OPEN,
                 'created_at' => '2 days ago',
                 'updated_at' => '2 days ago',
-            ],
-            [
-                'id' => 2,
-                'title' => 'Refactor BookController filters',
-                'description' => '',
-                'long_description' => 'Move popular and highest-rated filters into reusable Eloquent scopes.',
-                'deadline' => now()->subDays(3)->toJSON(),
-                'complete' => true,
-                'status' => Task::STATUS_DONE,
-                'created_at' => '5 days ago',
-                'updated_at' => '5 days ago',
             ],
             [
                 'id' => 3,
