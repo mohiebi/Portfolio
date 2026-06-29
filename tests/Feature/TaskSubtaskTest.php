@@ -223,9 +223,11 @@ class TaskSubtaskTest extends TestCase
         $this->assertDatabaseMissing('tasks', ['id' => $subtask->id]);
     }
 
-    public function test_done_tasks_older_than_48_hours_are_hidden_from_the_board(): void
+    public function test_done_tasks_inactive_for_a_week_are_hidden_from_the_board(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'task_done_cleanup_enabled' => true,
+        ]);
 
         $openTask = Task::factory()->for($user)->create([
             'title' => 'Visible open task',
@@ -238,15 +240,15 @@ class TaskSubtaskTest extends TestCase
             'title' => 'Recently completed task',
             'complete' => true,
             'status' => Task::STATUS_DONE,
-            'created_at' => now()->subHours(47),
-            'updated_at' => now()->subHours(47),
+            'created_at' => now()->subDays(6),
+            'updated_at' => now()->subDays(6),
         ]);
         $oldDoneTask = Task::factory()->for($user)->create([
             'title' => 'Hidden completed task',
             'complete' => true,
             'status' => Task::STATUS_DONE,
-            'created_at' => now()->subHours(49),
-            'updated_at' => now()->subHours(49),
+            'created_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(8),
         ]);
 
         $this->actingAs($user)
@@ -262,30 +264,163 @@ class TaskSubtaskTest extends TestCase
         $this->assertDatabaseHas('tasks', ['id' => $oldDoneTask->id]);
     }
 
-    public function test_prune_done_command_removes_only_week_old_top_level_done_tasks(): void
+    public function test_done_cleanup_is_off_by_default(): void
     {
         $user = User::factory()->create();
+        $oldDoneTask = Task::factory()->for($user)->create([
+            'title' => 'Still visible completed task',
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'created_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(8),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Taskmanager/Index')
+                ->has('tasks', 1)
+                ->where('tasks.0.id', $oldDoneTask->id)
+                ->where('doneCleanup.enabled', false)
+                ->where('doneCleanup.available', false)
+            );
+    }
+
+    public function test_recent_subtask_activity_keeps_done_parent_visible_on_the_board(): void
+    {
+        $user = User::factory()->create([
+            'task_done_cleanup_enabled' => true,
+        ]);
+
+        $parent = Task::factory()->for($user)->create([
+            'title' => 'Fresh subtask parent',
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'created_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(8),
+        ]);
+        $subtask = Task::factory()->for($user)->create([
+            'parent_id' => $parent->id,
+            'title' => 'Edited today',
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'created_at' => now()->subDays(8),
+            'updated_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Taskmanager/Index')
+                ->has('tasks', 1)
+                ->where('tasks.0.id', $parent->id)
+                ->where('tasks.0.subtasks.0.id', $subtask->id)
+            );
+    }
+
+    public function test_done_cleanup_control_is_available_after_ten_done_tasks(): void
+    {
+        $user = User::factory()->create();
+
+        Task::factory()->count(9)->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('doneCleanup.enabled', false)
+                ->where('doneCleanup.available', false)
+                ->where('doneCleanup.doneTaskCount', 9)
+            );
+
+        Task::factory()->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('doneCleanup.enabled', false)
+                ->where('doneCleanup.available', true)
+                ->where('doneCleanup.doneTaskCount', 10)
+            );
+    }
+
+    public function test_users_can_enable_done_cleanup_when_they_have_ten_done_tasks(): void
+    {
+        $user = User::factory()->create();
+
+        Task::factory()->count(9)->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDay(),
+        ]);
+        $oldDoneTask = Task::factory()->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDays(31),
+        ]);
+
+        $this->actingAs($user)
+            ->patch('/taskmanager/done-cleanup', [
+                'enabled' => true,
+            ])
+            ->assertRedirect();
+
+        $this->assertTrue($user->fresh()->task_done_cleanup_enabled);
+        $this->assertDatabaseMissing('tasks', ['id' => $oldDoneTask->id]);
+    }
+
+    public function test_prune_done_command_removes_only_month_old_inactive_top_level_done_tasks(): void
+    {
+        $user = User::factory()->create([
+            'task_done_cleanup_enabled' => true,
+        ]);
+        $userWithoutCleanup = User::factory()->create();
 
         $oldDoneTask = Task::factory()->for($user)->create([
             'complete' => true,
             'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(31),
         ]);
         $oldDoneSubtask = Task::factory()->for($user)->create([
             'parent_id' => $oldDoneTask->id,
             'complete' => true,
             'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(31),
         ]);
         $recentDoneTask = Task::factory()->for($user)->create([
             'complete' => true,
             'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDays(6),
+            'updated_at' => now()->subDays(29),
+        ]);
+        $oldDoneTaskWithFreshSubtask = Task::factory()->for($user)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDays(31),
+        ]);
+        $freshSubtask = Task::factory()->for($user)->create([
+            'parent_id' => $oldDoneTaskWithFreshSubtask->id,
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDay(),
         ]);
         $oldOpenTask = Task::factory()->for($user)->create([
             'complete' => false,
             'status' => Task::STATUS_OPEN,
-            'updated_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(31),
+        ]);
+        $optOutDoneTask = Task::factory()->for($userWithoutCleanup)->create([
+            'complete' => true,
+            'status' => Task::STATUS_DONE,
+            'updated_at' => now()->subDays(31),
         ]);
 
         $this->artisan('tasks:prune-done')
@@ -294,6 +429,9 @@ class TaskSubtaskTest extends TestCase
         $this->assertDatabaseMissing('tasks', ['id' => $oldDoneTask->id]);
         $this->assertDatabaseMissing('tasks', ['id' => $oldDoneSubtask->id]);
         $this->assertDatabaseHas('tasks', ['id' => $recentDoneTask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $oldDoneTaskWithFreshSubtask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $freshSubtask->id]);
         $this->assertDatabaseHas('tasks', ['id' => $oldOpenTask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $optOutDoneTask->id]);
     }
 }

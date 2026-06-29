@@ -11,9 +11,26 @@ import type { Task } from "@/types";
 type Props = {
   tasks: Task[];
   demoMode?: boolean;
+  doneCleanup?: DoneCleanupSettings;
 };
 
 type TaskStatus = "open" | "in_progress" | "done";
+
+type DoneCleanupSettings = {
+  enabled: boolean;
+  available: boolean;
+  doneTaskCount: number;
+  hideAfterDays: number;
+  removeAfterDays: number;
+};
+
+type DoneCleanupControl = {
+  enabled: boolean;
+  processing: boolean;
+  hideAfterDays: number;
+  removeAfterDays: number;
+  onChange: (enabled: boolean) => void;
+};
 
 type StatusColumn = {
   status: TaskStatus;
@@ -39,13 +56,15 @@ const STATUS_COLUMNS: StatusColumn[] = [
   },
 ];
 
-export default function TasksIndex({ tasks, demoMode = false }: Props) {
+export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Props) {
   const [savedTasks, setSavedTasks] = useState(tasks);
   const [demoTasks, setDemoTasks] = useState(tasks);
   const [quickTitle, setQuickTitle] = useState("");
   const [quickTitleError, setQuickTitleError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [quickAddProcessing, setQuickAddProcessing] = useState(false);
+  const [cleanupEnabled, setCleanupEnabled] = useState(doneCleanup?.enabled ?? false);
+  const [cleanupProcessing, setCleanupProcessing] = useState(false);
   const [workingTaskIds, setWorkingTaskIds] = useState<number[]>([]);
   const [workingSubtaskIds, setWorkingSubtaskIds] = useState<number[]>([]);
   const [draggingTaskId, setDraggingTaskId] = useState<number | null>(null);
@@ -57,10 +76,23 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
     setDemoTasks(tasks);
   }, [tasks]);
 
+  useEffect(() => {
+    setCleanupEnabled(doneCleanup?.enabled ?? false);
+  }, [doneCleanup?.enabled]);
+
   const displayedTasks = demoMode ? demoTasks : savedTasks;
   const groupedTasks = useMemo(() => groupTasks(displayedTasks), [displayedTasks]);
   const done = groupedTasks.done.length;
   const active = groupedTasks.open.length + groupedTasks.in_progress.length;
+  const doneCleanupControl = !demoMode && doneCleanup?.available
+    ? {
+        enabled: cleanupEnabled,
+        processing: cleanupProcessing,
+        hideAfterDays: doneCleanup.hideAfterDays,
+        removeAfterDays: doneCleanup.removeAfterDays,
+        onChange: handleDoneCleanupChange,
+      }
+    : undefined;
 
   const setTaskWorking = (taskId: number, working: boolean) => {
     setWorkingTaskIds((current) =>
@@ -246,6 +278,29 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
     }
   };
 
+  function handleDoneCleanupChange(enabled: boolean) {
+    const previousValue = cleanupEnabled;
+
+    setActionError(null);
+    setCleanupEnabled(enabled);
+    setCleanupProcessing(true);
+
+    router.patch(
+      "/taskmanager/done-cleanup",
+      { enabled },
+      {
+        preserveScroll: true,
+        onError: (errors) => {
+          setCleanupEnabled(previousValue);
+          setActionError(errors.done_cleanup ?? "The cleanup preference could not be updated. Please try again.");
+        },
+        onFinish: () => {
+          setCleanupProcessing(false);
+        },
+      },
+    );
+  }
+
   return (
     <SiteShell>
       <Head title="taskmanager" />
@@ -311,6 +366,7 @@ export default function TasksIndex({ tasks, demoMode = false }: Props) {
             demoMode={demoMode}
             dragOverStatus={dragOverStatus}
             groupedTasks={groupedTasks}
+            doneCleanupControl={doneCleanupControl}
             workingSubtaskIds={workingSubtaskIds}
             workingTaskIds={workingTaskIds}
             onDelete={handleDelete}
@@ -331,6 +387,7 @@ function TaskBoard({
   demoMode,
   dragOverStatus,
   groupedTasks,
+  doneCleanupControl,
   workingSubtaskIds,
   workingTaskIds,
   onDelete,
@@ -344,6 +401,7 @@ function TaskBoard({
   demoMode: boolean;
   dragOverStatus: TaskStatus | null;
   groupedTasks: Record<TaskStatus, Task[]>;
+  doneCleanupControl?: DoneCleanupControl;
   workingSubtaskIds: number[];
   workingTaskIds: number[];
   onDelete: (task: Task) => void;
@@ -361,6 +419,7 @@ function TaskBoard({
           <MobileTaskLane
             key={column.status}
             column={column}
+            doneCleanupControl={column.status === "done" ? doneCleanupControl : undefined}
             demoMode={demoMode}
             dragging={dragOverStatus === column.status}
             tasks={groupedTasks[column.status]}
@@ -397,6 +456,9 @@ function TaskBoard({
                     {groupedTasks[column.status].length}
                   </span>
                 </div>
+                {column.status === "done" && doneCleanupControl && (
+                  <DoneCleanupCheckbox {...doneCleanupControl} className="mt-2" />
+                )}
               </th>
             ))}
           </tr>
@@ -432,6 +494,7 @@ function TaskBoard({
 
 function MobileTaskLane({
   column,
+  doneCleanupControl,
   demoMode,
   dragging,
   tasks,
@@ -446,6 +509,7 @@ function MobileTaskLane({
   onToggleSubtask,
 }: {
   column: StatusColumn;
+  doneCleanupControl?: DoneCleanupControl;
   demoMode: boolean;
   dragging: boolean;
   tasks: Task[];
@@ -467,13 +531,18 @@ function MobileTaskLane({
         dragging ? "bg-primary/10" : ""
       }`}
     >
-      <div className="mb-3 flex items-center justify-between gap-3 border-b border-[#243551] px-1 pb-3">
-        <h2 className={`font-sans text-xs font-bold uppercase tracking-normal ${column.accent}`}>
-          {column.title}
-        </h2>
-        <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#233250]/85 px-2 text-xs font-semibold text-[#9fb3d9]">
-          {tasks.length}
-        </span>
+      <div className="mb-3 border-b border-[#243551] px-1 pb-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className={`font-sans text-xs font-bold uppercase tracking-normal ${column.accent}`}>
+            {column.title}
+          </h2>
+          <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#233250]/85 px-2 text-xs font-semibold text-[#9fb3d9]">
+            {tasks.length}
+          </span>
+        </div>
+        {doneCleanupControl && (
+          <DoneCleanupCheckbox {...doneCleanupControl} className="mt-2" />
+        )}
       </div>
 
       <div className="grid gap-2">
@@ -564,6 +633,40 @@ function TaskLaneCell({
         )}
       </div>
     </td>
+  );
+}
+
+function DoneCleanupCheckbox({
+  enabled,
+  processing,
+  hideAfterDays,
+  removeAfterDays,
+  onChange,
+  className = "",
+}: DoneCleanupControl & { className?: string }) {
+  return (
+    <label
+      className={`flex cursor-pointer items-start gap-2 rounded-xl border border-[#263855] bg-[#071224]/70 px-2.5 py-2 text-left transition-colors hover:border-primary/60 hover:bg-primary/5 ${
+        processing ? "cursor-wait opacity-75" : ""
+      } ${className}`}
+    >
+      <input
+        type="checkbox"
+        checked={enabled}
+        disabled={processing}
+        onChange={(event) => onChange(event.target.checked)}
+        className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer accent-primary disabled:cursor-wait"
+        aria-label="Hide and remove old done tasks"
+      />
+      <span className="min-w-0 text-[11px] leading-4 text-[#9fb3d9]">
+        <span className="block font-semibold text-[#d8e7ff]">
+          Hide/remove old done tasks
+        </span>
+        <span>
+          Hide after {hideAfterDays} days · remove after {removeAfterDays} days
+        </span>
+      </span>
+    </label>
   );
 }
 

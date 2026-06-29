@@ -141,6 +141,9 @@ Route::middleware('auth')->group(function(){
         ->resource('my-jobs', MyJobController::class);
 });
 Route::middleware('auth')->group(function(){
+    Route::patch('taskmanager/done-cleanup', [TaskmanagerController::class, 'updateDoneCleanup'])
+        ->name('taskmanager.done-cleanup.update');
+
     Route::post('taskmanager/{task}/subtasks', [TaskmanagerController::class, 'storeSubtask'])
         ->name('taskmanager.subtasks.store');
     Route::patch('taskmanager/{task}/subtasks/{subtask}', [TaskmanagerController::class, 'updateSubtask'])

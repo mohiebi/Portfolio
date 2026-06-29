@@ -15,8 +15,8 @@ class Task extends Model
     public const STATUS_OPEN = 'open';
     public const STATUS_IN_PROGRESS = 'in_progress';
     public const STATUS_DONE = 'done';
-    public const DONE_BOARD_TTL_HOURS = 48;
-    public const DONE_RETENTION_DAYS = 7;
+    public const DONE_BOARD_TTL_DAYS = 7;
+    public const DONE_RETENTION_DAYS = 30;
 
     protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status', 'deadline'];
 
@@ -114,20 +114,34 @@ class Task extends Model
 
     public function scopeVisibleOnTaskBoard($query)
     {
-        return $query->where(function ($query) {
+        $cutoff = now()->subDays(self::DONE_BOARD_TTL_DAYS);
+
+        return $query->where(function ($query) use ($cutoff) {
             $query->where(function ($query) {
                 $query->where('status', '!=', self::STATUS_DONE)
                     ->where('complete', false);
-            })->orWhere('updated_at', '>', now()->subHours(self::DONE_BOARD_TTL_HOURS));
+            })
+                ->orWhere('updated_at', '>', $cutoff)
+                ->orWhereHas('subtasks', function ($query) use ($cutoff) {
+                    $query->where('updated_at', '>', $cutoff);
+                });
         });
     }
 
     public function scopePrunableDone($query)
     {
+        $cutoff = now()->subDays(self::DONE_RETENTION_DAYS);
+
         return $query
             ->topLevel()
             ->done()
-            ->where('updated_at', '<=', now()->subDays(self::DONE_RETENTION_DAYS));
+            ->whereHas('user', function ($query) {
+                $query->where('task_done_cleanup_enabled', true);
+            })
+            ->where('updated_at', '<=', $cutoff)
+            ->whereDoesntHave('subtasks', function ($query) use ($cutoff) {
+                $query->where('updated_at', '>', $cutoff);
+            });
     }
 
     public function parent(): BelongsTo

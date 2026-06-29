@@ -14,19 +14,84 @@ class TaskmanagerController extends Controller
      */
     public function index()
     {
-        $tasks = auth()->check()
-            ? auth()->user()->tasks()
+        $user = auth()->user();
+        $doneTaskCount = 0;
+        $doneCleanupEnabled = false;
+
+        if ($user) {
+            $doneTaskCount = $user->tasks()
                 ->topLevel()
-                ->visibleOnTaskBoard()
+                ->done()
+                ->count();
+            $doneCleanupEnabled = (bool) $user->task_done_cleanup_enabled;
+
+            $tasksQuery = $user->tasks()
+                ->topLevel()
                 ->with('subtasks')
-                ->latest()
-                ->get()
-            : $this->demoTasks();
+                ->latest();
+
+            if ($doneCleanupEnabled) {
+                $tasksQuery->visibleOnTaskBoard();
+            }
+
+            $tasks = $tasksQuery->get();
+        } else {
+            $tasks = $this->demoTasks();
+        }
 
         return Inertia::render('Taskmanager/Index', [
             'tasks' => $tasks,
             'demoMode' => auth()->guest(),
+            'doneCleanup' => [
+                'enabled' => $doneCleanupEnabled,
+                'available' => $user && ($doneTaskCount >= 10 || $doneCleanupEnabled),
+                'doneTaskCount' => $doneTaskCount,
+                'hideAfterDays' => Task::DONE_BOARD_TTL_DAYS,
+                'removeAfterDays' => Task::DONE_RETENTION_DAYS,
+            ],
         ]);
+    }
+
+    public function updateDoneCleanup(Request $request)
+    {
+        $data = $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $user = $request->user();
+        $enabled = (bool) $data['enabled'];
+        $doneTaskCount = $user->tasks()
+            ->topLevel()
+            ->done()
+            ->count();
+
+        if ($enabled && $doneTaskCount < 10 && ! $user->task_done_cleanup_enabled) {
+            return redirect()->back()->withErrors([
+                'done_cleanup' => 'Done task cleanup becomes available after you have 10 completed tasks.',
+            ]);
+        }
+
+        $user->forceFill([
+            'task_done_cleanup_enabled' => $enabled,
+        ])->save();
+
+        $deletedCount = 0;
+
+        if ($enabled) {
+            $deletedCount = $user->tasks()
+                ->prunableDone()
+                ->delete();
+        }
+
+        $message = $enabled
+            ? 'Done task cleanup enabled. Old completed tasks are now hidden, and month-old inactive ones were removed.'
+            : 'Done task cleanup disabled. Older completed tasks will stay visible.';
+
+        if ($deletedCount > 0) {
+            $message .= " Removed {$deletedCount} old done task(s).";
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**

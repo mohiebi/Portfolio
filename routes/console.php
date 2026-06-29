@@ -14,4 +14,4 @@ Artisan::command('tasks:prune-done', function () {
     $this->components->info("Deleted {$deleted} done task(s).");
 
     return 0;
-})->purpose('Delete top-level done tasks older than one week')->daily();
+})->purpose('Delete top-level done tasks inactive for 30 days')->daily();

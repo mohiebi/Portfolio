@@ -48,6 +48,7 @@ class User extends Authenticatable implements  MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'task_done_cleanup_enabled' => 'boolean',
         ];
     }
 
