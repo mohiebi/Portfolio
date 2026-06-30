@@ -1,9 +1,10 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarClock, Check, Circle, Clock, ListChecks, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Trash2 } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { StatusMessage } from "@/components/site/StatusMessage";
 import { formatDeadlineDate, getDeadlineState, sortByDeadline } from "@/lib/taskDeadline";
 import type { Task } from "@/types";
@@ -84,7 +85,11 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
   const groupedTasks = useMemo(() => groupTasks(displayedTasks), [displayedTasks]);
   const done = groupedTasks.done.length;
   const active = groupedTasks.open.length + groupedTasks.in_progress.length;
-  const doneCleanupControl = !demoMode && doneCleanup?.available
+  // doneCleanup.available reflects the count at the last full page load; recheck
+  // against the live `done` count so the control appears as soon as task #10
+  // is completed, without requiring a reload.
+  const doneCleanupAvailable = Boolean(doneCleanup) && (doneCleanup!.available || done >= 10 || cleanupEnabled);
+  const doneCleanupControl = !demoMode && doneCleanup && doneCleanupAvailable
     ? {
         enabled: cleanupEnabled,
         processing: cleanupProcessing,
@@ -352,6 +357,8 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
           </form>
         </div>
 
+        {doneCleanupControl && <DoneCleanupBar {...doneCleanupControl} className="mt-4" />}
+
         {displayedTasks.length === 0 ? (
           <div className="mt-8">
             <EmptyState
@@ -366,7 +373,6 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
             demoMode={demoMode}
             dragOverStatus={dragOverStatus}
             groupedTasks={groupedTasks}
-            doneCleanupControl={doneCleanupControl}
             workingSubtaskIds={workingSubtaskIds}
             workingTaskIds={workingTaskIds}
             onDelete={handleDelete}
@@ -387,7 +393,6 @@ function TaskBoard({
   demoMode,
   dragOverStatus,
   groupedTasks,
-  doneCleanupControl,
   workingSubtaskIds,
   workingTaskIds,
   onDelete,
@@ -401,7 +406,6 @@ function TaskBoard({
   demoMode: boolean;
   dragOverStatus: TaskStatus | null;
   groupedTasks: Record<TaskStatus, Task[]>;
-  doneCleanupControl?: DoneCleanupControl;
   workingSubtaskIds: number[];
   workingTaskIds: number[];
   onDelete: (task: Task) => void;
@@ -419,7 +423,6 @@ function TaskBoard({
           <MobileTaskLane
             key={column.status}
             column={column}
-            doneCleanupControl={column.status === "done" ? doneCleanupControl : undefined}
             demoMode={demoMode}
             dragging={dragOverStatus === column.status}
             tasks={groupedTasks[column.status]}
@@ -456,9 +459,6 @@ function TaskBoard({
                     {groupedTasks[column.status].length}
                   </span>
                 </div>
-                {column.status === "done" && doneCleanupControl && (
-                  <DoneCleanupCheckbox {...doneCleanupControl} className="mt-2" />
-                )}
               </th>
             ))}
           </tr>
@@ -494,7 +494,6 @@ function TaskBoard({
 
 function MobileTaskLane({
   column,
-  doneCleanupControl,
   demoMode,
   dragging,
   tasks,
@@ -509,7 +508,6 @@ function MobileTaskLane({
   onToggleSubtask,
 }: {
   column: StatusColumn;
-  doneCleanupControl?: DoneCleanupControl;
   demoMode: boolean;
   dragging: boolean;
   tasks: Task[];
@@ -540,9 +538,6 @@ function MobileTaskLane({
             {tasks.length}
           </span>
         </div>
-        {doneCleanupControl && (
-          <DoneCleanupCheckbox {...doneCleanupControl} className="mt-2" />
-        )}
       </div>
 
       <div className="grid gap-2">
@@ -636,7 +631,7 @@ function TaskLaneCell({
   );
 }
 
-function DoneCleanupCheckbox({
+function DoneCleanupBar({
   enabled,
   processing,
   hideAfterDays,
@@ -645,28 +640,36 @@ function DoneCleanupCheckbox({
   className = "",
 }: DoneCleanupControl & { className?: string }) {
   return (
-    <label
-      className={`flex cursor-pointer items-start gap-2 rounded-xl border border-[#263855] bg-[#071224]/70 px-2.5 py-2 text-left transition-colors hover:border-primary/60 hover:bg-primary/5 ${
-        processing ? "cursor-wait opacity-75" : ""
-      } ${className}`}
+    <div
+      className={`flex flex-col gap-3 rounded-xl border px-4 py-3 transition-colors sm:flex-row sm:items-center sm:justify-between ${
+        enabled ? "border-success/30 bg-success/5" : "border-border bg-card"
+      } ${processing ? "opacity-70" : ""} ${className}`}
     >
-      <input
-        type="checkbox"
+      <div className="flex min-w-0 items-center gap-3">
+        <span
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors ${
+            enabled ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
+          }`}
+          aria-hidden="true"
+        >
+          <Eraser className="h-4 w-4" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground">Auto-clean done tasks</p>
+          <p className="text-xs text-muted-foreground">
+            Hide after {hideAfterDays} days &middot; remove after {removeAfterDays} days
+          </p>
+        </div>
+      </div>
+
+      <Switch
         checked={enabled}
         disabled={processing}
-        onChange={(event) => onChange(event.target.checked)}
-        className="mt-0.5 h-3.5 w-3.5 shrink-0 cursor-pointer accent-primary disabled:cursor-wait"
-        aria-label="Hide and remove old done tasks"
+        onCheckedChange={onChange}
+        aria-label="Automatically hide and remove old done tasks"
+        className="shrink-0 self-start disabled:cursor-wait sm:self-auto"
       />
-      <span className="min-w-0 text-[11px] leading-4 text-[#9fb3d9]">
-        <span className="block font-semibold text-[#d8e7ff]">
-          Hide/remove old done tasks
-        </span>
-        <span>
-          Hide after {hideAfterDays} days · remove after {removeAfterDays} days
-        </span>
-      </span>
-    </label>
+    </div>
   );
 }
 
