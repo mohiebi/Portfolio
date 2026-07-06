@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -22,6 +22,7 @@ import {
   Zap,
 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import type { Service, ServiceProject } from "@/types";
 import launchImg from "@/assets/launch.webp";
@@ -69,9 +70,10 @@ export default function PublicServiceShow({ service, otherServices }: Props) {
 
   return (
     <SiteShell>
-      <Head title={`${service.name} - ${locale === "de" ? "Leistungen" : "Services"}`}>
-        {[<meta key="description" name="description" content={service.benefit} />]}
-      </Head>
+      <SeoHead
+        title={`${service.name} - ${locale === "de" ? "Leistungen" : "Services"}`}
+        description={service.benefit}
+      />
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-border/60">

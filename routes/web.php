@@ -25,6 +25,7 @@ use App\Models\Article;
 use App\Models\CaseStudy;
 use App\Models\Recommendation;
 use App\Models\Service;
+use App\Support\Seo;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -41,6 +42,12 @@ Route::get('/projects', function () {
     return Inertia::render('Projects/Index');
 })->name('projects.index');
 
+Route::get('/sitemap.xml', function () {
+    return response(Seo::sitemapXml(), 200, [
+        'Content-Type' => 'application/xml; charset=UTF-8',
+    ]);
+})->name('seo.sitemap');
+
 Route::get('/articles', [ArticleController::class, 'publicIndex'])
     ->name('articles.public.index');
 Route::get('/articles/{article:slug}', [ArticleController::class, 'publicShow'])
@@ -56,11 +63,12 @@ Route::get('/services', [ServiceController::class, 'publicIndex'])
 Route::get('/services/{service:slug}', [ServiceController::class, 'publicShow'])
     ->name('services.public.show');
 
-Route::get('/recommendations/all', function () {
+Route::get('/recommendations', function () {
     return Inertia::render('Recommendations/PublicIndex', [
         'recommendations' => Recommendation::published()->ordered()->get(),
     ]);
 })->name('recommendations.public');
+Route::redirect('/recommendations/all', '/recommendations', 301);
 
 Route::get('/dashboard', function () {
     $packageSlugs = [
@@ -92,7 +100,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::redirect('/recommendations', '/dashboard/recommendations');
 Route::redirect('/recommendations/create', '/dashboard/recommendations/create');
 
 Route::middleware(['auth', 'admin'])->prefix('dashboard')->name('dashboard.')->group(function () {

@@ -1,7 +1,8 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Briefcase, Calendar, Check, MapPin, Sparkles } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import type { CaseStudy } from "@/types";
 import { localizedRecord, useI18n } from "@/i18n";
@@ -17,7 +18,10 @@ export default function PublicCaseStudyShow({ caseStudy, nextCaseStudy }: Props)
   nextCaseStudy = nextCaseStudy ? localizedRecord(nextCaseStudy, locale) : nextCaseStudy;
   return (
     <SiteShell>
-      <Head title={`${caseStudy.title} - ${locale === "de" ? "Fallstudie" : "Case Study"}`} />
+      <SeoHead
+        title={`${caseStudy.title} - ${locale === "de" ? "Fallstudie" : "Case Study"}`}
+        description={caseStudy.summary}
+      />
 
       <section className={`relative overflow-hidden border-b border-border/60 bg-gradient-to-br ${caseStudy.accent}`}>
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />

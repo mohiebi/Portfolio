@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import { getProjects, type PortfolioProject } from "@/lib/projects";
 import { useI18n } from "@/i18n";
@@ -32,12 +33,10 @@ export default function ProjectsIndex() {
   const featuredCount = projects.filter((project) => project.featured).length;
   return (
     <SiteShell>
-      <Head title="Portfolio Projects">
-        <meta
-          name="description"
-          content="Portfolio projects by Mohi, including TaskManager, CashPilot, AI Routine Coach, Mahdieh Design, Job Board, BookReview, and Real Estate."
-        />
-      </Head>
+      <SeoHead
+        title="Portfolio Projects"
+        description="Portfolio projects by Mohi, including TaskManager, CashPilot, AI Routine Coach, Mahdieh Design, Job Board, BookReview, and Real Estate."
+      />
 
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />

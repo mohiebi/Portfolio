@@ -1,7 +1,8 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowRight, CalendarDays, Clock, FileText, Tag } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import type { Article } from "@/types";
 import { localizedRecords, localeForIntl, useI18n, type Locale } from "@/i18n";
@@ -15,7 +16,10 @@ export default function PublicArticlesIndex({ articles }: Props) {
   articles = localizedRecords(articles, locale);
   return (
     <SiteShell>
-      <Head title="Technical Articles" />
+      <SeoHead
+        title="Technical Articles"
+        description="Practical writing about backend systems, Laravel, architecture, production debugging, and full-stack delivery."
+      />
 
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
@@ -82,7 +86,7 @@ function ArticleCard({ article, index, locale }: { article: Article; index: numb
     >
       <div className="relative overflow-hidden border-b border-border bg-surface/40">
         {article.cover_url ? (
-          <img src={article.cover_url} alt="" className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={article.cover_url} alt="" loading="lazy" width={768} height={432} className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className="aspect-video bg-grid" />
         )}

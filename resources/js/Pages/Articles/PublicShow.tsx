@@ -1,8 +1,9 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CalendarDays, Clock, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import type { Article } from "@/types";
 import { localizedRecord, localeForIntl, useI18n, type Locale } from "@/i18n";
@@ -32,7 +33,12 @@ export default function PublicArticleShow({ article, nextArticle }: Props) {
 
   return (
     <SiteShell>
-      <Head title={`${article.title} - ${locale === "de" ? "Artikel" : "Article"}`} />
+      <SeoHead
+        title={`${article.title} - ${locale === "de" ? "Artikel" : "Article"}`}
+        description={article.excerpt}
+        image={article.cover_url}
+        type="article"
+      />
 
       {/* Reading progress */}
       <div className="fixed left-0 top-0 z-50 h-0.5 w-full bg-border/30">
@@ -121,6 +127,9 @@ export default function PublicArticleShow({ article, nextArticle }: Props) {
             <img
               src={article.cover_url}
               alt={article.title}
+              width={1200}
+              height={675}
+              fetchPriority="high"
               className="w-full rounded-2xl border border-border object-cover shadow-card aspect-video"
             />
           </div>
@@ -241,6 +250,9 @@ export default function PublicArticleShow({ article, nextArticle }: Props) {
                   <img
                     src={nextArticle.cover_url}
                     alt=""
+                    loading="lazy"
+                    width={352}
+                    height={198}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/20" />

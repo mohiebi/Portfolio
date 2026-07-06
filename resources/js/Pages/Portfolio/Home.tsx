@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import {
   ArrowRight, Mail, Linkedin, FileDown, Sparkles, Database, Code2,
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
@@ -10,6 +10,7 @@ import servicesCoverImg from "@/assets/services cover on main.webp";
 import { motion, useScroll, useTransform, useReducedMotion, type Variants } from "framer-motion";
 import { useRef, useState, type ReactNode } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
 import { getFeaturedProjects, type PortfolioProject } from "@/lib/projects";
@@ -343,13 +344,10 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
 
   return (
     <SiteShell>
-      <Head title="Back-End / Full-Stack Engineer">
-        {[
-          <meta key="description" name="description" content="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms." />,
-          <meta key="og:title" property="og:title" content="Mohi - Back-End / Full-Stack Engineer" />,
-          <meta key="og:description" property="og:description" content="PHP, Node.js, Symfony, Laravel, NestJS, Vue.js, APIs, Web3 wallet integrations, AI-gated backend services, and scalable production systems." />,
-        ]}
-      </Head>
+      <SeoHead
+        title="Back-End / Full-Stack Engineer"
+        description="Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms."
+      />
       {/* HERO */}
       <section ref={heroRef} className="relative overflow-hidden">
         <motion.div
@@ -454,6 +452,9 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
               <img
                 src={portraitUrl}
                 alt="Mohi portrait"
+                width={720}
+                height={900}
+                fetchPriority="high"
                 className="aspect-[4/5] w-full object-cover"
               />
               <div className="absolute bottom-3 left-4 right-4 rounded-xl border border-border bg-background/80 px-4 py-3 backdrop-blur">
@@ -500,7 +501,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                 </p>
               </div>
               <a
-                href="/recommendations/all"
+                href="/recommendations"
                 className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background/60 px-3 py-1.5 text-xs font-mono uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
               >
                 All recommendations
@@ -1457,7 +1458,7 @@ function RecommendationShowcaseCard({
             <>
               {" "}
               <a
-                href={`/recommendations/all#recommendation-${recommendation.id}`}
+                href={`/recommendations#recommendation-${recommendation.id}`}
                 className="font-medium text-primary transition-colors hover:text-primary/80"
               >
                 (read more)

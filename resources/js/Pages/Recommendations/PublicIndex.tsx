@@ -1,7 +1,7 @@
-import { Head } from "@inertiajs/react";
 import { ArrowLeft, ExternalLink, Linkedin, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import type { Recommendation } from "@/types";
 import { localizedRecords, localeForIntl, useI18n, type Locale } from "@/i18n";
 
@@ -14,7 +14,10 @@ export default function PublicRecommendationsPage({ recommendations }: Props) {
   recommendations = localizedRecords(recommendations, locale);
   return (
     <SiteShell>
-      <Head title="LinkedIn Recommendations" />
+      <SeoHead
+        title="LinkedIn Recommendations"
+        description="Full LinkedIn recommendations from people who have worked with Mohi across engineering, product, and delivery."
+      />
 
       <main className="relative overflow-hidden border-t border-border/60">
         <motion.div

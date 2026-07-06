@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -23,6 +23,7 @@ import {
   Building2,
 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import type { Service } from "@/types";
 import heroImg from "@/assets/dark2.webp";
@@ -102,15 +103,10 @@ export default function PublicServicesIndex({ services }: Props) {
 
   return (
     <SiteShell>
-      <Head title="Service Packages">
-        {[
-          <meta
-            key="description"
-            name="description"
-            content="Backend-focused business systems, modern websites, workflow automation and AI-powered platforms delivered in weeks, not months."
-          />,
-        ]}
-      </Head>
+      <SeoHead
+        title="Service Packages"
+        description="Backend-focused business systems, modern websites, workflow automation and AI-powered platforms delivered in weeks, not months."
+      />
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden border-b border-border/60">
@@ -218,6 +214,7 @@ export default function PublicServicesIndex({ services }: Props) {
                 alt="Modern AI-enabled business systems infrastructure"
                 width={1536}
                 height={1024}
+                fetchPriority="high"
                 className="w-full object-contain"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />

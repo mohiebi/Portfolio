@@ -1,7 +1,8 @@
-import { Head, Link } from "@inertiajs/react";
+import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
 import { ArrowRight, Briefcase, Calendar, Cpu, Globe, Layers, MapPin, Sparkles } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
+import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
 import type { CaseStudy } from "@/types";
 import { localizedRecords, useI18n } from "@/i18n";
@@ -22,7 +23,10 @@ export default function PublicCaseStudiesIndex({ caseStudies }: Props) {
   caseStudies = localizedRecords(caseStudies, locale);
   return (
     <SiteShell>
-      <Head title="Case Study Library" />
+      <SeoHead
+        title="Case Study Library"
+        description="Selected engineering case studies across backend architecture, Laravel, Symfony, Vue, Node.js, Web3, AI integrations, and production modernization."
+      />
 
       <section className="relative overflow-hidden border-b border-border/60">
         <div className="absolute inset-0 bg-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
