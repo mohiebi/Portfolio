@@ -52,9 +52,33 @@ export function compareByDeadline(a: Pick<Task, "deadline">, b: Pick<Task, "dead
   return aTime - bTime;
 }
 
+function timestamp(value?: string | null): number | null {
+  if (!value) return null;
+
+  const time = new Date(value).getTime();
+
+  return Number.isNaN(time) ? null : time;
+}
+
+export function compareByUpdatedAt(a: Pick<Task, "updated_at">, b: Pick<Task, "updated_at">): number {
+  const aTime = timestamp(a.updated_at);
+  const bTime = timestamp(b.updated_at);
+
+  if (aTime === null && bTime === null) return 0;
+  if (aTime === null) return 1;
+  if (bTime === null) return -1;
+
+  return bTime - aTime;
+}
+
 /** Returns a new array, sorted by deadline ascending (tasks without a deadline go last). */
 export function sortByDeadline<T extends Pick<Task, "deadline">>(tasks: T[]): T[] {
   return [...tasks].sort(compareByDeadline);
+}
+
+/** Returns a new array, sorted by most recently updated first. */
+export function sortByUpdatedAt<T extends Pick<Task, "updated_at">>(tasks: T[]): T[] {
+  return [...tasks].sort(compareByUpdatedAt);
 }
 
 /** Converts an ISO date string to the `YYYY-MM-DD` format expected by <input type="date">. */

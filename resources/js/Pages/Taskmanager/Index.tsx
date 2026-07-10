@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { StatusMessage } from "@/components/site/StatusMessage";
-import { formatDeadlineDate, getDeadlineState, sortByDeadline } from "@/lib/taskDeadline";
+import { formatDeadlineDate, getDeadlineState, sortByDeadline, sortByUpdatedAt } from "@/lib/taskDeadline";
 import type { Task } from "@/types";
 
 type Props = {
@@ -878,7 +878,7 @@ function groupTasks(tasks: Task[]): Record<TaskStatus, Task[]> {
   return {
     open: sortByDeadline(groups.open),
     in_progress: sortByDeadline(groups.in_progress),
-    done: sortByDeadline(groups.done),
+    done: sortByUpdatedAt(groups.done),
   };
 }
 
@@ -897,6 +897,7 @@ function withStatus(task: Task, status: TaskStatus): Task {
       : task.subtasks,
     status,
     complete: status === "done",
+    updated_at: new Date().toISOString(),
   };
 }
 
