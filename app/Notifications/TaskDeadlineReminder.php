@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Task;
+use App\Notifications\Channels\ResendChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -21,7 +22,33 @@ class TaskDeadlineReminder extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        $channels = ['database'];
+
+        if ($this->stage === self::STAGE_DUE) {
+            $channels[] = ResendChannel::class;
+        }
+
+        return $channels;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toResend(object $notifiable): array
+    {
+        $payload = $this->reminderPayload();
+
+        return [
+            'from' => 'Mohi Portfolio <info@mohiebi.com>',
+            'to' => [$notifiable->email],
+            'subject' => "Task due today: {$this->task->title}",
+            'html' => view('emails.task-deadline-reminder', [
+                'taskTitle' => $this->task->title,
+                'deadlineDate' => $payload['deadline_date'],
+                'taskUrl' => url($payload['url']),
+                'isSubtask' => $this->task->parent_id !== null,
+            ])->render(),
+        ];
     }
 
     /**

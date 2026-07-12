@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Notifications\TaskDeadlineReminder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Mockery;
+use Resend\Laravel\Facades\Resend;
 use Tests\TestCase;
 
 class TaskDeadlineReminderTest extends TestCase
@@ -20,9 +22,10 @@ class TaskDeadlineReminderTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_deadline_reminder_command_creates_warning_due_and_overdue_notifications(): void
+    public function test_deadline_reminder_command_creates_warning_due_and_overdue_notifications_and_emails_only_due_tasks(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(1);
 
         $user = User::factory()->create();
         $warningTask = Task::factory()->for($user)->create([
@@ -68,6 +71,7 @@ class TaskDeadlineReminderTest extends TestCase
     public function test_deadline_reminders_ignore_completed_null_and_future_tasks(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(0);
 
         $user = User::factory()->create();
         Task::factory()->for($user)->create([
@@ -95,6 +99,7 @@ class TaskDeadlineReminderTest extends TestCase
     public function test_deadline_reminders_do_not_duplicate_the_same_stage(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(1);
 
         $user = User::factory()->create();
         Task::factory()->for($user)->create([
@@ -113,6 +118,7 @@ class TaskDeadlineReminderTest extends TestCase
     public function test_changing_a_deadline_resets_reminder_tracking_and_allows_a_new_stage(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(1);
 
         $user = User::factory()->create();
         $task = Task::factory()->for($user)->create([
@@ -141,11 +147,13 @@ class TaskDeadlineReminderTest extends TestCase
     public function test_subtask_deadline_reminder_links_to_parent_task(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(1);
 
         $user = User::factory()->create();
         $parent = Task::factory()->for($user)->create([
             'complete' => false,
             'status' => Task::STATUS_OPEN,
+            'deadline' => null,
         ]);
         $subtask = Task::factory()->for($user)->create([
             'parent_id' => $parent->id,
@@ -161,5 +169,17 @@ class TaskDeadlineReminderTest extends TestCase
         $this->assertSame($subtask->id, $notification->data['task_id']);
         $this->assertSame($parent->id, $notification->data['parent_id']);
         $this->assertSame("/taskmanager/{$parent->id}", $notification->data['url']);
+    }
+
+    private function expectResendEmails(int $times): void
+    {
+        $emails = Mockery::mock();
+        $emails->shouldReceive('send')
+            ->times($times)
+            ->with(Mockery::on(fn (array $payload) => str_starts_with($payload['subject'] ?? '', 'Task due today:')));
+
+        Resend::shouldReceive('emails')
+            ->times($times)
+            ->andReturn($emails);
     }
 }

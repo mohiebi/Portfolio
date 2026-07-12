@@ -6,11 +6,25 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskDeadlineReminder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
+use Resend\Laravel\Facades\Resend;
 use Tests\TestCase;
 
 class NotificationReadTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $emails = Mockery::mock();
+        $emails->shouldReceive('send')->zeroOrMoreTimes();
+
+        Resend::shouldReceive('emails')
+            ->zeroOrMoreTimes()
+            ->andReturn($emails);
+    }
 
     public function test_user_can_mark_their_own_notification_as_read(): void
     {
