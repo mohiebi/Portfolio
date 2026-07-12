@@ -100,4 +100,7 @@ jobs:
             docker exec portfolio-app php artisan route:cache
             docker exec portfolio-app php artisan view:cache
 
+            # Register Telegram webhook with Telegram's servers
+            docker exec portfolio-app php artisan telegraph:set-webhook
+
             echo "Deployment complete."
