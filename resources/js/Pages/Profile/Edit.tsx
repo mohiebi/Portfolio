@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusMessage } from "@/components/site/StatusMessage";
 import type { PageProps } from "@/types";
-import { Bell, BellOff, Link, MessageCircle, Unlink } from "lucide-react";
+import { Bell, BellOff, ChevronDown, Link, MessageCircle, Unlink } from "lucide-react";
 import { useState } from "react";
 
 type TelegramProfile = {
@@ -142,20 +142,24 @@ export default function ProfilePage() {
                     step="60"
                     value={reminderSchedule.data.time}
                     onChange={(event) => reminderSchedule.setData("time", event.target.value)}
+                    className="[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:opacity-70 [&::-webkit-calendar-picker-indicator]:filter hover:[&::-webkit-calendar-picker-indicator]:opacity-100"
                   />
                 </Field>
                 <Field label="Timezone" error={reminderSchedule.errors.timezone}>
-                  <select
-                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
-                    value={reminderSchedule.data.timezone}
-                    onChange={(event) => reminderSchedule.setData("timezone", event.target.value)}
-                  >
-                    {taskReminderSchedule.timezone_options.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      className="h-10 w-full appearance-none rounded-md border border-input bg-background py-2 pl-3 pr-8 text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                      value={reminderSchedule.data.timezone}
+                      onChange={(event) => reminderSchedule.setData("timezone", event.target.value)}
+                    >
+                      {taskReminderSchedule.timezone_options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  </div>
                 </Field>
                 <Button type="submit" disabled={reminderSchedule.processing}>
                   Save time
