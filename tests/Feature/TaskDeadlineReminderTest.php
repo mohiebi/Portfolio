@@ -27,7 +27,7 @@ class TaskDeadlineReminderTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
         $this->expectResendEmails(1);
 
-        $user = User::factory()->create();
+        $user = $this->reminderUser();
         $warningTask = Task::factory()->for($user)->create([
             'title' => 'Tomorrow task',
             'complete' => false,
@@ -73,7 +73,7 @@ class TaskDeadlineReminderTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
         $this->expectResendEmails(0);
 
-        $user = User::factory()->create();
+        $user = $this->reminderUser();
         Task::factory()->for($user)->create([
             'complete' => true,
             'status' => Task::STATUS_DONE,
@@ -101,7 +101,7 @@ class TaskDeadlineReminderTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
         $this->expectResendEmails(1);
 
-        $user = User::factory()->create();
+        $user = $this->reminderUser();
         Task::factory()->for($user)->create([
             'complete' => false,
             'status' => Task::STATUS_OPEN,
@@ -120,7 +120,7 @@ class TaskDeadlineReminderTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
         $this->expectResendEmails(1);
 
-        $user = User::factory()->create();
+        $user = $this->reminderUser();
         $task = Task::factory()->for($user)->create([
             'complete' => false,
             'status' => Task::STATUS_OPEN,
@@ -149,7 +149,7 @@ class TaskDeadlineReminderTest extends TestCase
         Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
         $this->expectResendEmails(1);
 
-        $user = User::factory()->create();
+        $user = $this->reminderUser();
         $parent = Task::factory()->for($user)->create([
             'complete' => false,
             'status' => Task::STATUS_OPEN,
@@ -171,6 +171,52 @@ class TaskDeadlineReminderTest extends TestCase
         $this->assertSame("/taskmanager/{$parent->id}", $notification->data['url']);
     }
 
+    public function test_deadline_reminders_only_send_during_the_user_reminder_window(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(1);
+
+        $dueUser = $this->reminderUser();
+        $laterUser = User::factory()->create([
+            'task_reminder_time' => '11:00',
+            'task_reminder_timezone' => '+00:00',
+        ]);
+
+        Task::factory()->for($dueUser)->create([
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+            'deadline' => now(),
+        ]);
+        Task::factory()->for($laterUser)->create([
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+            'deadline' => now(),
+        ]);
+
+        $this->artisan('tasks:send-deadline-reminders')
+            ->assertExitCode(0);
+
+        $this->assertSame(1, $dueUser->notifications()->count());
+        $this->assertSame(0, $laterUser->notifications()->count());
+    }
+
+    public function test_profile_updates_task_reminder_schedule(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch('/profile/task-reminder-schedule', [
+                'time' => '14:45',
+                'timezone' => '+03:30',
+            ])
+            ->assertRedirect('/profile');
+
+        $user = $user->fresh();
+
+        $this->assertSame('14:45', $user->task_reminder_time);
+        $this->assertSame('+03:30', $user->task_reminder_timezone);
+    }
+
     private function expectResendEmails(int $times): void
     {
         $emails = Mockery::mock();
@@ -181,5 +227,13 @@ class TaskDeadlineReminderTest extends TestCase
         Resend::shouldReceive('emails')
             ->times($times)
             ->andReturn($emails);
+    }
+
+    private function reminderUser(): User
+    {
+        return User::factory()->create([
+            'task_reminder_time' => '09:00',
+            'task_reminder_timezone' => '+00:00',
+        ]);
     }
 }

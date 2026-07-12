@@ -100,6 +100,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/telegram/connect', [ProfileController::class, 'connectTelegram'])->name('profile.telegram.connect');
     Route::delete('/profile/telegram', [ProfileController::class, 'disconnectTelegram'])->name('profile.telegram.disconnect');
     Route::patch('/profile/telegram/reminders', [ProfileController::class, 'updateTelegramReminders'])->name('profile.telegram.reminders');
+    Route::patch('/profile/task-reminder-schedule', [ProfileController::class, 'updateTaskReminderSchedule'])->name('profile.task-reminders.schedule');
 });
 
 Route::redirect('/recommendations/create', '/dashboard/recommendations/create');

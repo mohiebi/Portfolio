@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -29,6 +30,11 @@ class ProfileController extends Controller
                 'username' => $connection?->telegram_username,
                 'connected_at' => $connection?->connected_at?->toJSON(),
                 'reminders_enabled' => $connection?->reminders_enabled ?? true,
+            ],
+            'taskReminderSchedule' => [
+                'time' => $request->user()->taskReminderTime(),
+                'timezone' => $request->user()->taskReminderTimezone(),
+                'timezone_options' => $this->taskReminderTimezoneOptions(),
             ],
         ]);
     }
@@ -116,5 +122,52 @@ class ProfileController extends Controller
 
         return Redirect::route('profile.edit')
             ->with('success', 'Telegram reminder preference updated.');
+    }
+
+    public function updateTaskReminderSchedule(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'time' => ['required', 'date_format:H:i'],
+            'timezone' => ['required', Rule::in(array_column($this->taskReminderTimezoneOptions(), 'value'))],
+        ]);
+
+        $request->user()->forceFill([
+            'task_reminder_time' => $data['time'],
+            'task_reminder_timezone' => $data['timezone'],
+        ])->save();
+
+        return Redirect::route('profile.edit')
+            ->with('success', 'Task reminder schedule updated.');
+    }
+
+    private function taskReminderTimezoneOptions(): array
+    {
+        return collect(range(-12, 14))
+            ->flatMap(function (int $hour): array {
+                $offsets = [0];
+
+                if (in_array($hour, [-9, -3, 3, 4, 5, 6, 8, 9, 10], true)) {
+                    $offsets[] = 30;
+                }
+
+                if (in_array($hour, [5, 8, 12], true)) {
+                    $offsets[] = 45;
+                }
+
+                return collect($offsets)
+                    ->map(function (int $minute) use ($hour): array {
+                        $sign = $hour < 0 ? '-' : '+';
+                        $value = sprintf('%s%02d:%02d', $sign, abs($hour), $minute);
+
+                        return [
+                            'value' => $value,
+                            'label' => 'UTC'.($value === '+00:00' ? '' : $value),
+                        ];
+                    })
+                    ->all();
+            })
+            ->unique('value')
+            ->values()
+            ->all();
     }
 }

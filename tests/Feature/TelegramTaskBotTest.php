@@ -36,7 +36,9 @@ class TelegramTaskBotTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Profile/Edit')
                 ->where('telegram.connected', false)
-                ->where('telegram.bot_username', 'task_bot'));
+                ->where('telegram.bot_username', 'task_bot')
+                ->where('taskReminderSchedule.time', User::DEFAULT_TASK_REMINDER_TIME)
+                ->where('taskReminderSchedule.timezone', User::DEFAULT_TASK_REMINDER_TIMEZONE));
     }
 
     public function test_connect_route_creates_link_token_and_redirects_to_telegram(): void
@@ -217,6 +219,23 @@ class TelegramTaskBotTest extends TestCase
         Telegraph::assertNothingSent();
     }
 
+    public function test_telegram_reminders_wait_for_the_user_reminder_window(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'));
+
+        [, , $user] = $this->connectedUser(reminderTime: '11:00');
+        Task::factory()->for($user)->create([
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => now('Asia/Tehran'),
+        ]);
+
+        $this->artisan('tasks:send-telegram-reminders')->assertExitCode(0);
+
+        Telegraph::assertNothingSent();
+    }
+
     public function test_changing_deadline_resets_telegram_reminder_tracking(): void
     {
         $user = User::factory()->create();
@@ -230,10 +249,13 @@ class TelegramTaskBotTest extends TestCase
         $this->assertNull($task->fresh()->telegram_due_reminded_at);
     }
 
-    private function connectedUser(bool $remindersEnabled = true): array
+    private function connectedUser(bool $remindersEnabled = true, string $reminderTime = '09:00', string $reminderTimezone = '+03:30'): array
     {
         [$bot, $chat] = $this->botAndChat();
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'task_reminder_time' => $reminderTime,
+            'task_reminder_timezone' => $reminderTimezone,
+        ]);
 
         TelegramConnection::create([
             'user_id' => $user->id,

@@ -16,14 +16,24 @@ type TelegramProfile = {
   reminders_enabled: boolean;
 };
 
+type TaskReminderSchedule = {
+  time: string;
+  timezone: string;
+  timezone_options: Array<{ value: string; label: string }>;
+};
+
 export default function ProfilePage() {
-  const { auth, telegram } = usePage<PageProps<{ telegram: TelegramProfile }>>().props;
+  const { auth, telegram, taskReminderSchedule } = usePage<PageProps<{ telegram: TelegramProfile; taskReminderSchedule: TaskReminderSchedule }>>().props;
   const user = auth.user!;
   const profile = useForm({ name: user.name, email: user.email });
   const password = useForm({ current_password: "", password: "", password_confirmation: "" });
   const destroy = useForm({ password: "" });
   const telegramConnect = useForm({});
   const telegramDisconnect = useForm({});
+  const reminderSchedule = useForm({
+    time: taskReminderSchedule.time,
+    timezone: taskReminderSchedule.timezone,
+  });
   const [telegramReminderProcessing, setTelegramReminderProcessing] = useState(false);
 
   const submitReminderPreference = (enabled: boolean) => {
@@ -32,6 +42,11 @@ export default function ProfilePage() {
       onStart: () => setTelegramReminderProcessing(true),
       onFinish: () => setTelegramReminderProcessing(false),
     });
+  };
+
+  const submitReminderSchedule = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    reminderSchedule.patch("/profile/task-reminder-schedule", { preserveScroll: true });
   };
 
   return (
@@ -114,6 +129,39 @@ export default function ProfilePage() {
                 {telegram.reminders_enabled ? "Disable" : "Enable"}
               </Button>
             </div>
+
+            <form className="grid gap-4 rounded-lg border border-border bg-muted/20 p-4" onSubmit={submitReminderSchedule}>
+              <div>
+                <p className="text-sm font-semibold">Reminder time</p>
+                <p className="text-sm text-muted-foreground">Used for email and Telegram deadline reminders. The hourly job sends during the selected local hour.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+                <Field label="Time" error={reminderSchedule.errors.time}>
+                  <Input
+                    type="time"
+                    step="60"
+                    value={reminderSchedule.data.time}
+                    onChange={(event) => reminderSchedule.setData("time", event.target.value)}
+                  />
+                </Field>
+                <Field label="Timezone" error={reminderSchedule.errors.timezone}>
+                  <select
+                    className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring"
+                    value={reminderSchedule.data.timezone}
+                    onChange={(event) => reminderSchedule.setData("timezone", event.target.value)}
+                  >
+                    {taskReminderSchedule.timezone_options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Button type="submit" disabled={reminderSchedule.processing}>
+                  Save time
+                </Button>
+              </div>
+            </form>
           </div>
         </Card>
         <Card title="Delete account" description="This action is permanent and cannot be undone." tone="danger">

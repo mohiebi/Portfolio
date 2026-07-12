@@ -17,6 +17,10 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
+    public const DEFAULT_TASK_REMINDER_TIME = '08:00';
+
+    public const DEFAULT_TASK_REMINDER_TIMEZONE = '+00:00';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -50,6 +54,30 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'task_done_cleanup_enabled' => 'boolean',
         ];
+    }
+
+    public function taskReminderTime(): string
+    {
+        return $this->task_reminder_time ?: self::DEFAULT_TASK_REMINDER_TIME;
+    }
+
+    public function taskReminderTimezone(): string
+    {
+        return $this->task_reminder_timezone ?: self::DEFAULT_TASK_REMINDER_TIMEZONE;
+    }
+
+    public function isTaskReminderDueAt(?Carbon $now = null): bool
+    {
+        $localNow = ($now ?? now())->copy()->setTimezone($this->taskReminderTimezone());
+        [$hour, $minute] = array_map('intval', explode(':', $this->taskReminderTime()));
+        $scheduledAt = $localNow->copy()->setTime($hour, $minute);
+
+        return $scheduledAt->format('Y-m-d H') === $localNow->format('Y-m-d H');
+    }
+
+    public function taskReminderDate(?Carbon $now = null): Carbon
+    {
+        return ($now ?? now())->copy()->setTimezone($this->taskReminderTimezone())->startOfDay();
     }
 
     public function sendEmailVerificationNotification(): void

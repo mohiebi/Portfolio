@@ -24,7 +24,7 @@ Artisan::command('tasks:send-deadline-reminders', function () {
     $this->components->info("Sent {$sent} task deadline reminder(s).");
 
     return 0;
-})->purpose('Send task deadline reminders')->dailyAt('08:00');
+})->purpose('Send task deadline reminders')->hourly();
 
 Artisan::command('tasks:send-telegram-reminders', function () {
     $sent = app(TelegramTaskReminderService::class)->sendDueReminders();
@@ -32,4 +32,4 @@ Artisan::command('tasks:send-telegram-reminders', function () {
     $this->components->info("Sent {$sent} Telegram task reminder message(s).");
 
     return 0;
-})->purpose('Send grouped Telegram task deadline reminders')->dailyAt('07:00')->timezone('Asia/Tehran');
+})->purpose('Send grouped Telegram task deadline reminders')->hourly();

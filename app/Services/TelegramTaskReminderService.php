@@ -14,9 +14,9 @@ class TelegramTaskReminderService
     {
     }
 
-    public function sendDueReminders(?Carbon $today = null): int
+    public function sendDueReminders(?Carbon $now = null): int
     {
-        $today = ($today ?? Carbon::now('Asia/Tehran'))->copy()->timezone('Asia/Tehran')->startOfDay();
+        $now = $now ?? now();
         $sentMessages = 0;
 
         TelegramConnection::query()
@@ -25,11 +25,17 @@ class TelegramTaskReminderService
             ->whereNotNull('telegraph_chat_id')
             ->with(['telegraphChat', 'user'])
             ->orderBy('id')
-            ->chunkById(50, function ($connections) use ($today, &$sentMessages): void {
+            ->chunkById(50, function ($connections) use ($now, &$sentMessages): void {
                 foreach ($connections as $connection) {
                     if (! $connection->user || ! $connection->telegraphChat) {
                         continue;
                     }
+
+                    if (! $connection->user->isTaskReminderDueAt($now)) {
+                        continue;
+                    }
+
+                    $today = $connection->user->taskReminderDate($now);
 
                     $warningTasks = $this->tasksFor($connection, 'telegram_warning_reminded_at', fn ($query) => $query->whereDate('deadline', $today->copy()->addDay()->toDateString()));
                     $dueTasks = $this->tasksFor($connection, 'telegram_due_reminded_at', fn ($query) => $query->whereDate('deadline', $today->toDateString()));

@@ -3,40 +3,62 @@
 namespace App\Services;
 
 use App\Models\Task;
+use App\Models\User;
 use App\Notifications\TaskDeadlineReminder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 class TaskDeadlineReminderService
 {
-    public function sendDueReminders(?Carbon $today = null): int
+    public function sendDueReminders(?Carbon $now = null): int
     {
-        $today = ($today ?? now())->copy()->startOfDay();
+        $now = $now ?? now();
+        $sent = 0;
 
-        return $this->sendStage(
-            TaskDeadlineReminder::STAGE_WARNING,
-            'deadline_warning_reminded_at',
-            fn (Builder $query) => $query->whereDate('deadline', $today->copy()->addDay()->toDateString()),
-        ) + $this->sendStage(
-            TaskDeadlineReminder::STAGE_DUE,
-            'deadline_due_reminded_at',
-            fn (Builder $query) => $query->whereDate('deadline', $today->toDateString()),
-        ) + $this->sendStage(
-            TaskDeadlineReminder::STAGE_OVERDUE,
-            'deadline_overdue_reminded_at',
-            fn (Builder $query) => $query->whereDate('deadline', '<', $today->toDateString()),
-        );
+        User::query()
+            ->whereHas('tasks', fn (Builder $query) => $this->applyActiveDeadlineTaskConstraints($query))
+            ->orderBy('id')
+            ->chunkById(100, function ($users) use ($now, &$sent): void {
+                foreach ($users as $user) {
+                    if (! $user->isTaskReminderDueAt($now)) {
+                        continue;
+                    }
+
+                    $today = $user->taskReminderDate($now);
+
+                    $sent += $this->sendStage(
+                        $user,
+                        TaskDeadlineReminder::STAGE_WARNING,
+                        'deadline_warning_reminded_at',
+                        fn (Builder $query) => $query->whereDate('deadline', $today->copy()->addDay()->toDateString()),
+                    );
+                    $sent += $this->sendStage(
+                        $user,
+                        TaskDeadlineReminder::STAGE_DUE,
+                        'deadline_due_reminded_at',
+                        fn (Builder $query) => $query->whereDate('deadline', $today->toDateString()),
+                    );
+                    $sent += $this->sendStage(
+                        $user,
+                        TaskDeadlineReminder::STAGE_OVERDUE,
+                        'deadline_overdue_reminded_at',
+                        fn (Builder $query) => $query->whereDate('deadline', '<', $today->toDateString()),
+                    );
+                }
+            });
+
+        return $sent;
     }
 
     /**
      * @param callable(Builder): Builder $deadlineConstraint
      */
-    private function sendStage(string $stage, string $remindedAtColumn, callable $deadlineConstraint): int
+    private function sendStage(User $user, string $stage, string $remindedAtColumn, callable $deadlineConstraint): int
     {
         $sent = 0;
         $now = now();
 
-        $deadlineConstraint($this->activeDeadlineTasks())
+        $deadlineConstraint($this->applyActiveDeadlineTaskConstraints($user->tasks()))
             ->whereNull($remindedAtColumn)
             ->with(['parent', 'user'])
             ->orderBy('id')
@@ -60,9 +82,9 @@ class TaskDeadlineReminderService
         return $sent;
     }
 
-    private function activeDeadlineTasks(): Builder
+    private function applyActiveDeadlineTaskConstraints($query)
     {
-        return Task::query()
+        return $query
             ->where('complete', false)
             ->where(function (Builder $query) {
                 $query->whereNull('status')
