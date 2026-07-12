@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 
 class TelegramTaskBotService
 {
-    private const PAGE_SIZE = 10;
+    private const PAGE_SIZE = 6;
 
     public function sendMainMenu(TelegraphChat $chat, ?TelegramConnection $connection = null, ?int $editMessageId = null): void
     {
@@ -33,12 +33,19 @@ class TelegramTaskBotService
         $remindersLabel = $connection->reminders_enabled ? 'Enabled' : 'Disabled';
         $username = $connection->telegram_username ? '@'.$connection->telegram_username : 'this chat';
 
+        $user = $connection->user;
+        $reminderTime = $user?->taskReminderTime() ?? '08:00';
+        $reminderTimezone = $user?->taskReminderTimezone() ?? '+00:00';
+        $reminderDisplay = $reminderTime.' (UTC'.$reminderTimezone.')';
+
         $this->reply(
             $chat,
             $editMessageId,
             "⚙️ <b>Settings</b>\n\n".
             "👤 Connected as: <b>{$this->escape($username)}</b>\n".
-            "{$remindersIcon} Daily reminders: <b>{$remindersLabel}</b>",
+            "{$remindersIcon} Daily reminders: <b>{$remindersLabel}</b>\n".
+            "🕐 Reminder time: <b>{$reminderDisplay}</b>\n\n".
+            "<i>Change reminder time from your profile page.</i>",
             Keyboard::make()->row([
                 Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
                 Button::make('🏠 Main Menu')->action('mainMenu'),

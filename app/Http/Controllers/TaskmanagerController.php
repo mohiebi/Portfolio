@@ -17,6 +17,7 @@ class TaskmanagerController extends Controller
         $user = auth()->user();
         $doneTaskCount = 0;
         $doneCleanupEnabled = false;
+        $telegramConnected = false;
 
         if ($user) {
             $doneTaskCount = $user->tasks()
@@ -35,6 +36,8 @@ class TaskmanagerController extends Controller
             }
 
             $tasks = $tasksQuery->get();
+
+            $telegramConnected = $user->telegramConnection()->whereNotNull('connected_at')->exists();
         } else {
             $tasks = $this->demoTasks();
         }
@@ -42,6 +45,8 @@ class TaskmanagerController extends Controller
         return Inertia::render('Taskmanager/Index', [
             'tasks' => $tasks,
             'demoMode' => auth()->guest(),
+            'telegramConnected' => $telegramConnected,
+            'telegramBotUsername' => env('TELEGRAM_BOT_USERNAME'),
             'doneCleanup' => [
                 'enabled' => $doneCleanupEnabled,
                 'available' => $user && ($doneTaskCount >= 10 || $doneCleanupEnabled),

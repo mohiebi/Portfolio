@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type CSSProperties, type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
-import { AlarmClock, AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Trash2, type LucideIcon } from "lucide-react";
+import { AlarmClock, AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Send, Trash2, X, type LucideIcon } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,8 @@ import type { Task } from "@/types";
 type Props = {
   tasks: Task[];
   demoMode?: boolean;
+  telegramConnected?: boolean;
+  telegramBotUsername?: string;
   doneCleanup?: DoneCleanupSettings;
 };
 
@@ -66,7 +68,12 @@ const STATUS_COLUMNS: StatusColumn[] = [
   },
 ];
 
-export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Props) {
+const TELEGRAM_BANNER_DISMISSED_KEY = "telegram_banner_dismissed";
+
+export default function TasksIndex({ tasks, demoMode = false, telegramConnected = false, telegramBotUsername, doneCleanup }: Props) {
+  const [telegramBannerDismissed, setTelegramBannerDismissed] = useState(() =>
+    typeof localStorage !== "undefined" && localStorage.getItem(TELEGRAM_BANNER_DISMISSED_KEY) === "1"
+  );
   const [savedTasks, setSavedTasks] = useState(tasks);
   const [demoTasks, setDemoTasks] = useState(tasks);
   const [quickTitle, setQuickTitle] = useState("");
@@ -333,6 +340,17 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
           <div className="mt-6 rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
             You are viewing a demo. You can move these sample tasks here, but changes are not saved. Log in or register to create and manage your own tasks.
           </div>
+        )}
+
+        {!demoMode && !telegramConnected && !telegramBannerDismissed && (
+          <TelegramBanner
+            botUsername={telegramBotUsername}
+            className="mt-6"
+            onDismiss={() => {
+              localStorage.setItem(TELEGRAM_BANNER_DISMISSED_KEY, "1");
+              setTelegramBannerDismissed(true);
+            }}
+          />
         )}
 
         <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -980,6 +998,61 @@ function TaskCard({
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+function TelegramBanner({
+  botUsername,
+  className = "",
+  onDismiss,
+}: {
+  botUsername?: string;
+  className?: string;
+  onDismiss: () => void;
+}) {
+  const botUrl = botUsername ? `https://t.me/${botUsername}` : "https://t.me/";
+
+  return (
+    <div className={`relative overflow-hidden rounded-xl border border-[#2294e4]/30 bg-[#2294e4]/8 px-4 py-4 ${className}`}>
+      <div className="flex items-start gap-4">
+        <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-[#2294e4]/30 bg-[#2294e4]/15 text-[#2294e4]">
+          <Send className="h-4 w-4" />
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground">Connect your Telegram bot</p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Get daily reminders, browse your tasks, and check deadlines right inside Telegram — no need to open the app.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href={botUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#2294e4]/40 bg-[#2294e4]/15 px-3 text-xs font-semibold text-[#2294e4] transition-colors hover:bg-[#2294e4]/25"
+            >
+              <Send className="h-3 w-3" />
+              Open bot
+            </a>
+            <Link
+              href="/profile"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-background/50 px-3 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-card"
+            >
+              Connect in profile →
+            </Link>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss Telegram banner"
+          className="shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-border/50 hover:text-foreground"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   );
 }
