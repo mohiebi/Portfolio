@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
 
 class TelegramTaskBotService
 {
-    private const PAGE_SIZE = 6;
+    private const PAGE_SIZE = 10;
 
     public function sendMainMenu(TelegraphChat $chat, ?TelegramConnection $connection = null, ?int $editMessageId = null): void
     {
@@ -52,13 +52,17 @@ class TelegramTaskBotService
         $page = max(1, $page);
 
         $tasks = $this->taskQuery($user, $filter)
-            ->with('parent')
-            ->orderByRaw('parent_id is null desc')
+            ->whereNull('parent_id')
+            ->with('subtasks')
             ->orderBy('deadline')
             ->orderByDesc('created_at')
             ->paginate(self::PAGE_SIZE, ['*'], 'page', $page);
 
-        $this->reply($chat, $editMessageId, $this->taskListMessage($tasks, $filter), $this->taskListKeyboard($tasks, $filter));
+        // offset so numbers continue across pages: page 2 starts at 11, 21, etc.
+        $offset = ($tasks->currentPage() - 1) * self::PAGE_SIZE;
+        $numbered = $tasks->getCollection()->values()->map(fn (Task $task, int $i) => [$i + $offset + 1, $task]);
+
+        $this->reply($chat, $editMessageId, $this->taskListMessage($tasks, $filter, $numbered), $this->taskListKeyboard($tasks, $filter, $numbered));
     }
 
     public function sendTaskDetail(TelegraphChat $chat, User $user, int $taskId, ?int $editMessageId = null): void
@@ -152,7 +156,7 @@ class TelegramTaskBotService
             ->when($filter === 'done', fn (Builder $query) => $query->done());
     }
 
-    private function taskListMessage(LengthAwarePaginator $tasks, string $filter): string
+    private function taskListMessage(LengthAwarePaginator $tasks, string $filter, \Illuminate\Support\Collection $numbered): string
     {
         $title = $this->filterLabel($filter);
 
@@ -160,8 +164,8 @@ class TelegramTaskBotService
             return "📭 <b>{$title}</b>\n\nNo tasks found.";
         }
 
-        $lines = $tasks->getCollection()
-            ->map(fn (Task $task): string => $this->taskSummaryLine($task))
+        $lines = $numbered
+            ->map(fn (array $entry): string => $this->taskSummaryBlock($entry[0], $entry[1]))
             ->implode("\n");
 
         $pagination = $tasks->lastPage() > 1
@@ -171,13 +175,14 @@ class TelegramTaskBotService
         return "<b>{$title}</b>{$pagination}\n\n{$lines}";
     }
 
-    private function taskListKeyboard(LengthAwarePaginator $tasks, string $filter): Keyboard
+    private function taskListKeyboard(LengthAwarePaginator $tasks, string $filter, \Illuminate\Support\Collection $numbered): Keyboard
     {
         $keyboard = Keyboard::make();
 
-        foreach ($tasks->getCollection()->chunk(2) as $chunk) {
+        foreach ($numbered->chunk(2) as $chunk) {
             $keyboard = $keyboard->row($chunk
-                ->map(fn (Task $task): Button => Button::make("#{$task->id} {$this->statusIcon($task)}")->action('showTask')->param('task_id', $task->id))
+                ->map(fn (array $entry): Button => Button::make("{$entry[0]}. {$this->statusIcon($entry[1])}")->action('showTask')->param('task_id', $entry[1]->id))
+                ->values()
                 ->all());
         }
 
@@ -267,11 +272,15 @@ class TelegramTaskBotService
         return '<b>'.$label.' ('.$tasks->count().')</b>'."\n".implode("\n", $lines);
     }
 
-    private function taskSummaryLine(Task $task): string
+    private function taskSummaryBlock(int $number, Task $task): string
     {
-        $subtask = $task->parent_id ? ' ↳' : '';
+        $lines = ["{$number}. {$this->statusIcon($task)} {$this->escape($task->title)} · {$this->deadlineLabel($task)}"];
 
-        return $this->statusIcon($task).$subtask.' <b>#'.$task->id.'</b> '.$this->escape($task->title).' · '.$this->deadlineLabel($task);
+        foreach ($task->subtasks as $subtask) {
+            $lines[] = '   ↳ '.$this->statusIcon($subtask).' '.$this->escape($subtask->title).' · '.$this->deadlineLabel($subtask);
+        }
+
+        return implode("\n", $lines);
     }
 
     private function taskReminderLine(Task $task): string
@@ -319,7 +328,7 @@ class TelegramTaskBotService
         return match ($task->status) {
             Task::STATUS_IN_PROGRESS => '⚡',
             Task::STATUS_DONE => '✅',
-            default => $task->complete ? '✅' : '🔵',
+            default => $task->complete ? '✅' : '⬜',
         };
     }
 
