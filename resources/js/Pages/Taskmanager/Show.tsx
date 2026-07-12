@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from "@inertiajs/react";
 import { type FormEvent, useState } from "react";
-import { AlertTriangle, ArrowLeft, CalendarClock, Check, Circle, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { AlarmClock, AlertTriangle, ArrowLeft, CalendarClock, Check, Circle, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -284,7 +284,7 @@ export default function TaskShow({ task }: Props) {
                   subtaskDeadlineState === "overdue"
                     ? "border-destructive/60 bg-destructive/5"
                     : subtaskDeadlineState === "due-today"
-                      ? "border-destructive/60 bg-destructive/5"
+                      ? "border-deadline-today/60 bg-deadline-today/5"
                       : subtaskDeadlineState === "due-tomorrow"
                       ? "border-warning/60 bg-warning/5"
                       : "border-border bg-background/35";
@@ -358,14 +358,16 @@ export default function TaskShow({ task }: Props) {
                                   subtaskDeadlineState === "overdue"
                                     ? "text-destructive"
                                     : subtaskDeadlineState === "due-today"
-                                      ? "text-destructive"
+                                      ? "text-deadline-today"
                                       : subtaskDeadlineState === "due-tomorrow"
                                       ? "text-warning"
                                       : "text-muted-foreground"
                                 }`}
                               >
-                                {subtaskDeadlineState === "overdue" || subtaskDeadlineState === "due-today" ? (
+                                {subtaskDeadlineState === "overdue" ? (
                                   <AlertTriangle className="h-3 w-3 shrink-0" />
+                                ) : subtaskDeadlineState === "due-today" ? (
+                                  <AlarmClock className="h-3 w-3 shrink-0" />
                                 ) : (
                                   <CalendarClock className="h-3 w-3 shrink-0" />
                                 )}
@@ -425,14 +427,14 @@ function DeadlineBadge({ deadline, state }: { deadline?: string | null; state: D
   const className = state === "overdue"
     ? "bg-destructive/15 text-destructive animate-pulse-glow-danger"
     : state === "due-today"
-      ? "bg-destructive/15 text-destructive animate-pulse-glow-danger"
+      ? "bg-deadline-today/15 text-deadline-today animate-pulse-glow-warning"
       : state === "due-tomorrow"
       ? "bg-warning/15 text-warning animate-pulse-glow-warning"
       : "bg-muted text-muted-foreground";
 
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${className}`}>
-      {state === "overdue" || state === "due-today" ? <AlertTriangle className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
+      {state === "overdue" ? <AlertTriangle className="h-3 w-3" /> : state === "due-today" ? <AlarmClock className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
       {state === "overdue" ? "Overdue " : "Due "}
       {formatDeadlineDate(deadline)}
     </span>

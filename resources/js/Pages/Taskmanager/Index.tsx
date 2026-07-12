@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
-import { type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Trash2, type LucideIcon } from "lucide-react";
+import { type CSSProperties, type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+import { AlarmClock, AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Trash2, type LucideIcon } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -409,30 +409,46 @@ function DeadlineAlerts({ alerts, className = "" }: { alerts: DeadlineAlertItem[
     today: alerts.filter((alert) => alert.state === "due-today"),
     tomorrow: alerts.filter((alert) => alert.state === "due-tomorrow"),
   };
+  const visibleGroups = [
+    {
+      count: groups.overdue.length,
+      icon: AlertTriangle,
+      items: groups.overdue,
+      title: "Overdue",
+      tone: "danger" as const,
+    },
+    {
+      count: groups.today.length,
+      icon: AlarmClock,
+      items: groups.today,
+      title: "Due today",
+      tone: "today" as const,
+    },
+    {
+      count: groups.tomorrow.length,
+      icon: CalendarClock,
+      items: groups.tomorrow,
+      title: "Due tomorrow",
+      tone: "warning" as const,
+    },
+  ].filter((group) => group.count > 0);
 
   return (
-    <div className={`grid gap-3 lg:grid-cols-3 ${className}`}>
-      <DeadlineAlertGroup
-        count={groups.overdue.length}
-        icon={AlertTriangle}
-        items={groups.overdue}
-        title="Overdue"
-        tone="danger"
-      />
-      <DeadlineAlertGroup
-        count={groups.today.length}
-        icon={AlertTriangle}
-        items={groups.today}
-        title="Due today"
-        tone="danger"
-      />
-      <DeadlineAlertGroup
-        count={groups.tomorrow.length}
-        icon={CalendarClock}
-        items={groups.tomorrow}
-        title="Due tomorrow"
-        tone="warning"
-      />
+    <div
+      className={`grid grid-cols-1 gap-3 sm:[grid-template-columns:var(--deadline-alert-columns)] ${className}`}
+      // Fill the row with only the visible groups: 1 = full width, 2 = halves, 3 = thirds.
+      style={{ "--deadline-alert-columns": `repeat(${visibleGroups.length}, minmax(0, 1fr))` } as CSSProperties}
+    >
+      {visibleGroups.map((group) => (
+        <DeadlineAlertGroup
+          key={group.title}
+          count={group.count}
+          icon={group.icon}
+          items={group.items}
+          title={group.title}
+          tone={group.tone}
+        />
+      ))}
     </div>
   );
 }
@@ -448,13 +464,13 @@ function DeadlineAlertGroup({
   icon: LucideIcon;
   items: DeadlineAlertItem[];
   title: string;
-  tone: "danger" | "warning";
+  tone: "danger" | "today" | "warning";
 }) {
-  if (count === 0) return null;
-
   const toneClass = tone === "danger"
     ? "border-destructive/60 bg-destructive/12 text-destructive shadow-[0_18px_40px_-28px_oklch(0.62_0.21_25_/_0.9)]"
-    : "border-warning/60 bg-warning/12 text-warning shadow-[0_18px_40px_-28px_oklch(0.82_0.14_85_/_0.9)]";
+    : tone === "today"
+      ? "border-deadline-today/60 bg-deadline-today/12 text-deadline-today shadow-[0_18px_40px_-28px_oklch(0.72_0.18_52_/_0.9)]"
+      : "border-warning/60 bg-warning/12 text-warning shadow-[0_18px_40px_-28px_oklch(0.82_0.14_85_/_0.9)]";
   const visibleItems = items.slice(0, 3);
 
   return (
@@ -807,9 +823,11 @@ function TaskCard({
   const deadlineState = getDeadlineState(task);
 
   const cardStateClass =
-    deadlineState === "overdue" || deadlineState === "due-today"
+    deadlineState === "overdue"
       ? "border-destructive/70 bg-destructive/10 shadow-[0_0_0_1px_oklch(0.62_0.21_25_/_0.2),0_16px_38px_-24px_oklch(0.62_0.21_25_/_0.85)] animate-pulse-glow-danger"
-      : deadlineState === "due-tomorrow"
+      : deadlineState === "due-today"
+        ? "border-deadline-today/70 bg-deadline-today/10 shadow-[0_0_0_1px_oklch(0.72_0.18_52_/_0.22),0_16px_38px_-24px_oklch(0.72_0.18_52_/_0.85)] animate-pulse-glow-warning"
+        : deadlineState === "due-tomorrow"
         ? "border-warning/70 bg-warning/10 shadow-[0_0_0_1px_oklch(0.82_0.14_85_/_0.2),0_16px_38px_-24px_oklch(0.82_0.14_85_/_0.85)] animate-pulse-glow-warning"
         : focusing
           ? "border-primary/70 bg-primary/10 shadow-[0_0_0_1px_oklch(0.72_0.16_158_/_0.18),0_16px_38px_-24px_oklch(0.72_0.16_158_/_0.85)]"
@@ -879,7 +897,7 @@ function TaskCard({
                       subtaskDeadlineState === "overdue"
                         ? "border-l-destructive/70 bg-destructive/5"
                         : subtaskDeadlineState === "due-today"
-                          ? "border-l-destructive/70 bg-destructive/5"
+                          ? "border-l-deadline-today/70 bg-deadline-today/5"
                           : subtaskDeadlineState === "due-tomorrow"
                           ? "border-l-warning/70 bg-warning/5"
                           : "border-l-transparent"
@@ -904,7 +922,7 @@ function TaskCard({
                         {subtask.title}
                       </span>
                       {subtaskDeadlineState === "overdue" && <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-destructive" />}
-                      {subtaskDeadlineState === "due-today" && <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-destructive" />}
+                      {subtaskDeadlineState === "due-today" && <AlarmClock className="h-2.5 w-2.5 shrink-0 text-deadline-today" />}
                       {subtaskDeadlineState === "due-tomorrow" && <CalendarClock className="h-2.5 w-2.5 shrink-0 text-warning" />}
                     </span>
                   </button>
@@ -923,14 +941,16 @@ function TaskCard({
                 deadlineState === "overdue"
                   ? "border-destructive/50 bg-destructive/20 text-destructive"
                   : deadlineState === "due-today"
-                    ? "border-destructive/50 bg-destructive/20 text-destructive"
+                    ? "border-deadline-today/50 bg-deadline-today/20 text-deadline-today"
                     : deadlineState === "due-tomorrow"
                     ? "border-warning/50 bg-warning/20 text-warning"
                     : "border-[#263855] bg-[#14213a] text-[#9bb1ce]"
               }`}
             >
-              {deadlineState === "overdue" || deadlineState === "due-today" ? (
+              {deadlineState === "overdue" ? (
                 <AlertTriangle className="h-3 w-3" />
+              ) : deadlineState === "due-today" ? (
+                <AlarmClock className="h-3 w-3" />
               ) : (
                 <CalendarClock className="h-3 w-3" />
               )}

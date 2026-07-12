@@ -1,5 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
-import { AlertTriangle, Bell, CalendarClock } from "lucide-react";
+import { AlarmClock, AlertTriangle, Bell, CalendarClock } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import type { DatabaseNotification, PaginatedData } from "@/types";
 
@@ -101,8 +101,12 @@ function notificationContent(notification: DatabaseNotification) {
     const href = data.url ?? "/taskmanager";
 
     return {
-      icon: overdue || dueToday ? AlertTriangle : CalendarClock,
-      iconClass: overdue || dueToday ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning",
+      icon: overdue ? AlertTriangle : dueToday ? AlarmClock : CalendarClock,
+      iconClass: overdue
+        ? "bg-destructive/15 text-destructive"
+        : dueToday
+          ? "bg-deadline-today/15 text-deadline-today"
+          : "bg-warning/15 text-warning",
       content: (
         <span>
           {label}:{" "}

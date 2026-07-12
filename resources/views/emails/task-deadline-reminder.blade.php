@@ -11,7 +11,7 @@
       <td align="center" style="padding:48px 16px 32px;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:520px;">
           <tr>
-            <td style="height:2px;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:4px 4px 0 0;"></td>
+            <td style="height:2px;background:linear-gradient(90deg,#f97316,#f59e0b);border-radius:4px 4px 0 0;"></td>
           </tr>
           <tr>
             <td style="background-color:#121d2f;border:1px solid #1e2d45;border-top:none;border-radius:0 0 16px 16px;">
@@ -29,8 +29,8 @@
                   <td style="padding:36px 40px 40px;">
                     <table cellpadding="0" cellspacing="0" role="presentation" style="margin-bottom:24px;">
                       <tr>
-                        <td style="padding:10px 18px;background-color:#32151d;border:1px solid rgba(239,68,68,0.28);border-radius:8px;">
-                          <span style="font-size:13px;color:#fca5a5;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;">Due today</span>
+                        <td style="padding:10px 18px;background-color:#341d10;border:1px solid rgba(249,115,22,0.3);border-radius:8px;">
+                          <span style="font-size:13px;color:#fdba74;font-family:Arial,sans-serif;text-transform:uppercase;letter-spacing:0.5px;">Due today</span>
                           <br>
                           <span style="font-size:16px;font-weight:800;color:#edf5f2;font-family:Arial,sans-serif;">{{ $deadlineDate }}</span>
                         </td>
@@ -47,7 +47,7 @@
 
                     <table cellpadding="0" cellspacing="0" role="presentation">
                       <tr>
-                        <td style="border-radius:8px;background-color:#ef4444;box-shadow:0 0 20px rgba(239,68,68,0.25);">
+                        <td style="border-radius:8px;background-color:#f97316;box-shadow:0 0 20px rgba(249,115,22,0.25);">
                           <a href="{{ $taskUrl }}" style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#fff7f7;text-decoration:none;letter-spacing:0.1px;font-family:Arial,sans-serif;">
                             View task
                           </a>
