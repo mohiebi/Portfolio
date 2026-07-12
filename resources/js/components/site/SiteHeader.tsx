@@ -1,6 +1,6 @@
 import { Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
-import { ExternalLink, Menu, Sparkles, X } from "lucide-react";
+import { Bell, ExternalLink, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getProjects, type PortfolioProject } from "@/lib/projects";
 import logoUrl from "@/assets/mohi-logo.svg";
@@ -224,6 +224,7 @@ export function SiteHeader() {
             {auth?.user ? (
               <div className="flex items-center gap-3">
                 <UserGreeting user={auth.user} className="text-sm" />
+                <NotificationBell count={auth.user.unread_notifications_count ?? 0} />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -271,6 +272,7 @@ export function SiteHeader() {
                 {auth?.user ? (
                   <div className="flex flex-col gap-2">
                     <UserGreeting user={auth.user} className="px-3 py-2 text-sm" onClick={() => setOpen(false)} />
+                    <NotificationBell count={auth.user.unread_notifications_count ?? 0} onClick={() => setOpen(false)} className="mx-3 w-fit" />
                     <Button
                       variant="outline"
                       size="sm"
@@ -375,6 +377,34 @@ function UserGreeting({
       onClick={onClick}
     >
       Hi {user.name}
+    </Link>
+  );
+}
+
+function NotificationBell({
+  count,
+  className = "",
+  onClick,
+}: {
+  count: number;
+  className?: string;
+  onClick?: () => void;
+}) {
+  const visibleCount = count > 99 ? "99+" : String(count);
+
+  return (
+    <Link
+      href="/notification"
+      aria-label={count > 0 ? `${count} unread notifications` : "Notifications"}
+      className={`relative grid h-9 w-9 place-items-center rounded-md border border-border bg-background/45 text-muted-foreground transition-colors hover:border-primary/45 hover:bg-accent hover:text-foreground ${className}`}
+      onClick={onClick}
+    >
+      <Bell className="h-4 w-4" />
+      {count > 0 && (
+        <span className="absolute -right-1.5 -top-1.5 grid min-h-5 min-w-5 place-items-center rounded-full border border-background bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
+          {visibleCount}
+        </span>
+      )}
     </Link>
   );
 }

@@ -9,6 +9,7 @@ class NotificationPolicy
 {
     public function update(User $user, DatabaseNotification $notification): bool
     {
-        return $user->id === $notification->notifiable_id;
+        return $notification->notifiable_type === $user->getMorphClass()
+            && (int) $user->id === (int) $notification->notifiable_id;
     }
 }

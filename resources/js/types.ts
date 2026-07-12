@@ -5,6 +5,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
       name: string;
       email: string;
       is_admin: boolean;
+      unread_notifications_count?: number;
       employer?: Employer | null;
     } | null;
   };
@@ -62,6 +63,9 @@ export type Task = {
   description?: string | null;
   long_description?: string | null;
   deadline?: string | null;
+  deadline_warning_reminded_at?: string | null;
+  deadline_due_reminded_at?: string | null;
+  deadline_overdue_reminded_at?: string | null;
   complete: boolean;
   status?: "open" | "in_progress" | "done";
   subtasks?: Task[];

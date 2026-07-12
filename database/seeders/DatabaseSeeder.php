@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             'name' =>'Mohammad Hosein',
             'email' => 'e.mohamadhosein@gmail.com',
             // 'email_verified_at' => now(),
-            'password' => Hash::make('9375473295h'),
+            'password' => Hash::make('password'),
             'remember_token' => '',
             'role'=>'7'
          ]);

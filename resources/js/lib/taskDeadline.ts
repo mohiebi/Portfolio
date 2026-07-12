@@ -1,6 +1,6 @@
 import type { Task } from "@/types";
 
-export type DeadlineState = "overdue" | "due-soon" | null;
+export type DeadlineState = "overdue" | "due-today" | "due-tomorrow" | null;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RELATIVE_DAY_LIMIT = 6;
@@ -27,7 +27,7 @@ function daysFromToday(value: string): number | null {
 }
 
 /**
- * "due-soon" covers today and tomorrow; "overdue" means the date has passed.
+ * "due-tomorrow" warns early, "due-today" escalates, and "overdue" means the date has passed.
  * Completed tasks never get a state, regardless of their deadline.
  */
 export function getDeadlineState(task: Pick<Task, "deadline" | "complete">): DeadlineState {
@@ -36,7 +36,8 @@ export function getDeadlineState(task: Pick<Task, "deadline" | "complete">): Dea
   const days = daysFromToday(task.deadline);
   if (days === null) return null;
   if (days < 0) return "overdue";
-  if (days <= 1) return "due-soon";
+  if (days === 0) return "due-today";
+  if (days === 1) return "due-tomorrow";
 
   return null;
 }

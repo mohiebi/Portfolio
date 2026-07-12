@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Task;
+use App\Services\TaskDeadlineReminderService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -15,3 +16,11 @@ Artisan::command('tasks:prune-done', function () {
 
     return 0;
 })->purpose('Delete top-level done tasks inactive for 30 days')->daily();
+
+Artisan::command('tasks:send-deadline-reminders', function () {
+    $sent = app(TaskDeadlineReminderService::class)->sendDueReminders();
+
+    $this->components->info("Sent {$sent} task deadline reminder(s).");
+
+    return 0;
+})->purpose('Send task deadline reminders')->dailyAt('08:00');

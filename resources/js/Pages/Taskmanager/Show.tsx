@@ -283,7 +283,9 @@ export default function TaskShow({ task }: Props) {
                 const cardStateClass =
                   subtaskDeadlineState === "overdue"
                     ? "border-destructive/60 bg-destructive/5"
-                    : subtaskDeadlineState === "due-soon"
+                    : subtaskDeadlineState === "due-today"
+                      ? "border-destructive/60 bg-destructive/5"
+                      : subtaskDeadlineState === "due-tomorrow"
                       ? "border-warning/60 bg-warning/5"
                       : "border-border bg-background/35";
 
@@ -355,12 +357,14 @@ export default function TaskShow({ task }: Props) {
                                 className={`mt-2 flex min-w-0 items-center gap-1.5 text-xs font-medium ${
                                   subtaskDeadlineState === "overdue"
                                     ? "text-destructive"
-                                    : subtaskDeadlineState === "due-soon"
+                                    : subtaskDeadlineState === "due-today"
+                                      ? "text-destructive"
+                                      : subtaskDeadlineState === "due-tomorrow"
                                       ? "text-warning"
                                       : "text-muted-foreground"
                                 }`}
                               >
-                                {subtaskDeadlineState === "overdue" ? (
+                                {subtaskDeadlineState === "overdue" || subtaskDeadlineState === "due-today" ? (
                                   <AlertTriangle className="h-3 w-3 shrink-0" />
                                 ) : (
                                   <CalendarClock className="h-3 w-3 shrink-0" />
@@ -420,13 +424,15 @@ function DeadlineBadge({ deadline, state }: { deadline?: string | null; state: D
 
   const className = state === "overdue"
     ? "bg-destructive/15 text-destructive animate-pulse-glow-danger"
-    : state === "due-soon"
+    : state === "due-today"
+      ? "bg-destructive/15 text-destructive animate-pulse-glow-danger"
+      : state === "due-tomorrow"
       ? "bg-warning/15 text-warning animate-pulse-glow-warning"
       : "bg-muted text-muted-foreground";
 
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${className}`}>
-      {state === "overdue" ? <AlertTriangle className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
+      {state === "overdue" || state === "due-today" ? <AlertTriangle className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
       {state === "overdue" ? "Overdue " : "Due "}
       {formatDeadlineDate(deadline)}
     </span>

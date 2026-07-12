@@ -23,6 +23,9 @@ class Task extends Model
     protected $casts = [
         'complete' => 'boolean',
         'deadline' => 'datetime',
+        'deadline_warning_reminded_at' => 'datetime',
+        'deadline_due_reminded_at' => 'datetime',
+        'deadline_overdue_reminded_at' => 'datetime',
     ];
 
     public function toggleComplete(): void
@@ -144,6 +147,24 @@ class Task extends Model
             });
     }
 
+    public function reminderTargetTask(): self
+    {
+        if (! $this->parent_id) {
+            return $this;
+        }
+
+        return $this->relationLoaded('parent') && $this->parent
+            ? $this->parent
+            : $this->parent()->firstOrFail();
+    }
+
+    public function resetDeadlineReminderTracking(): void
+    {
+        $this->deadline_warning_reminded_at = null;
+        $this->deadline_due_reminded_at = null;
+        $this->deadline_overdue_reminded_at = null;
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');
@@ -161,6 +182,24 @@ class Task extends Model
         static::creating(function ($task) {
             if (! $task->user_id && Auth::id()) {
                 $task->user_id = Auth::id();
+            }
+        });
+
+        static::updating(function ($task) {
+            if ($task->isDirty('deadline')) {
+                $task->resetDeadlineReminderTracking();
+            }
+        });
+
+        static::updated(function ($task) {
+            if ($task->wasChanged('deadline')) {
+                $task->newQueryWithoutScopes()
+                    ->whereKey($task->getKey())
+                    ->update([
+                        'deadline_warning_reminded_at' => null,
+                        'deadline_due_reminded_at' => null,
+                        'deadline_overdue_reminded_at' => null,
+                    ]);
             }
         });
     }

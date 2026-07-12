@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Trash2, type LucideIcon } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,15 @@ type StatusColumn = {
   status: TaskStatus;
   title: string;
   accent: string;
+};
+
+type DeadlineAlertItem = {
+  id: string;
+  title: string;
+  href: string;
+  state: "overdue" | "due-today" | "due-tomorrow";
+  deadline: string;
+  isSubtask: boolean;
 };
 
 const STATUS_COLUMNS: StatusColumn[] = [
@@ -83,6 +92,7 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
 
   const displayedTasks = demoMode ? demoTasks : savedTasks;
   const groupedTasks = useMemo(() => groupTasks(displayedTasks), [displayedTasks]);
+  const deadlineAlerts = useMemo(() => collectDeadlineAlerts(displayedTasks, demoMode), [displayedTasks, demoMode]);
   const done = groupedTasks.done.length;
   const active = groupedTasks.open.length + groupedTasks.in_progress.length;
   // doneCleanup.available reflects the count at the last full page load; recheck
@@ -359,6 +369,8 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
 
         {doneCleanupControl && <DoneCleanupBar {...doneCleanupControl} className="mt-4" />}
 
+        <DeadlineAlerts alerts={deadlineAlerts} className="mt-4" />
+
         {displayedTasks.length === 0 ? (
           <div className="mt-8">
             <EmptyState
@@ -386,6 +398,101 @@ export default function TasksIndex({ tasks, demoMode = false, doneCleanup }: Pro
         )}
       </section>
     </SiteShell>
+  );
+}
+
+function DeadlineAlerts({ alerts, className = "" }: { alerts: DeadlineAlertItem[]; className?: string }) {
+  if (alerts.length === 0) return null;
+
+  const groups = {
+    overdue: alerts.filter((alert) => alert.state === "overdue"),
+    today: alerts.filter((alert) => alert.state === "due-today"),
+    tomorrow: alerts.filter((alert) => alert.state === "due-tomorrow"),
+  };
+
+  return (
+    <div className={`grid gap-3 lg:grid-cols-3 ${className}`}>
+      <DeadlineAlertGroup
+        count={groups.overdue.length}
+        icon={AlertTriangle}
+        items={groups.overdue}
+        title="Overdue"
+        tone="danger"
+      />
+      <DeadlineAlertGroup
+        count={groups.today.length}
+        icon={AlertTriangle}
+        items={groups.today}
+        title="Due today"
+        tone="danger"
+      />
+      <DeadlineAlertGroup
+        count={groups.tomorrow.length}
+        icon={CalendarClock}
+        items={groups.tomorrow}
+        title="Due tomorrow"
+        tone="warning"
+      />
+    </div>
+  );
+}
+
+function DeadlineAlertGroup({
+  count,
+  icon: Icon,
+  items,
+  title,
+  tone,
+}: {
+  count: number;
+  icon: LucideIcon;
+  items: DeadlineAlertItem[];
+  title: string;
+  tone: "danger" | "warning";
+}) {
+  if (count === 0) return null;
+
+  const toneClass = tone === "danger"
+    ? "border-destructive/60 bg-destructive/12 text-destructive shadow-[0_18px_40px_-28px_oklch(0.62_0.21_25_/_0.9)]"
+    : "border-warning/60 bg-warning/12 text-warning shadow-[0_18px_40px_-28px_oklch(0.82_0.14_85_/_0.9)]";
+  const visibleItems = items.slice(0, 3);
+
+  return (
+    <section className={`rounded-xl border px-4 py-3 ${toneClass}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0" />
+          <h2 className="truncate text-sm font-bold uppercase tracking-normal">{title}</h2>
+        </div>
+        <span className="grid h-7 min-w-7 place-items-center rounded-full bg-background/50 px-2 text-sm font-bold">
+          {count}
+        </span>
+      </div>
+      <div className="mt-3 grid gap-1.5">
+        {visibleItems.map((item) => (
+          <Link
+            key={item.id}
+            href={item.href}
+            className="flex min-w-0 items-center justify-between gap-3 rounded-lg bg-background/35 px-3 py-2 text-sm text-foreground hover:bg-background/55"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="min-w-0 truncate font-medium">{item.title}</span>
+              {item.isSubtask && (
+                <span className="shrink-0 rounded-md bg-background/45 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+                  Subtask
+                </span>
+              )}
+            </span>
+            <span className="shrink-0 text-xs text-muted-foreground">{formatDeadlineDate(item.deadline)}</span>
+          </Link>
+        ))}
+        {items.length > visibleItems.length && (
+          <p className="px-1 text-xs text-muted-foreground">
+            +{items.length - visibleItems.length} more
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -700,9 +807,9 @@ function TaskCard({
   const deadlineState = getDeadlineState(task);
 
   const cardStateClass =
-    deadlineState === "overdue"
+    deadlineState === "overdue" || deadlineState === "due-today"
       ? "border-destructive/70 bg-destructive/10 shadow-[0_0_0_1px_oklch(0.62_0.21_25_/_0.2),0_16px_38px_-24px_oklch(0.62_0.21_25_/_0.85)] animate-pulse-glow-danger"
-      : deadlineState === "due-soon"
+      : deadlineState === "due-tomorrow"
         ? "border-warning/70 bg-warning/10 shadow-[0_0_0_1px_oklch(0.82_0.14_85_/_0.2),0_16px_38px_-24px_oklch(0.82_0.14_85_/_0.85)] animate-pulse-glow-warning"
         : focusing
           ? "border-primary/70 bg-primary/10 shadow-[0_0_0_1px_oklch(0.72_0.16_158_/_0.18),0_16px_38px_-24px_oklch(0.72_0.16_158_/_0.85)]"
@@ -771,7 +878,9 @@ function TaskCard({
                     className={`group -mx-1 grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md border-l-2 px-1 py-0.5 text-left transition-colors hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-70 ${
                       subtaskDeadlineState === "overdue"
                         ? "border-l-destructive/70 bg-destructive/5"
-                        : subtaskDeadlineState === "due-soon"
+                        : subtaskDeadlineState === "due-today"
+                          ? "border-l-destructive/70 bg-destructive/5"
+                          : subtaskDeadlineState === "due-tomorrow"
                           ? "border-l-warning/70 bg-warning/5"
                           : "border-l-transparent"
                     }`}
@@ -795,7 +904,8 @@ function TaskCard({
                         {subtask.title}
                       </span>
                       {subtaskDeadlineState === "overdue" && <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-destructive" />}
-                      {subtaskDeadlineState === "due-soon" && <CalendarClock className="h-2.5 w-2.5 shrink-0 text-warning" />}
+                      {subtaskDeadlineState === "due-today" && <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-destructive" />}
+                      {subtaskDeadlineState === "due-tomorrow" && <CalendarClock className="h-2.5 w-2.5 shrink-0 text-warning" />}
                     </span>
                   </button>
                 );
@@ -809,15 +919,17 @@ function TaskCard({
           </span>
           {task.deadline && (
             <span
-              className={`flex items-center gap-1.5 font-medium ${
+              className={`inline-flex min-h-6 items-center gap-1.5 rounded-full border px-2 py-1 font-semibold ${
                 deadlineState === "overdue"
-                  ? "text-destructive"
-                  : deadlineState === "due-soon"
-                    ? "text-warning"
-                    : "text-[#9bb1ce]"
+                  ? "border-destructive/50 bg-destructive/20 text-destructive"
+                  : deadlineState === "due-today"
+                    ? "border-destructive/50 bg-destructive/20 text-destructive"
+                    : deadlineState === "due-tomorrow"
+                    ? "border-warning/50 bg-warning/20 text-warning"
+                    : "border-[#263855] bg-[#14213a] text-[#9bb1ce]"
               }`}
             >
-              {deadlineState === "overdue" ? (
+              {deadlineState === "overdue" || deadlineState === "due-today" ? (
                 <AlertTriangle className="h-3 w-3" />
               ) : (
                 <CalendarClock className="h-3 w-3" />
@@ -880,6 +992,42 @@ function groupTasks(tasks: Task[]): Record<TaskStatus, Task[]> {
     in_progress: sortByDeadline(groups.in_progress),
     done: sortByUpdatedAt(groups.done),
   };
+}
+
+function collectDeadlineAlerts(tasks: Task[], demoMode: boolean): DeadlineAlertItem[] {
+  return tasks.flatMap((task) => {
+    const href = demoMode ? "/login?redirect=/taskmanager" : `/taskmanager/${task.id}`;
+    const taskState = getDeadlineState(task);
+    const alerts: DeadlineAlertItem[] = taskState && task.deadline && getTaskStatus(task) !== "done"
+      ? [{
+          id: `task-${task.id}`,
+          title: task.title,
+          href,
+          state: taskState,
+          deadline: task.deadline,
+          isSubtask: false,
+        }]
+      : [];
+
+    for (const subtask of task.subtasks ?? []) {
+      const subtaskState = getDeadlineState(subtask);
+
+      if (!subtaskState || !subtask.deadline || getTaskStatus(subtask) === "done") {
+        continue;
+      }
+
+      alerts.push({
+        id: `subtask-${subtask.id}`,
+        title: `${subtask.title} - ${task.title}`,
+        href,
+        state: subtaskState,
+        deadline: subtask.deadline,
+        isSubtask: true,
+      });
+    }
+
+    return alerts;
+  }).sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
 }
 
 function getTaskStatus(task: Task): TaskStatus {
