@@ -12,6 +12,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   flash: {
     success?: string | null;
     status?: string | null;
+    error?: string | null;
   };
   app: {
     name: string;

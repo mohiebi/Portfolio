@@ -13,9 +13,13 @@ class Task extends Model
     use HasFactory;
 
     public const STATUS_OPEN = 'open';
+
     public const STATUS_IN_PROGRESS = 'in_progress';
+
     public const STATUS_DONE = 'done';
+
     public const DONE_BOARD_TTL_DAYS = 7;
+
     public const DONE_RETENTION_DAYS = 30;
 
     protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status', 'deadline'];
@@ -26,6 +30,9 @@ class Task extends Model
         'deadline_warning_reminded_at' => 'datetime',
         'deadline_due_reminded_at' => 'datetime',
         'deadline_overdue_reminded_at' => 'datetime',
+        'telegram_warning_reminded_at' => 'datetime',
+        'telegram_due_reminded_at' => 'datetime',
+        'telegram_overdue_reminded_at' => 'datetime',
     ];
 
     public function toggleComplete(): void
@@ -163,6 +170,9 @@ class Task extends Model
         $this->deadline_warning_reminded_at = null;
         $this->deadline_due_reminded_at = null;
         $this->deadline_overdue_reminded_at = null;
+        $this->telegram_warning_reminded_at = null;
+        $this->telegram_due_reminded_at = null;
+        $this->telegram_overdue_reminded_at = null;
     }
 
     public function parent(): BelongsTo
@@ -199,10 +209,14 @@ class Task extends Model
                         'deadline_warning_reminded_at' => null,
                         'deadline_due_reminded_at' => null,
                         'deadline_overdue_reminded_at' => null,
+                        'telegram_warning_reminded_at' => null,
+                        'telegram_due_reminded_at' => null,
+                        'telegram_overdue_reminded_at' => null,
                     ]);
             }
         });
     }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

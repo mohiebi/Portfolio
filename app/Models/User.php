@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 use Resend\Laravel\Facades\Resend;
 
-class User extends Authenticatable implements  MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -52,7 +52,6 @@ class User extends Authenticatable implements  MustVerifyEmail
         ];
     }
 
-    
     public function sendEmailVerificationNotification(): void
     {
         $verificationUrl = URL::temporarySignedRoute(
@@ -64,11 +63,11 @@ class User extends Authenticatable implements  MustVerifyEmail
         $name = e($this->name);
 
         Resend::emails()->send([
-            'from'    => 'Mohi Portfolio <info@mohiebi.com>',
-            'to'      => [$this->email],
+            'from' => 'Mohi Portfolio <info@mohiebi.com>',
+            'to' => [$this->email],
             'subject' => 'Verify your email address',
-            'html'    => view('emails.verify-email', [
-                'name'            => $name,
+            'html' => view('emails.verify-email', [
+                'name' => $name,
                 'verificationUrl' => $verificationUrl,
             ])->render(),
         ]);
@@ -89,6 +88,11 @@ class User extends Authenticatable implements  MustVerifyEmail
         return $this->hasMany(Task::class);
     }
 
+    public function telegramConnection(): HasOne
+    {
+        return $this->hasOne(TelegramConnection::class);
+    }
+
     public function listings(): HasMany
     {
         return $this->hasMany(Listing::class, 'by_user_id');
@@ -98,6 +102,4 @@ class User extends Authenticatable implements  MustVerifyEmail
     {
         return $this->hasMany(Offer::class, 'bidder_id');
     }
-
-
 }

@@ -1,23 +1,23 @@
 <?php
 
-use App\Http\Controllers\Auth\GoogleAuth;
 use App\Http\Controllers\ArticleController;
-use App\Http\Controllers\Projects\RealEstate\ListingController;
-use App\Http\Controllers\Projects\RealEstate\ListingOfferController;
-use App\Http\Controllers\Projects\RealEstate\NotificationController;
-use App\Http\Controllers\Projects\RealEstate\RealtorListingAcceptOfferController;
-use App\Http\Controllers\Projects\RealEstate\RealtorListingController;
-use App\Http\Controllers\Projects\RealEstate\RealtorListingImageController;
+use App\Http\Controllers\Auth\GoogleAuth;
 use App\Http\Controllers\CaseStudyController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\Projects\BookReview\BookController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Projects\BookReview\BookController;
 use App\Http\Controllers\Projects\BookReview\ReviewController;
 use App\Http\Controllers\Projects\JobBoard\EmployerController;
 use App\Http\Controllers\Projects\JobBoard\JobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\JobController;
 use App\Http\Controllers\Projects\JobBoard\myJobApplicationController;
 use App\Http\Controllers\Projects\JobBoard\MyJobController;
+use App\Http\Controllers\Projects\RealEstate\ListingController;
+use App\Http\Controllers\Projects\RealEstate\ListingOfferController;
+use App\Http\Controllers\Projects\RealEstate\NotificationController;
+use App\Http\Controllers\Projects\RealEstate\RealtorListingAcceptOfferController;
+use App\Http\Controllers\Projects\RealEstate\RealtorListingController;
+use App\Http\Controllers\Projects\RealEstate\RealtorListingImageController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TaskmanagerController;
@@ -28,7 +28,6 @@ use App\Models\Service;
 use App\Support\Seo;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
 
 Route::get('/', function () {
     return Inertia::render('Portfolio/Home', [
@@ -98,6 +97,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/telegram/connect', [ProfileController::class, 'connectTelegram'])->name('profile.telegram.connect');
+    Route::delete('/profile/telegram', [ProfileController::class, 'disconnectTelegram'])->name('profile.telegram.disconnect');
+    Route::patch('/profile/telegram/reminders', [ProfileController::class, 'updateTelegramReminders'])->name('profile.telegram.reminders');
 });
 
 Route::redirect('/recommendations/create', '/dashboard/recommendations/create');
@@ -116,23 +118,23 @@ Route::middleware(['auth', 'admin'])->prefix('dashboard')->name('dashboard.')->g
 
 require __DIR__.'/auth.php';
 
-Route::get('google/auth', [GoogleAuth::class,'auth'])->name('googleLogin');
-Route::get('auth/google/callback', [GoogleAuth::class,'callback']);
- 
+Route::get('google/auth', [GoogleAuth::class, 'auth'])->name('googleLogin');
+Route::get('auth/google/callback', [GoogleAuth::class, 'callback']);
+
 Route::resource('books', BookController::class)
-    ->only(['index', 'show']);
+     ->only(['index', 'show']);
 
 Route::middleware(['throttle'])->group(function () {
     Route::resource('books.reviews', ReviewController::class)
-        ->scoped(['review'=>'book'])
+        ->scoped(['review' => 'book'])
         ->only(['create', 'store']);
-    
+
 });
 
 Route::resource('jobs', JobController::class)
-    ->only(['index' , 'show']);
+    ->only(['index', 'show']);
 
-Route::middleware('auth')->group(function(){
+Route::middleware('auth')->group(function () {
     Route::get('jobs/{job}/apply', [JobApplicationController::class, 'create'])
         ->name('jobs.apply');
     Route::post('jobs/{job}/apply', [JobApplicationController::class, 'store'])
@@ -147,7 +149,7 @@ Route::middleware('auth')->group(function(){
     Route::middleware('employer')
         ->resource('my-jobs', MyJobController::class);
 });
-Route::middleware('auth')->group(function(){
+Route::middleware('auth')->group(function () {
     Route::patch('taskmanager/done-cleanup', [TaskmanagerController::class, 'updateDoneCleanup'])
         ->name('taskmanager.done-cleanup.update');
 
@@ -165,7 +167,7 @@ Route::middleware('auth')->group(function(){
 Route::resource('taskmanager', TaskmanagerController::class)
     ->only(['index']);
 
-Route::put('taskmanager/{task}/toggle-complete', [TaskmanagerController::class ,'togglecomplete'])
+Route::put('taskmanager/{task}/toggle-complete', [TaskmanagerController::class, 'togglecomplete'])
     ->middleware('auth')
     ->name('taskmanager-toggle');
 
@@ -173,8 +175,8 @@ Route::patch('taskmanager/{task}/status', [TaskmanagerController::class, 'update
     ->middleware('auth')
     ->name('taskmanager-status');
 
-Route::post('sendmail', [ContactController::class ,'contact'] )
-->name('contact');
+Route::post('sendmail', [ContactController::class, 'contact'])
+    ->name('contact');
 
 // ── Real Estate Marketplace ───────────────────────────────────────────────────
 

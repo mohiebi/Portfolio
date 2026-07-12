@@ -2,6 +2,7 @@
 
 use App\Models\Task;
 use App\Services\TaskDeadlineReminderService;
+use App\Services\TelegramTaskReminderService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -24,3 +25,11 @@ Artisan::command('tasks:send-deadline-reminders', function () {
 
     return 0;
 })->purpose('Send task deadline reminders')->dailyAt('08:00');
+
+Artisan::command('tasks:send-telegram-reminders', function () {
+    $sent = app(TelegramTaskReminderService::class)->sendDueReminders();
+
+    $this->components->info("Sent {$sent} Telegram task reminder message(s).");
+
+    return 0;
+})->purpose('Send grouped Telegram task deadline reminders')->dailyAt('07:00')->timezone('Asia/Tehran');

@@ -1,16 +1,38 @@
-import { Head, useForm, usePage } from "@inertiajs/react";
+import { Head, router, useForm, usePage } from "@inertiajs/react";
 import { SiteShell, PageHeader } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusMessage } from "@/components/site/StatusMessage";
 import type { PageProps } from "@/types";
+import { Bell, BellOff, Link, MessageCircle, Unlink } from "lucide-react";
+import { useState } from "react";
+
+type TelegramProfile = {
+  bot_username?: string | null;
+  connected: boolean;
+  username?: string | null;
+  connected_at?: string | null;
+  reminders_enabled: boolean;
+};
 
 export default function ProfilePage() {
-  const user = usePage<PageProps>().props.auth.user!;
+  const { auth, telegram } = usePage<PageProps<{ telegram: TelegramProfile }>>().props;
+  const user = auth.user!;
   const profile = useForm({ name: user.name, email: user.email });
   const password = useForm({ current_password: "", password: "", password_confirmation: "" });
   const destroy = useForm({ password: "" });
+  const telegramConnect = useForm({});
+  const telegramDisconnect = useForm({});
+  const [telegramReminderProcessing, setTelegramReminderProcessing] = useState(false);
+
+  const submitReminderPreference = (enabled: boolean) => {
+    router.patch("/profile/telegram/reminders", { reminders_enabled: enabled }, {
+      preserveScroll: true,
+      onStart: () => setTelegramReminderProcessing(true),
+      onFinish: () => setTelegramReminderProcessing(false),
+    });
+  };
 
   return (
     <SiteShell>
@@ -32,6 +54,67 @@ export default function ProfilePage() {
             <Field label="Confirm" error={password.errors.password_confirmation}><Input type="password" value={password.data.password_confirmation} onChange={(event) => password.setData("password_confirmation", event.target.value)} /></Field>
             <div className="flex justify-end"><Button disabled={password.processing}>Update password</Button></div>
           </form>
+        </Card>
+        <Card title="Telegram bot" description="Connect Telegram to view tasks and receive daily deadline reminders.">
+          <div className="grid gap-5">
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
+                  <MessageCircle className="size-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">
+                    {telegram.connected ? "Telegram connected" : "Telegram not connected"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {telegram.connected
+                      ? telegram.username
+                        ? `Connected as @${telegram.username}`
+                        : "Connected to your Telegram chat"
+                      : telegram.bot_username
+                        ? `Bot: @${telegram.bot_username}`
+                        : "Set TELEGRAM_BOT_USERNAME before connecting."}
+                  </p>
+                </div>
+              </div>
+              {telegram.connected ? (
+                <form onSubmit={(event) => { event.preventDefault(); telegramDisconnect.delete("/profile/telegram", { preserveScroll: true }); }}>
+                  <Button type="submit" variant="outline" disabled={telegramDisconnect.processing}>
+                    <Unlink className="mr-2 size-4" aria-hidden="true" />
+                    Disconnect
+                  </Button>
+                </form>
+              ) : (
+                <form onSubmit={(event) => { event.preventDefault(); telegramConnect.post("/profile/telegram/connect"); }}>
+                  <Button type="submit" disabled={telegramConnect.processing || !telegram.bot_username}>
+                    <Link className="mr-2 size-4" aria-hidden="true" />
+                    Connect Telegram
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full border border-warning/30 bg-warning/10 text-warning">
+                  {telegram.reminders_enabled ? <Bell className="size-5" aria-hidden="true" /> : <BellOff className="size-5" aria-hidden="true" />}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Daily Telegram reminders</p>
+                  <p className="text-sm text-muted-foreground">One grouped message at 7:00 AM Tehran time when tasks need attention.</p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!telegram.connected || telegramReminderProcessing}
+                onClick={() => submitReminderPreference(!telegram.reminders_enabled)}
+              >
+                {telegram.reminders_enabled ? <BellOff className="mr-2 size-4" aria-hidden="true" /> : <Bell className="mr-2 size-4" aria-hidden="true" />}
+                {telegram.reminders_enabled ? "Disable" : "Enable"}
+              </Button>
+            </div>
+          </div>
         </Card>
         <Card title="Delete account" description="This action is permanent and cannot be undone." tone="danger">
           <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); destroy.delete("/profile"); }}>

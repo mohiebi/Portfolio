@@ -39,4 +39,8 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_CALL_BACK'),
     ],
+
+    'telegram' => [
+        'bot_username' => env('TELEGRAM_BOT_USERNAME'),
+    ],
 ];
