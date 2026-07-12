@@ -69,7 +69,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
 
     public function mainMenu(): void
     {
-        $this->showMainMenuOrConnectMessage();
+        $this->showMainMenuOrConnectMessage($this->callbackMessageId());
     }
 
     public function settings(): void
@@ -82,7 +82,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendSettings($this->chat, $connection);
+        app(TelegramTaskBotService::class)->sendSettings($this->chat, $connection, $this->callbackMessageId());
     }
 
     public function showTasks(string $filter = 'all', string|int $page = 1): void
@@ -95,7 +95,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendTaskList($this->chat, $connection->user, $filter, (int) $page);
+        app(TelegramTaskBotService::class)->sendTaskList($this->chat, $connection->user, $filter, (int) $page, $this->callbackMessageId());
     }
 
     public function showTask(string|int $task_id): void
@@ -108,7 +108,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendTaskDetail($this->chat, $connection->user, (int) $task_id);
+        app(TelegramTaskBotService::class)->sendTaskDetail($this->chat, $connection->user, (int) $task_id, $this->callbackMessageId());
     }
 
     protected function handleChatMessage(Stringable $text): void
@@ -116,7 +116,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
         $this->showMainMenuOrConnectMessage();
     }
 
-    private function showMainMenuOrConnectMessage(): void
+    private function showMainMenuOrConnectMessage(?int $editMessageId = null): void
     {
         $connection = $this->connectedTelegramConnection();
 
@@ -126,7 +126,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendMainMenu($this->chat, $connection);
+        app(TelegramTaskBotService::class)->sendMainMenu($this->chat, $connection, $editMessageId);
     }
 
     private function connectedTelegramConnection(): ?TelegramConnection
@@ -141,5 +141,10 @@ class TaskManagerTelegramWebhook extends WebhookHandler
     private function sendConnectMessage(): void
     {
         $this->chat->html("🔗 <b>Not connected yet.</b>\n\nVisit your profile page to link this Telegram account and start viewing tasks &amp; receiving reminders.")->send();
+    }
+
+    private function callbackMessageId(): ?int
+    {
+        return $this->callbackQuery?->message()?->id();
     }
 }

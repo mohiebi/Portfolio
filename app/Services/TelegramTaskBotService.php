@@ -17,38 +17,36 @@ class TelegramTaskBotService
 {
     private const PAGE_SIZE = 6;
 
-    public function sendMainMenu(TelegraphChat $chat, ?TelegramConnection $connection = null): void
+    public function sendMainMenu(TelegraphChat $chat, ?TelegramConnection $connection = null, ?int $editMessageId = null): void
     {
         $name = $connection?->user?->name;
         $message = $name
             ? "👋 Hello, <b>{$this->escape($name)}</b>!\n\nWhat would you like to view?"
             : "🔗 <b>Not connected yet.</b>\n\nPlease connect this Telegram chat from your profile page to get started.";
 
-        $chat->html($message)
-            ->keyboard($connection?->isConnected() ? $this->mainMenuKeyboard() : Keyboard::make())
-            ->send();
+        $this->reply($chat, $editMessageId, $message, $connection?->isConnected() ? $this->mainMenuKeyboard() : Keyboard::make());
     }
 
-    public function sendSettings(TelegraphChat $chat, TelegramConnection $connection): void
+    public function sendSettings(TelegraphChat $chat, TelegramConnection $connection, ?int $editMessageId = null): void
     {
         $remindersIcon = $connection->reminders_enabled ? '🔔' : '🔕';
         $remindersLabel = $connection->reminders_enabled ? 'Enabled' : 'Disabled';
         $username = $connection->telegram_username ? '@'.$connection->telegram_username : 'this chat';
 
-        $chat->html(
+        $this->reply(
+            $chat,
+            $editMessageId,
             "⚙️ <b>Settings</b>\n\n".
             "👤 Connected as: <b>{$this->escape($username)}</b>\n".
-            "{$remindersIcon} Daily reminders: <b>{$remindersLabel}</b>"
-        )
-            ->keyboard(Keyboard::make()
-                ->row([
-                    Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
-                    Button::make('🏠 Main Menu')->action('mainMenu'),
-                ]))
-            ->send();
+            "{$remindersIcon} Daily reminders: <b>{$remindersLabel}</b>",
+            Keyboard::make()->row([
+                Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
+                Button::make('🏠 Main Menu')->action('mainMenu'),
+            ])
+        );
     }
 
-    public function sendTaskList(TelegraphChat $chat, User $user, string $filter = 'all', int $page = 1): void
+    public function sendTaskList(TelegraphChat $chat, User $user, string $filter = 'all', int $page = 1, ?int $editMessageId = null): void
     {
         $filter = $this->normalizeFilter($filter);
         $page = max(1, $page);
@@ -60,12 +58,10 @@ class TelegramTaskBotService
             ->orderByDesc('created_at')
             ->paginate(self::PAGE_SIZE, ['*'], 'page', $page);
 
-        $chat->html($this->taskListMessage($tasks, $filter))
-            ->keyboard($this->taskListKeyboard($tasks, $filter))
-            ->send();
+        $this->reply($chat, $editMessageId, $this->taskListMessage($tasks, $filter), $this->taskListKeyboard($tasks, $filter));
     }
 
-    public function sendTaskDetail(TelegraphChat $chat, User $user, int $taskId): void
+    public function sendTaskDetail(TelegraphChat $chat, User $user, int $taskId, ?int $editMessageId = null): void
     {
         $task = $user->tasks()
             ->with(['parent', 'subtasks'])
@@ -73,18 +69,29 @@ class TelegramTaskBotService
             ->first();
 
         if (! $task) {
-            $chat->html('Task not found.')->keyboard($this->mainMenuKeyboard())->send();
+            $this->reply($chat, $editMessageId, 'Task not found.', $this->mainMenuKeyboard());
 
             return;
         }
 
-        $chat->html($this->taskDetailMessage($task))
-            ->keyboard(Keyboard::make()
-                ->row([
-                    Button::make('All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
-                    Button::make('Main Menu')->action('mainMenu'),
-                ]))
-            ->send();
+        $this->reply(
+            $chat,
+            $editMessageId,
+            $this->taskDetailMessage($task),
+            Keyboard::make()->row([
+                Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
+                Button::make('🏠 Main Menu')->action('mainMenu'),
+            ])
+        );
+    }
+
+    private function reply(TelegraphChat $chat, ?int $editMessageId, string $html, Keyboard $keyboard): void
+    {
+        if ($editMessageId !== null) {
+            $chat->edit($editMessageId)->html($html)->keyboard($keyboard)->send();
+        } else {
+            $chat->html($html)->keyboard($keyboard)->send();
+        }
     }
 
     public function mainMenuKeyboard(): Keyboard
