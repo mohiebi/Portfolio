@@ -84,13 +84,12 @@ class TelegramTaskReminderService
      */
     private function markReminded(Collection $tasks, string $column, Carbon $sentAt): void
     {
-        $tasks->each(function (Task $task) use ($column, $sentAt): void {
-            try {
-                $task->timestamps = false;
-                $task->forceFill([$column => $sentAt])->saveQuietly();
-            } finally {
-                $task->timestamps = true;
-            }
+        if ($tasks->isEmpty()) {
+            return;
+        }
+
+        Task::withoutTimestamps(function () use ($tasks, $column, $sentAt): void {
+            Task::whereIn('id', $tasks->pluck('id'))->update([$column => $sentAt]);
         });
     }
 }
