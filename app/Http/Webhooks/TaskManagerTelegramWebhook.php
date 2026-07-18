@@ -4,12 +4,20 @@ namespace App\Http\Webhooks;
 
 use App\Models\TelegramConnection;
 use App\Services\TelegramTaskBotService;
+use App\Services\TelegramTaskCrudService;
 use DefStudio\Telegraph\Handlers\WebhookHandler;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Stringable;
 
 class TaskManagerTelegramWebhook extends WebhookHandler
 {
+    public function __construct(
+        private readonly TelegramTaskBotService $botService,
+        private readonly TelegramTaskCrudService $crudService,
+    ) {
+        parent::__construct();
+    }
+
     public function start(string $token = ''): void
     {
         $token = trim($token);
@@ -59,7 +67,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             'reminders_enabled' => true,
         ])->save();
 
-        app(TelegramTaskBotService::class)->sendMainMenu($this->chat, $connection->fresh(['user']));
+        $this->botService->sendMainMenu($this->chat, $connection->fresh(['user']));
     }
 
     public function help(): void
@@ -82,7 +90,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendSettings($this->chat, $connection, $this->callbackMessageId());
+        $this->botService->sendSettings($this->chat, $connection, $this->callbackMessageId());
     }
 
     public function showTasks(string $filter = 'all', string|int $page = 1): void
@@ -95,7 +103,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendTaskList($this->chat, $connection->user, $filter, (int) $page, $this->callbackMessageId());
+        $this->botService->sendTaskList($this->chat, $connection->user, $filter, (int) $page, $this->callbackMessageId());
     }
 
     public function showTask(string|int $task_id): void
@@ -108,11 +116,186 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendTaskDetail($this->chat, $connection->user, (int) $task_id, $this->callbackMessageId());
+        $this->botService->sendTaskDetail($this->chat, $connection->user, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function createTask(): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->beginTaskCreation($this->chat, $connection, $this->callbackMessageId());
+    }
+
+    public function createSubtask(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->beginSubtaskCreation($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function skipCreateDeadline(): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->skipCreateDeadline($this->chat, $connection, $this->callbackMessageId());
+    }
+
+    public function updateTaskDeadline(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->beginDeadlineUpdate($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function clearTaskDeadline(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->clearDeadline($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function updateTaskDescription(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->beginDescriptionUpdate($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function clearTaskDescription(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->clearDescription($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function taskStatus(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->sendStatusMenu($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function setTaskStatus(string|int $task_id, string $status): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->updateStatus($this->chat, $connection, (int) $task_id, $status, $this->callbackMessageId());
+    }
+
+    public function confirmDeleteTask(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->confirmDelete($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function deleteTask(string|int $task_id): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->deleteTask($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function updateReminderHour(): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->beginReminderHourUpdate($this->chat, $connection, $this->callbackMessageId());
+    }
+
+    public function cancelTaskInput(): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->cancel($this->chat, $connection, $this->callbackMessageId());
     }
 
     protected function handleChatMessage(Stringable $text): void
     {
+        $connection = $this->connectedTelegramConnection();
+
+        if ($connection && $this->crudService->handleTextInput($this->chat, $connection, $text)) {
+            return;
+        }
+
         $this->showMainMenuOrConnectMessage();
     }
 
@@ -126,7 +309,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
-        app(TelegramTaskBotService::class)->sendMainMenu($this->chat, $connection, $editMessageId);
+        $this->botService->sendMainMenu($this->chat, $connection, $editMessageId);
     }
 
     private function connectedTelegramConnection(): ?TelegramConnection

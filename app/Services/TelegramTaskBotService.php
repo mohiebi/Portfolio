@@ -21,15 +21,14 @@ class TelegramTaskBotService
     {
         $name = $connection?->user?->name;
         $message = $name
-            ? "👋 Hello, <b>{$this->escape($name)}</b>!\n\nWhat would you like to view?"
-            : "🔗 <b>Not connected yet.</b>\n\nPlease connect this Telegram chat from your profile page to get started.";
+            ? "TaskManager is connected.\n\nHello, <b>{$this->escape($name)}</b>!\n\nWhat would you like to do?"
+            : "<b>Not connected yet.</b>\n\nPlease connect this Telegram chat from your profile page to get started.";
 
         $this->reply($chat, $editMessageId, $message, $connection?->isConnected() ? $this->mainMenuKeyboard() : Keyboard::make());
     }
 
     public function sendSettings(TelegraphChat $chat, TelegramConnection $connection, ?int $editMessageId = null): void
     {
-        $remindersIcon = $connection->reminders_enabled ? '🔔' : '🔕';
         $remindersLabel = $connection->reminders_enabled ? 'Enabled' : 'Disabled';
         $username = $connection->telegram_username ? '@'.$connection->telegram_username : 'this chat';
 
@@ -41,15 +40,19 @@ class TelegramTaskBotService
         $this->reply(
             $chat,
             $editMessageId,
-            "⚙️ <b>Settings</b>\n\n".
-            "👤 Connected as: <b>{$this->escape($username)}</b>\n".
-            "{$remindersIcon} Daily reminders: <b>{$remindersLabel}</b>\n".
-            "🕐 Reminder time: <b>{$reminderDisplay}</b>\n\n".
-            "<i>Change reminder time from your profile page.</i>",
-            Keyboard::make()->row([
-                Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
-                Button::make('🏠 Main Menu')->action('mainMenu'),
-            ])
+            "<b>Settings</b>\n\n".
+            "Connected as: <b>{$this->escape($username)}</b>\n".
+            "Daily reminders: <b>{$remindersLabel}</b>\n".
+            "Reminder time: <b>{$reminderDisplay}</b>\n\n".
+            '<i>You can update the reminder hour here; timezone stays from your profile.</i>',
+            Keyboard::make()
+                ->row([
+                    Button::make('Update reminder hour')->action('updateReminderHour'),
+                ])
+                ->row([
+                    Button::make('All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
+                    Button::make('Main Menu')->action('mainMenu'),
+                ])
         );
     }
 
@@ -65,7 +68,6 @@ class TelegramTaskBotService
             ->orderByDesc('created_at')
             ->paginate(self::PAGE_SIZE, ['*'], 'page', $page);
 
-        // offset so numbers continue across pages: page 2 starts at 11, 21, etc.
         $offset = ($tasks->currentPage() - 1) * self::PAGE_SIZE;
         $numbered = $tasks->getCollection()->values()->map(fn (Task $task, int $i) => [$i + $offset + 1, $task]);
 
@@ -89,39 +91,30 @@ class TelegramTaskBotService
             $chat,
             $editMessageId,
             $this->taskDetailMessage($task),
-            Keyboard::make()->row([
-                Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
-                Button::make('🏠 Main Menu')->action('mainMenu'),
-            ])
+            $this->taskDetailKeyboard($task)
         );
-    }
-
-    private function reply(TelegraphChat $chat, ?int $editMessageId, string $html, Keyboard $keyboard): void
-    {
-        if ($editMessageId !== null) {
-            $chat->edit($editMessageId)->html($html)->keyboard($keyboard)->send();
-        } else {
-            $chat->html($html)->keyboard($keyboard)->send();
-        }
     }
 
     public function mainMenuKeyboard(): Keyboard
     {
         return Keyboard::make()
             ->row([
-                Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
-                Button::make('📅 Due Today')->action('showTasks')->param('filter', 'due_today')->param('page', 1),
+                Button::make('Add Task')->action('createTask'),
             ])
             ->row([
-                Button::make('🗓 Due Tomorrow')->action('showTasks')->param('filter', 'due_tomorrow')->param('page', 1),
-                Button::make('🆕 Open')->action('showTasks')->param('filter', 'open')->param('page', 1),
+                Button::make('All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
+                Button::make('Due Today')->action('showTasks')->param('filter', 'due_today')->param('page', 1),
             ])
             ->row([
-                Button::make('⚡ In Progress')->action('showTasks')->param('filter', 'in_progress')->param('page', 1),
-                Button::make('✅ Done')->action('showTasks')->param('filter', 'done')->param('page', 1),
+                Button::make('Due Tomorrow')->action('showTasks')->param('filter', 'due_tomorrow')->param('page', 1),
+                Button::make('Open')->action('showTasks')->param('filter', 'open')->param('page', 1),
             ])
             ->row([
-                Button::make('⚙️ Settings')->action('settings'),
+                Button::make('In Progress')->action('showTasks')->param('filter', 'in_progress')->param('page', 1),
+                Button::make('Done')->action('showTasks')->param('filter', 'done')->param('page', 1),
+            ])
+            ->row([
+                Button::make('Settings')->action('settings'),
             ]);
     }
 
@@ -140,14 +133,25 @@ class TelegramTaskBotService
         $chat->html($this->reminderMessage($warningTasks, $dueTasks, $overdueTasks, $today))
             ->keyboard(Keyboard::make()
                 ->row([
-                    Button::make('📅 Due Today')->action('showTasks')->param('filter', 'due_today')->param('page', 1),
-                    Button::make('🗓 Due Tomorrow')->action('showTasks')->param('filter', 'due_tomorrow')->param('page', 1),
+                    Button::make('Due Today')->action('showTasks')->param('filter', 'due_today')->param('page', 1),
+                    Button::make('Due Tomorrow')->action('showTasks')->param('filter', 'due_tomorrow')->param('page', 1),
                 ])
                 ->row([
-                    Button::make('🔴 Overdue')->action('showTasks')->param('filter', 'overdue')->param('page', 1),
-                    Button::make('📋 All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
+                    Button::make('Overdue')->action('showTasks')->param('filter', 'overdue')->param('page', 1),
+                    Button::make('All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
                 ]))
             ->send();
+    }
+
+    private function reply(TelegraphChat $chat, ?int $editMessageId, string $html, Keyboard $keyboard): void
+    {
+        if ($editMessageId !== null) {
+            $chat->edit($editMessageId)->html($html)->keyboard($keyboard)->send();
+
+            return;
+        }
+
+        $chat->html($html)->keyboard($keyboard)->send();
     }
 
     private function taskQuery(User $user, string $filter)
@@ -168,7 +172,7 @@ class TelegramTaskBotService
         $title = $this->filterLabel($filter);
 
         if ($tasks->isEmpty()) {
-            return "📭 <b>{$title}</b>\n\nNo tasks found.";
+            return "<b>{$title}</b>\n\nNo tasks found.";
         }
 
         $lines = $numbered
@@ -176,7 +180,7 @@ class TelegramTaskBotService
             ->implode("\n");
 
         $pagination = $tasks->lastPage() > 1
-            ? " · page {$tasks->currentPage()}/{$tasks->lastPage()}"
+            ? " - page {$tasks->currentPage()}/{$tasks->lastPage()}"
             : '';
 
         return "<b>{$title}</b>{$pagination}\n\n{$lines}";
@@ -196,32 +200,77 @@ class TelegramTaskBotService
         $pagination = [];
 
         if ($tasks->currentPage() > 1) {
-            $pagination[] = Button::make('⬅️ Prev')->action('showTasks')->param('filter', $filter)->param('page', $tasks->currentPage() - 1);
+            $pagination[] = Button::make('Prev')->action('showTasks')->param('filter', $filter)->param('page', $tasks->currentPage() - 1);
         }
 
         if ($tasks->hasMorePages()) {
-            $pagination[] = Button::make('Next ➡️')->action('showTasks')->param('filter', $filter)->param('page', $tasks->currentPage() + 1);
+            $pagination[] = Button::make('Next')->action('showTasks')->param('filter', $filter)->param('page', $tasks->currentPage() + 1);
         }
 
         if ($pagination !== []) {
             $keyboard = $keyboard->row($pagination);
         }
 
-        return $keyboard->row([
-            Button::make('🏠 Main Menu')->action('mainMenu'),
+        return $keyboard
+            ->row([
+                Button::make('Add Task')->action('createTask'),
+            ])
+            ->row([
+                Button::make('Main Menu')->action('mainMenu'),
+            ]);
+    }
+
+    private function taskDetailKeyboard(Task $task): Keyboard
+    {
+        $keyboard = Keyboard::make();
+
+        if (! $task->parent_id) {
+            $keyboard = $keyboard->row([
+                Button::make('Add Subtask')->action('createSubtask')->param('task_id', $task->id),
+            ]);
+        }
+
+        $keyboard = $keyboard->row([
+            Button::make('Change Status')->action('taskStatus')->param('task_id', $task->id),
+            Button::make('Set Deadline')->action('updateTaskDeadline')->param('task_id', $task->id),
         ]);
+
+        if ($task->deadline) {
+            $keyboard = $keyboard->row([
+                Button::make('Clear Deadline')->action('clearTaskDeadline')->param('task_id', $task->id),
+            ]);
+        }
+
+        $keyboard = $keyboard->row([
+            Button::make('Update Description')->action('updateTaskDescription')->param('task_id', $task->id),
+        ]);
+
+        if ($task->description) {
+            $keyboard = $keyboard->row([
+                Button::make('Clear Description')->action('clearTaskDescription')->param('task_id', $task->id),
+            ]);
+        }
+
+        return $keyboard
+            ->row([
+                Button::make('Delete Task')->action('confirmDeleteTask')->param('task_id', $task->id),
+            ])
+            ->row([
+                Button::make('All Tasks')->action('showTasks')->param('filter', 'all')->param('page', 1),
+                Button::make('Main Menu')->action('mainMenu'),
+            ]);
     }
 
     private function taskDetailMessage(Task $task): string
     {
         $lines = [
             $this->statusIcon($task).' <b>'.$this->escape($task->title).'</b>',
-            '📌 Status: '.$this->statusLabel($task),
-            '📆 Deadline: '.$this->deadlineLabel($task),
+            'Status: '.$this->statusLabel($task),
+            'Deadline: '.$this->deadlineLabel($task),
         ];
 
         if ($task->parent) {
-            $lines[] = '🔗 Subtask of: '.$this->escape($task->parent->title);
+            $lines[] = 'Subtask of: '.$this->escape($task->parent->title);
         }
 
         if ($task->description) {
@@ -233,9 +282,9 @@ class TelegramTaskBotService
         }
 
         if ($task->subtasks->isNotEmpty()) {
-            $lines[] = "\n📂 Subtasks:";
+            $lines[] = "\nSubtasks:";
             foreach ($task->subtasks as $subtask) {
-                $lines[] = $this->statusIcon($subtask).' '.$this->escape($subtask->title).' — '.$this->statusLabel($subtask);
+                $lines[] = $this->statusIcon($subtask).' '.$this->escape($subtask->title).' - '.$this->statusLabel($subtask);
             }
         }
 
@@ -249,11 +298,11 @@ class TelegramTaskBotService
      */
     private function reminderMessage(Collection $warningTasks, Collection $dueTasks, Collection $overdueTasks, Carbon $today): string
     {
-        $sections = ["🔔 <b>Task Reminders — {$today->toFormattedDateString()}</b>"];
+        $sections = ["<b>Task Reminders - {$today->toFormattedDateString()}</b>"];
 
-        $sections[] = $this->reminderSection('📅 Due today', $dueTasks);
-        $sections[] = $this->reminderSection('🗓 Due tomorrow', $warningTasks);
-        $sections[] = $this->reminderSection('🔴 Overdue', $overdueTasks);
+        $sections[] = $this->reminderSection('Due today', $dueTasks);
+        $sections[] = $this->reminderSection('Due tomorrow', $warningTasks);
+        $sections[] = $this->reminderSection('Overdue', $overdueTasks);
 
         return collect($sections)->filter()->implode("\n\n");
     }
@@ -281,10 +330,10 @@ class TelegramTaskBotService
 
     private function taskSummaryBlock(int $number, Task $task): string
     {
-        $lines = ["{$number}. {$this->statusIcon($task)} {$this->escape($task->title)} · {$this->deadlineLabel($task)}"];
+        $lines = ["{$number}. {$this->statusIcon($task)} {$this->escape($task->title)} - {$this->deadlineLabel($task)}"];
 
         foreach ($task->subtasks as $subtask) {
-            $lines[] = '   ↳ '.$this->statusIcon($subtask).' '.$this->escape($subtask->title).' · '.$this->deadlineLabel($subtask);
+            $lines[] = '   - '.$this->statusIcon($subtask).' '.$this->escape($subtask->title).' - '.$this->deadlineLabel($subtask);
         }
 
         return implode("\n", $lines);
@@ -333,9 +382,9 @@ class TelegramTaskBotService
     private function statusIcon(Task $task): string
     {
         return match ($task->status) {
-            Task::STATUS_IN_PROGRESS => '⚡',
-            Task::STATUS_DONE => '✅',
-            default => $task->complete ? '✅' : '⬜',
+            Task::STATUS_IN_PROGRESS => 'In Progress',
+            Task::STATUS_DONE => 'Done',
+            default => $task->complete ? 'Done' : 'Open',
         };
     }
 
@@ -349,15 +398,15 @@ class TelegramTaskBotService
         $today = Carbon::now('Asia/Tehran')->startOfDay();
 
         if ($deadline->lt($today)) {
-            return '🔴 '.$deadline->toFormattedDateString();
+            return 'Overdue '.$deadline->toFormattedDateString();
         }
 
         if ($deadline->isSameDay($today)) {
-            return '🟡 Today';
+            return 'Today';
         }
 
         if ($deadline->isSameDay($today->copy()->addDay())) {
-            return '🟠 Tomorrow';
+            return 'Tomorrow';
         }
 
         return $deadline->toFormattedDateString();
