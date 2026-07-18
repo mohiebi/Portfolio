@@ -12,6 +12,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class TelegramTaskBotService
 {
@@ -192,7 +193,7 @@ class TelegramTaskBotService
 
         foreach ($numbered->chunk(2) as $chunk) {
             $keyboard = $keyboard->row($chunk
-                ->map(fn (array $entry): Button => Button::make("{$entry[0]}. {$this->statusIcon($entry[1])}")->action('showTask')->param('task_id', $entry[1]->id))
+                ->map(fn (array $entry): Button => Button::make("{$entry[0]}. {$this->buttonTitle($entry[1]->title)}")->action('showTask')->param('task_id', $entry[1]->id))
                 ->values()
                 ->all());
         }
@@ -228,6 +229,13 @@ class TelegramTaskBotService
             $keyboard = $keyboard->row([
                 Button::make('Add Subtask')->action('createSubtask')->param('task_id', $task->id),
             ]);
+
+            foreach ($task->subtasks->values()->chunk(2) as $chunk) {
+                $keyboard = $keyboard->row($chunk
+                    ->map(fn (Task $subtask, int $index): Button => Button::make(($index + 1).'. '.$this->buttonTitle($subtask->title))->action('showTask')->param('task_id', $subtask->id))
+                    ->values()
+                    ->all());
+            }
         }
 
         $keyboard = $keyboard->row([
@@ -264,8 +272,7 @@ class TelegramTaskBotService
     private function taskDetailMessage(Task $task): string
     {
         $lines = [
-            $this->statusIcon($task).' <b>'.$this->escape($task->title).'</b>',
-            'Status: '.$this->statusLabel($task),
+            '<b>'.$this->escape($task->title).'</b> - '.$this->statusLabel($task),
             'Deadline: '.$this->deadlineLabel($task),
         ];
 
@@ -415,5 +422,10 @@ class TelegramTaskBotService
     private function escape(?string $value): string
     {
         return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    private function buttonTitle(string $title): string
+    {
+        return Str::limit($title, 34);
     }
 }

@@ -146,6 +146,27 @@ class TelegramTaskBotTest extends TestCase
         Telegraph::assertSentData(TelegraphClient::ENDPOINT_EDIT_MESSAGE, ['text' => 'Progress task'], false);
     }
 
+    public function test_task_list_buttons_show_titles_instead_of_statuses(): void
+    {
+        Telegraph::fake();
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        Task::factory()->for($user)->create([
+            'title' => 'Pay electricity bill',
+            'status' => Task::STATUS_DONE,
+            'complete' => true,
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:all;page:1'))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+        $button = $payload['reply_markup']['inline_keyboard'][0][0];
+
+        $this->assertSame('1. Pay electricity bill', $button['text']);
+        $this->assertStringContainsString('action:showTask', $button['callback_data']);
+    }
+
     public function test_task_detail_is_scoped_to_linked_user(): void
     {
         Telegraph::fake();
@@ -162,6 +183,48 @@ class TelegramTaskBotTest extends TestCase
 
         Telegraph::assertSentData(TelegraphClient::ENDPOINT_EDIT_MESSAGE, ['text' => 'Task not found'], false);
         Telegraph::assertSentData(TelegraphClient::ENDPOINT_EDIT_MESSAGE, ['text' => 'Visible task'], false);
+    }
+
+    public function test_task_detail_header_shows_title_then_status_once(): void
+    {
+        Telegraph::fake();
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        $task = Task::factory()->for($user)->create([
+            'title' => 'CashPilot',
+            'status' => Task::STATUS_IN_PROGRESS,
+            'complete' => false,
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, "action:showTask;task_id:{$task->id}"))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+
+        $this->assertStringContainsString('<b>CashPilot</b> - In Progress', $payload['text']);
+        $this->assertStringNotContainsString('In Progress <b>CashPilot</b>', $payload['text']);
+        $this->assertStringNotContainsString('Status: In Progress', $payload['text']);
+    }
+
+    public function test_parent_task_detail_shows_subtask_title_buttons(): void
+    {
+        Telegraph::fake();
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        $parent = Task::factory()->for($user)->create(['title' => 'Parent task']);
+        $subtask = Task::factory()->for($user)->create([
+            'parent_id' => $parent->id,
+            'title' => 'Pay provider invoice',
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, "action:showTask;task_id:{$parent->id}"))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+        $subtaskButton = $payload['reply_markup']['inline_keyboard'][1][0];
+
+        $this->assertSame('1. Pay provider invoice', $subtaskButton['text']);
+        $this->assertSame("action:showTask;task_id:{$subtask->id}", $subtaskButton['callback_data']);
     }
 
     public function test_telegram_creates_task_with_optional_deadline_skip(): void
@@ -517,5 +580,16 @@ class TelegramTaskBotTest extends TestCase
                 'data' => $data,
             ],
         ];
+    }
+
+    private function lastTelegraphPayload(string $endpoint): array
+    {
+        $reflection = new \ReflectionClass(Telegraph::getFacadeRoot());
+        $property = $reflection->getProperty('sentMessages');
+        $property->setAccessible(true);
+
+        return collect($property->getValue())
+            ->where('endpoint', $endpoint)
+            ->last()['data'];
     }
 }
