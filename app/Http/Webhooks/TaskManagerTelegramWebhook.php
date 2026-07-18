@@ -90,6 +90,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->botService->sendSettings($this->chat, $connection, $this->callbackMessageId());
     }
 
@@ -103,6 +104,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->botService->sendTaskList($this->chat, $connection->user, $filter, (int) $page, $this->callbackMessageId());
     }
 
@@ -116,6 +118,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->botService->sendTaskDetail($this->chat, $connection->user, (int) $task_id, $this->callbackMessageId());
     }
 
@@ -158,6 +161,19 @@ class TaskManagerTelegramWebhook extends WebhookHandler
         $this->crudService->skipCreateDeadline($this->chat, $connection, $this->callbackMessageId());
     }
 
+    public function createDeadlinePreset(string $preset): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->useCreateDeadlinePreset($this->chat, $connection, $preset, $this->callbackMessageId());
+    }
+
     public function updateTaskDeadline(string|int $task_id): void
     {
         $connection = $this->connectedTelegramConnection();
@@ -181,7 +197,22 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->crudService->clearDeadline($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
+    }
+
+    public function setDeadlinePreset(string|int $task_id, string $preset): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->clearInputState($this->chat);
+        $this->crudService->useDeadlinePreset($this->chat, $connection, (int) $task_id, $preset, $this->callbackMessageId());
     }
 
     public function updateTaskDescription(string|int $task_id): void
@@ -207,6 +238,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->crudService->clearDescription($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
     }
 
@@ -220,6 +252,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->crudService->sendStatusMenu($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
     }
 
@@ -233,6 +266,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->crudService->updateStatus($this->chat, $connection, (int) $task_id, $status, $this->callbackMessageId());
     }
 
@@ -246,6 +280,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->crudService->confirmDelete($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
     }
 
@@ -259,6 +294,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->crudService->deleteTask($this->chat, $connection, (int) $task_id, $this->callbackMessageId());
     }
 
@@ -273,6 +309,19 @@ class TaskManagerTelegramWebhook extends WebhookHandler
         }
 
         $this->crudService->beginReminderHourUpdate($this->chat, $connection, $this->callbackMessageId());
+    }
+
+    public function setReminderHour(string|int $hour): void
+    {
+        $connection = $this->connectedTelegramConnection();
+
+        if (! $connection) {
+            $this->sendConnectMessage();
+
+            return;
+        }
+
+        $this->crudService->setReminderHour($this->chat, $connection, $hour, $this->callbackMessageId());
     }
 
     public function cancelTaskInput(): void
@@ -309,6 +358,7 @@ class TaskManagerTelegramWebhook extends WebhookHandler
             return;
         }
 
+        $this->crudService->clearInputState($this->chat);
         $this->botService->sendMainMenu($this->chat, $connection, $editMessageId);
     }
 

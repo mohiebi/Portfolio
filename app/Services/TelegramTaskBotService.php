@@ -61,10 +61,11 @@ class TelegramTaskBotService
     {
         $filter = $this->normalizeFilter($filter);
         $page = max(1, $page);
+        $timezone = $user->taskReminderTimezone();
 
         $tasks = $this->taskQuery($user, $filter)
-            ->whereNull('parent_id')
-            ->with('subtasks')
+            ->when($filter === 'all', fn (Builder $query) => $query->whereNull('parent_id'))
+            ->with(['parent', 'subtasks'])
             ->orderBy('deadline')
             ->orderByDesc('created_at')
             ->paginate(self::PAGE_SIZE, ['*'], 'page', $page);
@@ -72,7 +73,7 @@ class TelegramTaskBotService
         $offset = ($tasks->currentPage() - 1) * self::PAGE_SIZE;
         $numbered = $tasks->getCollection()->values()->map(fn (Task $task, int $i) => [$i + $offset + 1, $task]);
 
-        $this->reply($chat, $editMessageId, $this->taskListMessage($tasks, $filter, $numbered), $this->taskListKeyboard($tasks, $filter, $numbered));
+        $this->reply($chat, $editMessageId, $this->taskListMessage($tasks, $filter, $numbered, $timezone), $this->taskListKeyboard($tasks, $filter, $numbered));
     }
 
     public function sendTaskDetail(TelegraphChat $chat, User $user, int $taskId, ?int $editMessageId = null): void
@@ -91,7 +92,7 @@ class TelegramTaskBotService
         $this->reply(
             $chat,
             $editMessageId,
-            $this->taskDetailMessage($task),
+            $this->taskDetailMessage($task, $user->taskReminderTimezone()),
             $this->taskDetailKeyboard($task)
         );
     }
@@ -157,7 +158,7 @@ class TelegramTaskBotService
 
     private function taskQuery(User $user, string $filter)
     {
-        $today = Carbon::now('Asia/Tehran')->startOfDay();
+        $today = Carbon::now($user->taskReminderTimezone())->startOfDay();
 
         return $user->tasks()
             ->when($filter === 'due_today', fn (Builder $query) => $query->whereDate('deadline', $today->toDateString()))
@@ -168,7 +169,7 @@ class TelegramTaskBotService
             ->when($filter === 'done', fn (Builder $query) => $query->done());
     }
 
-    private function taskListMessage(LengthAwarePaginator $tasks, string $filter, \Illuminate\Support\Collection $numbered): string
+    private function taskListMessage(LengthAwarePaginator $tasks, string $filter, \Illuminate\Support\Collection $numbered, string $timezone): string
     {
         $title = $this->filterLabel($filter);
 
@@ -177,7 +178,7 @@ class TelegramTaskBotService
         }
 
         $lines = $numbered
-            ->map(fn (array $entry): string => $this->taskSummaryBlock($entry[0], $entry[1]))
+            ->map(fn (array $entry): string => $this->taskSummaryBlock($entry[0], $entry[1], $timezone, $filter === 'all'))
             ->implode("\n");
 
         $pagination = $tasks->lastPage() > 1
@@ -193,7 +194,7 @@ class TelegramTaskBotService
 
         foreach ($numbered->chunk(2) as $chunk) {
             $keyboard = $keyboard->row($chunk
-                ->map(fn (array $entry): Button => Button::make("{$entry[0]}. {$this->buttonTitle($entry[1]->title)}")->action('showTask')->param('task_id', $entry[1]->id))
+                ->map(fn (array $entry): Button => Button::make("{$entry[0]}. {$this->taskButtonTitle($entry[1])}")->action('showTask')->param('task_id', $entry[1]->id))
                 ->values()
                 ->all());
         }
@@ -226,16 +227,16 @@ class TelegramTaskBotService
         $keyboard = Keyboard::make();
 
         if (! $task->parent_id) {
-            $keyboard = $keyboard->row([
-                Button::make('Add Subtask')->action('createSubtask')->param('task_id', $task->id),
-            ]);
-
             foreach ($task->subtasks->values()->chunk(2) as $chunk) {
                 $keyboard = $keyboard->row($chunk
                     ->map(fn (Task $subtask, int $index): Button => Button::make(($index + 1).'. '.$this->buttonTitle($subtask->title))->action('showTask')->param('task_id', $subtask->id))
                     ->values()
                     ->all());
             }
+
+            $keyboard = $keyboard->row([
+                Button::make('Add Subtask')->action('createSubtask')->param('task_id', $task->id),
+            ]);
         }
 
         $keyboard = $keyboard->row([
@@ -269,11 +270,11 @@ class TelegramTaskBotService
             ]);
     }
 
-    private function taskDetailMessage(Task $task): string
+    private function taskDetailMessage(Task $task, string $timezone): string
     {
         $lines = [
             '<b>'.$this->escape($task->title).'</b> - '.$this->statusLabel($task),
-            'Deadline: '.$this->deadlineLabel($task),
+            'Deadline: '.$this->deadlineLabel($task, $timezone),
         ];
 
         if ($task->parent) {
@@ -335,12 +336,18 @@ class TelegramTaskBotService
         return '<b>'.$label.' ('.$tasks->count().')</b>'."\n".implode("\n", $lines);
     }
 
-    private function taskSummaryBlock(int $number, Task $task): string
+    private function taskSummaryBlock(int $number, Task $task, string $timezone, bool $includeSubtasks): string
     {
-        $lines = ["{$number}. {$this->statusIcon($task)} {$this->escape($task->title)} - {$this->deadlineLabel($task)}"];
+        $lines = ["{$number}. {$this->statusIcon($task)} {$this->escape($task->title)} - {$this->deadlineLabel($task, $timezone)}"];
 
-        foreach ($task->subtasks as $subtask) {
-            $lines[] = '   - '.$this->statusIcon($subtask).' '.$this->escape($subtask->title).' - '.$this->deadlineLabel($subtask);
+        if ($task->parent) {
+            $lines[] = '   Subtask of: '.$this->escape($task->parent->title);
+        }
+
+        if ($includeSubtasks) {
+            foreach ($task->subtasks as $subtask) {
+                $lines[] = '   - '.$this->statusIcon($subtask).' '.$this->escape($subtask->title).' - '.$this->deadlineLabel($subtask, $timezone);
+            }
         }
 
         return implode("\n", $lines);
@@ -395,14 +402,14 @@ class TelegramTaskBotService
         };
     }
 
-    private function deadlineLabel(Task $task): string
+    private function deadlineLabel(Task $task, string $timezone = 'Asia/Tehran'): string
     {
         if (! $task->deadline) {
             return 'no deadline';
         }
 
-        $deadline = $task->deadline->copy()->timezone('Asia/Tehran');
-        $today = Carbon::now('Asia/Tehran')->startOfDay();
+        $deadline = $task->deadline->copy()->timezone($timezone);
+        $today = Carbon::now($timezone)->startOfDay();
 
         if ($deadline->lt($today)) {
             return 'Overdue '.$deadline->toFormattedDateString();
@@ -427,5 +434,12 @@ class TelegramTaskBotService
     private function buttonTitle(string $title): string
     {
         return Str::limit($title, 34);
+    }
+
+    private function taskButtonTitle(Task $task): string
+    {
+        $prefix = $task->parent_id ? 'Subtask: ' : '';
+
+        return Str::limit($prefix.$task->title, 34);
     }
 }

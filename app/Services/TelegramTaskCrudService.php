@@ -83,6 +83,20 @@ class TelegramTaskCrudService
         $this->createDraftTask($chat, $connection, $state, null, $editMessageId);
     }
 
+    public function useCreateDeadlinePreset(TelegraphChat $chat, TelegramConnection $connection, string $preset, ?int $editMessageId = null): void
+    {
+        $state = $this->state($chat, $connection);
+        $deadline = $this->presetDeadline($preset, $connection->user);
+
+        if (($state['action'] ?? null) !== self::ACTION_CREATE_DEADLINE || ! $deadline) {
+            $this->expiredStateReply($chat, $editMessageId, $connection);
+
+            return;
+        }
+
+        $this->createDraftTask($chat, $connection, $state, $deadline, $editMessageId);
+    }
+
     public function beginDeadlineUpdate(TelegraphChat $chat, TelegramConnection $connection, int $taskId, ?int $editMessageId = null): void
     {
         $task = $this->userTask($connection->user, $taskId);
@@ -101,9 +115,26 @@ class TelegramTaskCrudService
         $this->reply(
             $chat,
             $editMessageId,
-            "<b>Update deadline</b>\n\nSend a date as <code>YYYY-MM-DD</code> for <b>{$this->escape($task->title)}</b>.",
-            $this->cancelKeyboard()
+            "<b>Update deadline</b>\n\nChoose a quick date for <b>{$this->escape($task->title)}</b>, or send a date as <code>YYYY-MM-DD</code>.",
+            $this->updateDeadlineKeyboard($task)
         );
+    }
+
+    public function useDeadlinePreset(TelegraphChat $chat, TelegramConnection $connection, int $taskId, string $preset, ?int $editMessageId = null): void
+    {
+        $task = $this->userTask($connection->user, $taskId);
+        $deadline = $this->presetDeadline($preset, $connection->user);
+
+        if (! $task || ! $deadline) {
+            $this->expiredStateReply($chat, $editMessageId, $connection);
+
+            return;
+        }
+
+        $this->forgetState($chat);
+        $task->update(['deadline' => $deadline]);
+
+        $this->botService->sendTaskDetail($chat, $connection->user, $task->id, $editMessageId);
     }
 
     public function clearDeadline(TelegraphChat $chat, TelegramConnection $connection, int $taskId, ?int $editMessageId = null): void
@@ -228,8 +259,8 @@ class TelegramTaskCrudService
             "Delete <b>{$this->escape($task->title)}</b>?\n\nThis cannot be undone.",
             Keyboard::make()
                 ->row([
-                    Button::make('Delete')->action('deleteTask')->param('task_id', $task->id),
                     Button::make('Cancel')->action('showTask')->param('task_id', $task->id),
+                    Button::make('Yes, delete')->action('deleteTask')->param('task_id', $task->id),
                 ])
         );
     }
@@ -275,9 +306,14 @@ class TelegramTaskCrudService
         $this->reply(
             $chat,
             $editMessageId,
-            "<b>Reminder hour</b>\n\nSend an hour from <code>0</code> to <code>23</code>. Your timezone stays UTC{$connection->user->taskReminderTimezone()}.",
-            $this->cancelKeyboard()
+            "<b>Reminder hour</b>\n\nChoose an hour. Your timezone stays UTC{$connection->user->taskReminderTimezone()}.\n\nYou can also send an hour from <code>0</code> to <code>23</code>.",
+            $this->reminderHourKeyboard()
         );
+    }
+
+    public function setReminderHour(TelegraphChat $chat, TelegramConnection $connection, string|int $hour, ?int $editMessageId = null): void
+    {
+        $this->handleReminderHour($chat, $connection, (string) $hour, $editMessageId);
     }
 
     public function cancel(TelegraphChat $chat, TelegramConnection $connection, ?int $editMessageId = null): void
@@ -285,6 +321,11 @@ class TelegramTaskCrudService
         $this->forgetState($chat);
 
         $this->reply($chat, $editMessageId, 'Canceled.', $this->botService->mainMenuKeyboard());
+    }
+
+    public function clearInputState(TelegraphChat $chat): void
+    {
+        $this->forgetState($chat);
     }
 
     public function handleTextInput(TelegraphChat $chat, TelegramConnection $connection, Stringable $text): bool
@@ -333,11 +374,8 @@ class TelegramTaskCrudService
         $this->reply(
             $chat,
             null,
-            "<b>Optional deadline</b>\n\nSend a date as <code>YYYY-MM-DD</code>, or tap Skip.",
-            Keyboard::make()->row([
-                Button::make('Skip')->action('skipCreateDeadline'),
-                Button::make('Cancel')->action('cancelTaskInput'),
-            ])
+            "<b>Optional deadline</b>\n\nChoose a quick date, send a date as <code>YYYY-MM-DD</code>, or tap Skip.",
+            $this->createDeadlineKeyboard()
         );
     }
 
@@ -349,10 +387,7 @@ class TelegramTaskCrudService
         $parsedDeadline = $this->parseDeadline($deadline, $connection->user);
 
         if (! $parsedDeadline) {
-            $this->reply($chat, null, 'Please send the deadline as <code>YYYY-MM-DD</code>, or tap Skip.', Keyboard::make()->row([
-                Button::make('Skip')->action('skipCreateDeadline'),
-                Button::make('Cancel')->action('cancelTaskInput'),
-            ]));
+            $this->reply($chat, null, 'Please send the deadline as <code>YYYY-MM-DD</code>, or tap Skip.', $this->createDeadlineKeyboard());
 
             return;
         }
@@ -415,14 +450,14 @@ class TelegramTaskCrudService
         $this->botService->sendTaskDetail($chat, $connection->user, $task->id);
     }
 
-    private function handleReminderHour(TelegraphChat $chat, TelegramConnection $connection, string $hour): void
+    private function handleReminderHour(TelegraphChat $chat, TelegramConnection $connection, string $hour, ?int $editMessageId = null): void
     {
         $validator = Validator::make(['hour' => $hour], [
             'hour' => ['required', 'integer', 'min:0', 'max:23'],
         ]);
 
         if ($validator->fails()) {
-            $this->reply($chat, null, 'Please send an hour from 0 to 23.', $this->cancelKeyboard());
+            $this->reply($chat, $editMessageId, 'Please choose or send an hour from 0 to 23.', $this->reminderHourKeyboard());
 
             return;
         }
@@ -432,7 +467,7 @@ class TelegramTaskCrudService
         ])->save();
 
         $this->forgetState($chat);
-        $this->botService->sendSettings($chat, $connection->fresh(['user']));
+        $this->botService->sendSettings($chat, $connection->fresh(['user']), $editMessageId);
     }
 
     /**
@@ -486,6 +521,18 @@ class TelegramTaskCrudService
         }
 
         return $deadline->startOfDay();
+    }
+
+    private function presetDeadline(string $preset, User $user): ?Carbon
+    {
+        $today = $user->taskReminderDate();
+
+        return match ($preset) {
+            'today' => $today,
+            'tomorrow' => $today->copy()->addDay(),
+            'next_week' => $today->copy()->addWeek(),
+            default => null,
+        };
     }
 
     private function userTask(User $user, int $taskId): ?Task
@@ -555,6 +602,51 @@ class TelegramTaskCrudService
     private function cancelKeyboard(): Keyboard
     {
         return Keyboard::make()->row([
+            Button::make('Cancel')->action('cancelTaskInput'),
+        ]);
+    }
+
+    private function createDeadlineKeyboard(): Keyboard
+    {
+        return Keyboard::make()
+            ->row([
+                Button::make('Today')->action('createDeadlinePreset')->param('preset', 'today'),
+                Button::make('Tomorrow')->action('createDeadlinePreset')->param('preset', 'tomorrow'),
+            ])
+            ->row([
+                Button::make('Next week')->action('createDeadlinePreset')->param('preset', 'next_week'),
+                Button::make('Skip')->action('skipCreateDeadline'),
+            ])
+            ->row([
+                Button::make('Cancel')->action('cancelTaskInput'),
+            ]);
+    }
+
+    private function updateDeadlineKeyboard(Task $task): Keyboard
+    {
+        return Keyboard::make()
+            ->row([
+                Button::make('Today')->action('setDeadlinePreset')->param('task_id', $task->id)->param('preset', 'today'),
+                Button::make('Tomorrow')->action('setDeadlinePreset')->param('task_id', $task->id)->param('preset', 'tomorrow'),
+            ])
+            ->row([
+                Button::make('Next week')->action('setDeadlinePreset')->param('task_id', $task->id)->param('preset', 'next_week'),
+                Button::make('Cancel')->action('showTask')->param('task_id', $task->id),
+            ]);
+    }
+
+    private function reminderHourKeyboard(): Keyboard
+    {
+        $keyboard = Keyboard::make();
+
+        foreach (array_chunk(range(0, 23), 4) as $hours) {
+            $keyboard = $keyboard->row(array_map(
+                fn (int $hour): Button => Button::make(str_pad((string) $hour, 2, '0', STR_PAD_LEFT))->action('setReminderHour')->param('hour', $hour),
+                $hours,
+            ));
+        }
+
+        return $keyboard->row([
             Button::make('Cancel')->action('cancelTaskInput'),
         ]);
     }

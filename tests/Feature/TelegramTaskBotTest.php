@@ -146,6 +146,60 @@ class TelegramTaskBotTest extends TestCase
         Telegraph::assertSentData(TelegraphClient::ENDPOINT_EDIT_MESSAGE, ['text' => 'Progress task'], false);
     }
 
+    public function test_filtered_task_lists_include_matching_subtasks(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'));
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        $parent = Task::factory()->for($user)->create([
+            'title' => 'Parent task',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => now('Asia/Tehran')->addDays(5),
+        ]);
+        $subtask = Task::factory()->for($user)->create([
+            'parent_id' => $parent->id,
+            'title' => 'Subtask due today',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => now('Asia/Tehran'),
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:due_today;page:1'))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+        $button = $payload['reply_markup']['inline_keyboard'][0][0];
+
+        $this->assertStringContainsString('Subtask due today', $payload['text']);
+        $this->assertStringContainsString('Subtask of: Parent task', $payload['text']);
+        $this->assertSame('1. Subtask: Subtask due today', $button['text']);
+        $this->assertSame("action:showTask;task_id:{$subtask->id}", $button['callback_data']);
+    }
+
+    public function test_telegram_task_list_uses_user_timezone_for_due_filters(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 22:30:00', 'UTC'));
+
+        [$bot, $chat, $user] = $this->connectedUser(reminderTimezone: '+00:00');
+        Task::factory()->for($user)->create([
+            'title' => 'UTC today task',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => Carbon::parse('2026-07-12 00:00:00', 'UTC'),
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:due_today;page:1'))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+
+        $this->assertStringContainsString('UTC today task', $payload['text']);
+        $this->assertStringContainsString('Today', $payload['text']);
+    }
+
     public function test_task_list_buttons_show_titles_instead_of_statuses(): void
     {
         Telegraph::fake();
@@ -221,7 +275,7 @@ class TelegramTaskBotTest extends TestCase
             ->assertNoContent();
 
         $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
-        $subtaskButton = $payload['reply_markup']['inline_keyboard'][1][0];
+        $subtaskButton = $payload['reply_markup']['inline_keyboard'][0][0];
 
         $this->assertSame('1. Pay provider invoice', $subtaskButton['text']);
         $this->assertSame("action:showTask;task_id:{$subtask->id}", $subtaskButton['callback_data']);
@@ -265,6 +319,25 @@ class TelegramTaskBotTest extends TestCase
         $task = $user->tasks()->where('title', 'Task with deadline')->firstOrFail();
 
         $this->assertSame('2026-07-20', $task->deadline->timezone($user->taskReminderTimezone())->toDateString());
+    }
+
+    public function test_telegram_creates_task_with_deadline_preset_button(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'));
+
+        [$bot, $chat, $user] = $this->connectedUser();
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:createTask'))
+            ->assertNoContent();
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->messagePayload('Preset deadline task'))
+            ->assertNoContent();
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:createDeadlinePreset;preset:tomorrow'))
+            ->assertNoContent();
+
+        $task = $user->tasks()->where('title', 'Preset deadline task')->firstOrFail();
+
+        $this->assertSame('2026-07-13', $task->deadline->timezone($user->taskReminderTimezone())->toDateString());
     }
 
     public function test_telegram_creates_subtask_from_parent_detail(): void
@@ -344,6 +417,22 @@ class TelegramTaskBotTest extends TestCase
         $this->assertNull($task->fresh()->deadline);
     }
 
+    public function test_telegram_updates_deadline_with_preset_button(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'));
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        $task = Task::factory()->for($user)->create([
+            'deadline' => null,
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, "action:setDeadlinePreset;task_id:{$task->id};preset:next_week"))
+            ->assertNoContent();
+
+        $this->assertSame('2026-07-19', $task->fresh()->deadline->timezone($user->taskReminderTimezone())->toDateString());
+    }
+
     public function test_telegram_updates_and_clears_description(): void
     {
         Telegraph::fake();
@@ -384,6 +473,42 @@ class TelegramTaskBotTest extends TestCase
         $this->assertModelMissing($task);
     }
 
+    public function test_delete_confirmation_keeps_cancel_before_delete(): void
+    {
+        Telegraph::fake();
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        $task = Task::factory()->for($user)->create(['title' => 'Risky task']);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, "action:confirmDeleteTask;task_id:{$task->id}"))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+        $buttons = $payload['reply_markup']['inline_keyboard'][0];
+
+        $this->assertSame('Cancel', $buttons[0]['text']);
+        $this->assertSame('Yes, delete', $buttons[1]['text']);
+    }
+
+    public function test_navigation_clears_pending_text_input_state(): void
+    {
+        Telegraph::fake();
+
+        [$bot, $chat, $user] = $this->connectedUser();
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:createTask'))
+            ->assertNoContent();
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:all;page:1'))
+            ->assertNoContent();
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->messagePayload('Should not be created'))
+            ->assertNoContent();
+
+        $this->assertDatabaseMissing('tasks', [
+            'user_id' => $user->id,
+            'title' => 'Should not be created',
+        ]);
+    }
+
     public function test_telegram_updates_reminder_hour_without_changing_timezone(): void
     {
         Telegraph::fake();
@@ -398,6 +523,21 @@ class TelegramTaskBotTest extends TestCase
         $user = $user->fresh();
 
         $this->assertSame('14:00', $user->task_reminder_time);
+        $this->assertSame('+03:30', $user->task_reminder_timezone);
+    }
+
+    public function test_telegram_updates_reminder_hour_with_button(): void
+    {
+        Telegraph::fake();
+
+        [$bot, $chat, $user] = $this->connectedUser(reminderTime: '09:00', reminderTimezone: '+03:30');
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:setReminderHour;hour:7'))
+            ->assertNoContent();
+
+        $user = $user->fresh();
+
+        $this->assertSame('07:00', $user->task_reminder_time);
         $this->assertSame('+03:30', $user->task_reminder_timezone);
     }
 
