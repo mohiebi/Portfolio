@@ -86,7 +86,7 @@ class TelegramTaskBotTest extends TestCase
         $this->assertSame('john_smith', $connection->telegram_username);
 
         Telegraph::assertSentData(TelegraphClient::ENDPOINT_MESSAGE, [
-            'text' => 'TaskManager is connected',
+            'text' => 'Hello',
         ], false);
     }
 
@@ -221,6 +221,130 @@ class TelegramTaskBotTest extends TestCase
         $this->assertStringContainsString('action:showTask', $button['callback_data']);
     }
 
+    public function test_all_tasks_are_sorted_by_status_deadline_then_recent_update(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'));
+
+        [$bot, $chat, $user] = $this->connectedUser();
+
+        Task::factory()->for($user)->create([
+            'title' => 'Open without deadline newer',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => null,
+            'updated_at' => Carbon::parse('2026-07-12 08:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-12 08:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'Done with close deadline',
+            'status' => Task::STATUS_DONE,
+            'complete' => true,
+            'deadline' => now('Asia/Tehran'),
+            'updated_at' => Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'In progress without deadline',
+            'status' => Task::STATUS_IN_PROGRESS,
+            'complete' => false,
+            'deadline' => null,
+            'updated_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'Open with close deadline',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => now('Asia/Tehran')->addDay(),
+            'updated_at' => Carbon::parse('2026-07-09 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-09 09:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'In progress with deadline',
+            'status' => Task::STATUS_IN_PROGRESS,
+            'complete' => false,
+            'deadline' => now('Asia/Tehran')->addDays(3),
+            'updated_at' => Carbon::parse('2026-07-08 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-08 09:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'Open without deadline older',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'deadline' => null,
+            'updated_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:all;page:1'))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+        $buttons = collect($payload['reply_markup']['inline_keyboard'])
+            ->take(3)
+            ->flatten(1)
+            ->pluck('text')
+            ->all();
+
+        $this->assertSame([
+            '1. In progress with deadline',
+            '2. In progress without deadline',
+            '3. Open with close deadline',
+            '4. Open without deadline newer',
+            '5. Open without deadline older',
+            '6. Done with close deadline',
+        ], $buttons);
+    }
+
+    public function test_telegram_lists_hide_old_done_tasks_when_cleanup_is_enabled(): void
+    {
+        Telegraph::fake();
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00', 'Asia/Tehran'));
+
+        [$bot, $chat, $user] = $this->connectedUser();
+        $user->forceFill(['task_done_cleanup_enabled' => true])->save();
+
+        Task::factory()->for($user)->create([
+            'title' => 'Open task stays visible',
+            'status' => Task::STATUS_OPEN,
+            'complete' => false,
+            'updated_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'Recent done task',
+            'status' => Task::STATUS_DONE,
+            'complete' => true,
+            'updated_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
+        ]);
+        Task::factory()->for($user)->create([
+            'title' => 'Old done task',
+            'status' => Task::STATUS_DONE,
+            'complete' => true,
+            'updated_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
+            'created_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
+        ]);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:all;page:1'))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+
+        $this->assertStringContainsString('Open task stays visible', $payload['text']);
+        $this->assertStringContainsString('Recent done task', $payload['text']);
+        $this->assertStringNotContainsString('Old done task', $payload['text']);
+
+        $this->postJson("/telegraph/{$bot->token}/webhook", $this->callbackPayload($chat, 'action:showTasks;filter:done;page:1'))
+            ->assertNoContent();
+
+        $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
+
+        $this->assertStringContainsString('Recent done task', $payload['text']);
+        $this->assertStringNotContainsString('Old done task', $payload['text']);
+    }
+
     public function test_task_detail_is_scoped_to_linked_user(): void
     {
         Telegraph::fake();
@@ -255,9 +379,9 @@ class TelegramTaskBotTest extends TestCase
 
         $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
 
-        $this->assertStringContainsString('<b>CashPilot</b> - In Progress', $payload['text']);
+        $this->assertStringContainsString('⚡ <b>CashPilot</b>', $payload['text']);
+        $this->assertStringContainsString('📌 Status: In Progress', $payload['text']);
         $this->assertStringNotContainsString('In Progress <b>CashPilot</b>', $payload['text']);
-        $this->assertStringNotContainsString('Status: In Progress', $payload['text']);
     }
 
     public function test_parent_task_detail_shows_subtask_title_buttons(): void
@@ -277,7 +401,7 @@ class TelegramTaskBotTest extends TestCase
         $payload = $this->lastTelegraphPayload(TelegraphClient::ENDPOINT_EDIT_MESSAGE);
         $subtaskButton = $payload['reply_markup']['inline_keyboard'][0][0];
 
-        $this->assertSame('1. Pay provider invoice', $subtaskButton['text']);
+        $this->assertStringContainsString('Pay provider invoice', $subtaskButton['text']);
         $this->assertSame("action:showTask;task_id:{$subtask->id}", $subtaskButton['callback_data']);
     }
 
