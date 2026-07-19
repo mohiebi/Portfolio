@@ -377,9 +377,9 @@ class TaskmanagerController extends Controller
             ],
             [
                 'id' => 3,
-                'title' => 'Write README for Job Board',
+                'title' => 'Write product notes for CashPilot',
                 'description' => '',
-                'long_description' => 'Explain the project as a portfolio sample without local setup instructions.',
+                'long_description' => 'Explain the product workflow, data model, and next release ideas.',
                 'deadline' => now()->addDays(4)->toJSON(),
                 'complete' => false,
                 'status' => Task::STATUS_IN_PROGRESS,
@@ -388,7 +388,7 @@ class TaskmanagerController extends Controller
                 'subtasks' => [
                     [
                         'id' => 301,
-                        'title' => 'Outline project setup',
+                        'title' => 'Outline product setup',
                         'description' => '',
                         'long_description' => 'List the framework, local services, and first-run commands.',
                         'deadline' => now()->subDays(2)->toJSON(),
@@ -401,7 +401,7 @@ class TaskmanagerController extends Controller
                         'id' => 302,
                         'title' => 'Add screenshots',
                         'description' => '',
-                        'long_description' => 'Capture the job listing and application screens.',
+                        'long_description' => 'Capture the transaction dashboard and category summary screens.',
                         'deadline' => now()->addHours(18)->toJSON(),
                         'complete' => false,
                         'status' => Task::STATUS_OPEN,
@@ -412,7 +412,7 @@ class TaskmanagerController extends Controller
             ],
             [
                 'id' => 4,
-                'title' => 'Add Pest tests for Auth',
+                'title' => 'Add PHPUnit tests for Auth',
                 'description' => '',
                 'long_description' => '',
                 'deadline' => now()->subDay()->toJSON(),

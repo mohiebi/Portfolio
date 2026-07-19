@@ -1,11 +1,11 @@
 import { Link } from "@inertiajs/react";
 import { Mail, Linkedin, FileDown, Github } from "lucide-react";
-import { getFeaturedProjects, type PortfolioProject } from "@/lib/projects";
+import { getProducts, type PortfolioProduct } from "@/lib/projects";
 import { useI18n } from "@/i18n";
 
 export function SiteFooter() {
   const { locale } = useI18n();
-  const featuredProjects = getFeaturedProjects(locale);
+  const products = getProducts(locale);
   return (
     <footer className="mt-24 border-t border-border bg-surface/40">
       <div className="mx-auto grid max-w-7xl grid-cols-2 justify-items-center gap-x-8 gap-y-10 px-4 py-12 text-center sm:px-6 lg:grid-cols-4 lg:justify-items-stretch lg:px-8 lg:text-left">
@@ -23,10 +23,10 @@ export function SiteFooter() {
         </div>
 
         <div className="w-full">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Projects</h4>
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">My Products</h4>
           <ul className="mt-3 space-y-2 text-sm">
-            <li><Link href="/projects" className="hover:text-foreground text-muted-foreground">All projects</Link></li>
-            {featuredProjects.map((project) => (
+            <li><Link href="/products" className="hover:text-foreground text-muted-foreground">All products</Link></li>
+            {products.map((project) => (
               <li key={project.name}>
                 <ProjectFooterLink project={project} />
               </li>
@@ -53,7 +53,7 @@ export function SiteFooter() {
   );
 }
 
-function ProjectFooterLink({ project }: { project: PortfolioProject }) {
+function ProjectFooterLink({ project }: { project: PortfolioProduct }) {
   const className = "hover:text-foreground text-muted-foreground";
 
   if (project.external) {

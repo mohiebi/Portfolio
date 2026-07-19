@@ -32,10 +32,6 @@ class EmailDesignTest extends TestCase
                 'taskTitle' => 'Finish the email design',
                 'taskUrl' => 'https://example.com/task',
             ])->render(),
-            view('emails.offer-made', [
-                'amount' => '8,430.00',
-                'listingUrl' => 'https://example.com/listing',
-            ])->render(),
         ];
 
         foreach ($emails as $email) {

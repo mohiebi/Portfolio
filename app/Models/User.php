@@ -101,16 +101,6 @@ class User extends Authenticatable implements MustVerifyEmail
         ]);
     }
 
-    public function employer(): HasOne
-    {
-        return $this->hasOne(Employer::class);
-    }
-
-    public function jobApplications(): HasMany
-    {
-        return $this->hasMany(JobApplication::class);
-    }
-
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
@@ -119,15 +109,5 @@ class User extends Authenticatable implements MustVerifyEmail
     public function telegramConnection(): HasOne
     {
         return $this->hasOne(TelegramConnection::class);
-    }
-
-    public function listings(): HasMany
-    {
-        return $this->hasMany(Listing::class, 'by_user_id');
-    }
-
-    public function offers(): HasMany
-    {
-        return $this->hasMany(Offer::class, 'bidder_id');
     }
 }

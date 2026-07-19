@@ -3,8 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CaseStudyRequest extends FormRequest
 {
@@ -34,6 +34,10 @@ class CaseStudyRequest extends FormRequest
             'summary' => ['required', 'string', 'max:1200'],
             'accent' => ['required', 'string', 'max:120'],
             'cover' => ['required', Rule::in(['web3', 'modernize', 'ai', 'web'])],
+            'featured_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
+            'remove_featured_image' => ['boolean'],
+            'project_url' => ['nullable', 'url', 'max:255'],
+            'repository_url' => ['nullable', 'url', 'max:255'],
             'problem' => ['nullable', 'string', 'max:4000'],
             'approach' => ['nullable', 'array'],
             'approach.*' => ['string', 'max:700'],
@@ -57,6 +61,7 @@ class CaseStudyRequest extends FormRequest
         $this->merge([
             'slug' => Str::slug($slug ?: $title),
             'is_published' => $this->boolean('is_published'),
+            'remove_featured_image' => $this->boolean('remove_featured_image'),
             'sort_order' => $this->input('sort_order') === null ? 0 : $this->input('sort_order'),
         ]);
     }

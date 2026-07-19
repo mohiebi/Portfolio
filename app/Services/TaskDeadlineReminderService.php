@@ -30,19 +30,19 @@ class TaskDeadlineReminderService
                         $user,
                         TaskDeadlineReminder::STAGE_WARNING,
                         'deadline_warning_reminded_at',
-                        fn (Builder $query) => $query->whereDate('deadline', $today->copy()->addDay()->toDateString()),
+                        fn ($query) => $query->whereDate('deadline', $today->copy()->addDay()->toDateString()),
                     );
                     $sent += $this->sendStage(
                         $user,
                         TaskDeadlineReminder::STAGE_DUE,
                         'deadline_due_reminded_at',
-                        fn (Builder $query) => $query->whereDate('deadline', $today->toDateString()),
+                        fn ($query) => $query->whereDate('deadline', $today->toDateString()),
                     );
                     $sent += $this->sendStage(
                         $user,
                         TaskDeadlineReminder::STAGE_OVERDUE,
                         'deadline_overdue_reminded_at',
-                        fn (Builder $query) => $query->whereDate('deadline', '<', $today->toDateString()),
+                        fn ($query) => $query->whereDate('deadline', '<', $today->toDateString()),
                     );
                 }
             });
@@ -51,7 +51,7 @@ class TaskDeadlineReminderService
     }
 
     /**
-     * @param callable(Builder): Builder $deadlineConstraint
+     * @param  callable(mixed): mixed  $deadlineConstraint
      */
     private function sendStage(User $user, string $stage, string $remindedAtColumn, callable $deadlineConstraint): int
     {

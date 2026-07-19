@@ -21,6 +21,9 @@ class CaseStudy extends Model
         'summary',
         'accent',
         'cover',
+        'featured_image_path',
+        'project_url',
+        'repository_url',
         'problem',
         'approach',
         'impact',
@@ -29,6 +32,10 @@ class CaseStudy extends Model
         'is_published',
         'sort_order',
         'translations',
+    ];
+
+    protected $appends = [
+        'featured_image_url',
     ];
 
     protected $casts = [
@@ -51,5 +58,10 @@ class CaseStudy extends Model
         return $query
             ->orderBy('sort_order')
             ->orderByDesc('created_at');
+    }
+
+    public function getFeaturedImageUrlAttribute(): ?string
+    {
+        return $this->featured_image_path ? '/'.ltrim($this->featured_image_path, '/') : null;
     }
 }

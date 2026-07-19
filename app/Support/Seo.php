@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 class Seo
 {
     private const SITE_NAME = 'Mohi';
+
     private const DEFAULT_DESCRIPTION = 'Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms.';
 
     public static function page(?Request $request = null): array
@@ -53,14 +54,11 @@ class Seo
         $urls = collect([
             self::sitemapEntry('/', 'daily', '1.0'),
             self::sitemapEntry('/services', 'weekly', '0.9'),
-            self::sitemapEntry('/projects', 'weekly', '0.8'),
+            self::sitemapEntry('/products', 'weekly', '0.8'),
             self::sitemapEntry('/case-studies', 'weekly', '0.8'),
             self::sitemapEntry('/articles', 'weekly', '0.8'),
             self::sitemapEntry('/recommendations', 'monthly', '0.7'),
             self::sitemapEntry('/taskmanager', 'monthly', '0.5'),
-            self::sitemapEntry('/books', 'monthly', '0.5'),
-            self::sitemapEntry('/jobs', 'monthly', '0.5'),
-            self::sitemapEntry('/listing', 'monthly', '0.5'),
         ]);
 
         Service::published()->ordered()->get()->each(function (Service $service) use ($urls) {
@@ -128,14 +126,11 @@ class Seo
         return match (trim($request->path(), '/')) {
             '' => 'Back-End / Full-Stack Engineer',
             'services' => 'Service Packages',
-            'projects' => 'Portfolio Projects',
+            'products' => 'My Products',
             'articles' => 'Technical Articles',
             'case-studies' => 'Case Study Library',
             'recommendations', 'recommendations/all' => 'LinkedIn Recommendations',
             'taskmanager' => 'TaskManager Project',
-            'books' => 'BookReview Project',
-            'jobs' => 'Job Board Project',
-            'listing' => 'Real Estate Listings',
             default => self::fallbackTitle($request),
         };
     }
@@ -160,14 +155,11 @@ class Seo
         return match (trim($request->path(), '/')) {
             '' => self::DEFAULT_DESCRIPTION,
             'services' => 'Backend-focused business systems, modern websites, workflow automation and AI-powered platforms delivered in weeks, not months.',
-            'projects' => 'Portfolio projects by Mohi, including TaskManager, CashPilot, AI Routine Coach, Mahdieh Design, Job Board, BookReview, and Real Estate.',
+            'products' => 'Products by Mohi: TaskManager, CashPilot, and AI Routine Coach.',
             'articles' => 'Practical writing about backend systems, Laravel, architecture, production debugging, and full-stack delivery.',
             'case-studies' => 'Selected engineering case studies across backend architecture, Laravel, Symfony, Vue, Node.js, Web3, AI integrations, and production modernization.',
             'recommendations', 'recommendations/all' => 'Full LinkedIn recommendations from people who have worked with Mohi across engineering, product, and delivery.',
             'taskmanager' => 'A focused Laravel and Inertia task manager demo with authenticated user workflows, subtasks, and status tracking.',
-            'books' => 'A Laravel BookReview project with searchable books, ratings, review counts, and filterable discovery flows.',
-            'jobs' => 'A Laravel job board project with filterable listings, employer dashboards, and applicant workflows.',
-            'listing' => 'A real estate marketplace demo with property filters, buyer offers, notifications, and realtor listing tools.',
             default => self::DEFAULT_DESCRIPTION,
         };
     }
@@ -177,6 +169,11 @@ class Seo
         $article = self::routeModel($request, 'article');
         if ($article instanceof Article && $article->cover_url) {
             return self::url($article->cover_url);
+        }
+
+        $caseStudy = self::routeModel($request, 'caseStudy');
+        if ($caseStudy instanceof CaseStudy && $caseStudy->featured_image_url) {
+            return self::url($caseStudy->featured_image_url);
         }
 
         return self::url('/img/og-preview.webp');
@@ -194,13 +191,7 @@ class Seo
             'reset-password*',
             'verify-email*',
             'confirm-password',
-            'my-jobs*',
-            'my-job-applications*',
-            'employer*',
-            'realtor*',
             'notification*',
-            'jobs/*/apply',
-            'books/*/reviews*',
         ];
 
         if (Str::is($private, $path)) {
@@ -208,7 +199,7 @@ class Seo
         }
 
         $queryKeys = collect($request->query())->keys()->reject(fn (string $key) => $key === 'lang');
-        if ($queryKeys->isNotEmpty() && Str::is(['books', 'jobs', 'listing'], $path)) {
+        if ($queryKeys->isNotEmpty() && Str::is(['products'], $path)) {
             return 'noindex,follow';
         }
 
@@ -382,6 +373,7 @@ class Seo
         return match ($path) {
             '', '/' => '/',
             'recommendations/all' => '/recommendations',
+            'projects' => '/products',
             default => '/'.ltrim($path, '/'),
         };
     }

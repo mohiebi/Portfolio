@@ -1,6 +1,6 @@
 import { Link } from "@inertiajs/react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Briefcase, Calendar, Check, MapPin, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Briefcase, Calendar, Check, ExternalLink, Github, MapPin, Sparkles } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { SeoHead } from "@/components/site/SeoHead";
 import { Button } from "@/components/ui/button";
@@ -50,8 +50,39 @@ export default function PublicCaseStudyShow({ caseStudy, nextCaseStudy }: Props)
             {caseStudy.period && <span className="inline-flex items-center gap-1.5"><Calendar className="h-4 w-4 text-primary" /> {caseStudy.period}</span>}
             {caseStudy.location && <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" /> {caseStudy.location}</span>}
           </div>
+
+          {(caseStudy.project_url || caseStudy.repository_url) && (
+            <div className="mt-8 flex flex-wrap gap-3">
+              {caseStudy.project_url && (
+                <Button asChild>
+                  <a href={caseStudy.project_url} target="_blank" rel="noreferrer">
+                    Visit live site <ExternalLink className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+              {caseStudy.repository_url && (
+                <Button asChild variant="outline">
+                  <a href={caseStudy.repository_url} target="_blank" rel="noreferrer">
+                    View source <Github className="ml-2 h-4 w-4" />
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </section>
+
+      {caseStudy.featured_image_url && (
+        <section className="border-b border-border/60">
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+            <img
+              src={caseStudy.featured_image_url}
+              alt=""
+              className="aspect-[16/9] w-full rounded-2xl border border-border object-cover shadow-card"
+            />
+          </div>
+        </section>
+      )}
 
       {(caseStudy.impact ?? []).length > 0 && (
         <section className="border-b border-border/60">
@@ -118,6 +149,24 @@ export default function PublicCaseStudyShow({ caseStudy, nextCaseStudy }: Props)
           <div className="rounded-2xl border border-border bg-card/70 p-6">
             <h4 className="font-display text-lg font-semibold">Want to dig deeper?</h4>
             <p className="mt-2 text-sm text-muted-foreground">Happy to walk you through the architecture, trade-offs, and outcomes.</p>
+            {(caseStudy.project_url || caseStudy.repository_url) && (
+              <div className="mt-4 grid gap-2">
+                {caseStudy.project_url && (
+                  <Button asChild variant="outline" className="w-full">
+                    <a href={caseStudy.project_url} target="_blank" rel="noreferrer">
+                      Visit live site <ExternalLink className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+                {caseStudy.repository_url && (
+                  <Button asChild variant="outline" className="w-full">
+                    <a href={caseStudy.repository_url} target="_blank" rel="noreferrer">
+                      View source <Github className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+              </div>
+            )}
             <Button asChild className="mt-4 w-full">
               <a href="/#contact">Get in touch <ArrowRight className="ml-2 h-4 w-4" /></a>
             </Button>

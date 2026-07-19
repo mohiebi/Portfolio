@@ -45,9 +45,6 @@ const sampleAccent = {
   web: "from-emerald-400/25 to-sky-500/10",
   tasks: "from-emerald-400/25 to-sky-500/10",
   routine: "from-indigo-400/25 to-cyan-500/10",
-  jobs: "from-sky-400/25 to-emerald-500/10",
-  books: "from-amber-400/25 to-rose-500/10",
-  realestate: "from-teal-400/25 to-sky-500/10",
 } as const;
 
 const fadeUp = {

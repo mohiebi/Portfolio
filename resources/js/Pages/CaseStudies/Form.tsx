@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from "@inertiajs/react";
 import { type FormEvent, type ReactNode, useMemo } from "react";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Image, Save, Trash2 } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,10 @@ type CaseStudyForm = {
   summary: string;
   accent: string;
   cover: CaseStudy["cover"];
+  featured_image: File | null;
+  remove_featured_image: boolean;
+  project_url: string;
+  repository_url: string;
   problem: string;
   approach_text: string;
   impact_text: string;
@@ -54,6 +58,10 @@ export default function CaseStudyFormPage({ caseStudy }: Props) {
     summary: caseStudy?.summary ?? "",
     accent: caseStudy?.accent ?? accentOptions[0],
     cover: caseStudy?.cover ?? "web",
+    featured_image: null,
+    remove_featured_image: false,
+    project_url: caseStudy?.project_url ?? "",
+    repository_url: caseStudy?.repository_url ?? "",
     problem: caseStudy?.problem ?? "",
     approach_text: listToText(caseStudy?.approach),
     impact_text: impactToText(caseStudy?.impact),
@@ -65,6 +73,11 @@ export default function CaseStudyFormPage({ caseStudy }: Props) {
 
   const title = editing ? "Edit Case Study" : "New Case Study";
   const generatedSlug = useMemo(() => slugify(form.data.title), [form.data.title]);
+  const selectedImagePreview = useMemo(
+    () => form.data.featured_image ? URL.createObjectURL(form.data.featured_image) : null,
+    [form.data.featured_image],
+  );
+  const featuredImagePreview = selectedImagePreview ?? (!form.data.remove_featured_image ? caseStudy?.featured_image_url : null);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -180,6 +193,70 @@ export default function CaseStudyFormPage({ caseStudy }: Props) {
             <Field error={form.errors.summary} label="Summary" required>
               <Textarea id="summary" rows={4} value={form.data.summary} onChange={(event) => form.setData("summary", event.target.value)} required />
             </Field>
+
+            <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+              <div className="grid gap-4">
+                <Field error={form.errors.project_url} label="Live project URL">
+                  <Input
+                    id="project_url"
+                    type="url"
+                    value={form.data.project_url}
+                    onChange={(event) => form.setData("project_url", event.target.value)}
+                    placeholder="https://example.com"
+                  />
+                </Field>
+                <Field error={form.errors.repository_url} label="Source repository URL">
+                  <Input
+                    id="repository_url"
+                    type="url"
+                    value={form.data.repository_url}
+                    onChange={(event) => form.setData("repository_url", event.target.value)}
+                    placeholder="https://github.com/..."
+                  />
+                </Field>
+                <Field error={(form.errors as any).featured_image} label="Featured image">
+                  <Input
+                    id="featured_image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={(event) => {
+                      form.setData("featured_image", event.target.files?.[0] ?? null);
+                      form.setData("remove_featured_image", false);
+                    }}
+                  />
+                </Field>
+                {featuredImagePreview && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-fit"
+                    onClick={() => {
+                      form.setData("featured_image", null);
+                      form.setData("remove_featured_image", true);
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Remove featured image
+                  </Button>
+                )}
+                {form.progress && (
+                  <progress className="h-2 w-full overflow-hidden rounded-full" value={form.progress.percentage} max="100">
+                    {form.progress.percentage}%
+                  </progress>
+                )}
+              </div>
+              <div className="overflow-hidden rounded-2xl border border-border bg-background/60">
+                {featuredImagePreview ? (
+                  <img src={featuredImagePreview} alt="" className="aspect-[16/10] w-full object-cover" />
+                ) : (
+                  <div className="grid aspect-[16/10] place-items-center text-center text-sm text-muted-foreground">
+                    <div>
+                      <Image className="mx-auto h-8 w-8 text-primary/70" />
+                      <p className="mt-2">No featured image selected</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             <Field error={form.errors.problem} label="Problem">
               <Textarea id="problem" rows={5} value={form.data.problem} onChange={(event) => form.setData("problem", event.target.value)} />
@@ -321,6 +398,10 @@ function formPayload(data: CaseStudyForm) {
     summary: data.summary,
     accent: data.accent,
     cover: data.cover,
+    featured_image: data.featured_image,
+    remove_featured_image: data.remove_featured_image ? "1" : "0",
+    project_url: data.project_url,
+    repository_url: data.repository_url,
     problem: data.problem,
     approach: textToList(data.approach_text),
     impact: textToImpact(data.impact_text),
