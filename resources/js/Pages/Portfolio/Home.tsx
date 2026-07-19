@@ -468,8 +468,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
         </motion.div>
       </section>
 
-
-      <ServicesSection />
+      <ProductsSection />
 
       {activeRecommendation && (
         <section id="recommendations" className="relative scroll-mt-20 overflow-hidden border-t border-border/60">
@@ -579,7 +578,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
         </section>
       )}
 
-      <ProductsSection />
+      <ServicesSection />
 
       <CaseStudiesSection caseStudies={caseStudies} />
 
