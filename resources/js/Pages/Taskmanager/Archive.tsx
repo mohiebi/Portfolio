@@ -108,7 +108,7 @@ export default function TaskArchive({ tasks, filters }: Props) {
               </label>
             </div>
 
-            <div className="grid gap-3 rounded-3xl border border-border/70 bg-background/45 p-4">
+            <div className="grid content-start gap-4">
               <DateRange
                 title="Created date"
                 fromId="created_from"
@@ -205,7 +205,7 @@ function DateRange({
   onToChange: (value: string) => void;
 }) {
   return (
-    <fieldset className="rounded-2xl border border-border/70 bg-card/60 p-3">
+    <fieldset className="rounded-2xl border border-border/70 bg-background/45 p-3">
       <legend className="px-1 text-xs font-semibold text-muted-foreground">{title}</legend>
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
         <div className="grid gap-1.5">
@@ -235,17 +235,30 @@ function DateRange({
 
 function ArchiveDateInput({ id, value, onChange }: { id: string; value: string; onChange: (value: string) => void }) {
   return (
-    <div className="relative">
-      <Input
+    <div className="relative h-10 rounded-xl border border-input bg-surface/80 text-sm shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
+      <input
         id={id}
         type="date"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-xl bg-background/70 pr-11 text-sm [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+        className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 [color-scheme:dark]"
       />
+      <span className="pointer-events-none flex h-full items-center px-3 pr-11 text-foreground">
+        {formatDateInputValue(value)}
+      </span>
       <CalendarDays className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
     </div>
   );
+}
+
+function formatDateInputValue(value: string): string {
+  if (!value) return "mm/dd/yyyy";
+
+  const [year, month, day] = value.split("-");
+
+  if (!year || !month || !day) return value;
+
+  return `${month}/${day}/${year}`;
 }
 
 function ArchiveEmptyState() {
