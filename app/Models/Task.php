@@ -20,12 +20,11 @@ class Task extends Model
 
     public const DONE_BOARD_TTL_DAYS = 7;
 
-    public const DONE_RETENTION_DAYS = 30;
-
-    protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status', 'deadline'];
+    protected $fillable = ['user_id', 'parent_id', 'title', 'description', 'long_description', 'complete', 'status', 'done_at', 'deadline'];
 
     protected $casts = [
         'complete' => 'boolean',
+        'done_at' => 'datetime',
         'deadline' => 'datetime',
         'deadline_warning_reminded_at' => 'datetime',
         'deadline_due_reminded_at' => 'datetime',
@@ -74,6 +73,7 @@ class Task extends Model
             ->update([
                 'complete' => true,
                 'status' => self::STATUS_DONE,
+                'done_at' => now(),
             ]);
     }
 
@@ -84,6 +84,7 @@ class Task extends Model
             ->update([
                 'complete' => false,
                 'status' => self::STATUS_OPEN,
+                'done_at' => null,
             ]);
     }
 
@@ -131,27 +132,27 @@ class Task extends Model
                 $query->where('status', '!=', self::STATUS_DONE)
                     ->where('complete', false);
             })
-                ->orWhere('updated_at', '>', $cutoff)
+                ->orWhere(function ($query) use ($cutoff) {
+                    $query->done()
+                        ->where(function ($query) use ($cutoff) {
+                            $query->where('done_at', '>', $cutoff)
+                                ->orWhere(function ($query) use ($cutoff) {
+                                    $query->whereNull('done_at')
+                                        ->where('updated_at', '>', $cutoff);
+                                });
+                        });
+                })
                 ->orWhereHas('subtasks', function ($query) use ($cutoff) {
-                    $query->where('updated_at', '>', $cutoff);
+                    $query->done()
+                        ->where(function ($query) use ($cutoff) {
+                            $query->where('done_at', '>', $cutoff)
+                                ->orWhere(function ($query) use ($cutoff) {
+                                    $query->whereNull('done_at')
+                                        ->where('updated_at', '>', $cutoff);
+                                });
+                        });
                 });
         });
-    }
-
-    public function scopePrunableDone($query)
-    {
-        $cutoff = now()->subDays(self::DONE_RETENTION_DAYS);
-
-        return $query
-            ->topLevel()
-            ->done()
-            ->whereHas('user', function ($query) {
-                $query->where('task_done_cleanup_enabled', true);
-            })
-            ->where('updated_at', '<=', $cutoff)
-            ->whereDoesntHave('subtasks', function ($query) use ($cutoff) {
-                $query->where('updated_at', '>', $cutoff);
-            });
     }
 
     public function reminderTargetTask(): self
@@ -192,6 +193,18 @@ class Task extends Model
         static::creating(function ($task) {
             if (! $task->user_id && Auth::id()) {
                 $task->user_id = Auth::id();
+            }
+        });
+
+        static::saving(function ($task) {
+            $isDone = $task->status === self::STATUS_DONE || $task->complete;
+
+            if ($isDone && ! $task->done_at) {
+                $task->done_at = now();
+            }
+
+            if (! $isDone) {
+                $task->done_at = null;
             }
         });
 

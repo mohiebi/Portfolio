@@ -52,7 +52,6 @@ class TaskmanagerController extends Controller
                 'available' => $user && ($doneTaskCount >= 10 || $doneCleanupEnabled),
                 'doneTaskCount' => $doneTaskCount,
                 'hideAfterDays' => Task::DONE_BOARD_TTL_DAYS,
-                'removeAfterDays' => Task::DONE_RETENTION_DAYS,
             ],
         ]);
     }
@@ -72,7 +71,7 @@ class TaskmanagerController extends Controller
 
         if ($enabled && $doneTaskCount < 10 && ! $user->task_done_cleanup_enabled) {
             return redirect()->back()->withErrors([
-                'done_cleanup' => 'Done task cleanup becomes available after you have 10 completed tasks.',
+                'done_cleanup' => 'Hiding old done tasks becomes available after you have 10 completed tasks.',
             ]);
         }
 
@@ -80,21 +79,9 @@ class TaskmanagerController extends Controller
             'task_done_cleanup_enabled' => $enabled,
         ])->save();
 
-        $deletedCount = 0;
-
-        if ($enabled) {
-            $deletedCount = $user->tasks()
-                ->prunableDone()
-                ->delete();
-        }
-
         $message = $enabled
-            ? 'Done task cleanup enabled. Old completed tasks are now hidden, and month-old inactive ones were removed.'
-            : 'Done task cleanup disabled. Older completed tasks will stay visible.';
-
-        if ($deletedCount > 0) {
-            $message .= " Removed {$deletedCount} old done task(s).";
-        }
+            ? 'Old done tasks will now be hidden from the board and kept in your archive.'
+            : 'Old done tasks will stay visible on the board.';
 
         return redirect()->back()->with('success', $message);
     }

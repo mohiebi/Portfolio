@@ -316,6 +316,7 @@ class TelegramTaskBotTest extends TestCase
             'title' => 'Recent done task',
             'status' => Task::STATUS_DONE,
             'complete' => true,
+            'done_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
             'updated_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
             'created_at' => Carbon::parse('2026-07-10 09:00:00', 'Asia/Tehran'),
         ]);
@@ -323,6 +324,7 @@ class TelegramTaskBotTest extends TestCase
             'title' => 'Old done task',
             'status' => Task::STATUS_DONE,
             'complete' => true,
+            'done_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
             'updated_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
             'created_at' => Carbon::parse('2026-07-01 09:00:00', 'Asia/Tehran'),
         ]);

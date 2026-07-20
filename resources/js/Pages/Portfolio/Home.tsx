@@ -522,7 +522,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                     <motion.div
                       key={recommendation.id}
                       animate={variants[role]}
-                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      transition={{ type: "spring", stiffness: 90, damping: 20 }}
                       onClick={() => !isCenter && setActiveRecommendationIndex(index)}
                       className={`${isCenter ? "relative sm:absolute sm:inset-0" : "hidden cursor-pointer sm:absolute sm:inset-0 sm:block"} ${role === "hidden" ? "pointer-events-none" : ""}`}
                       style={{ transformOrigin: "center bottom" }}
@@ -1433,7 +1433,9 @@ function RecommendationShowcaseCard({
   const preview = recommendationPreview(recommendation.body);
 
   return (
-    <article
+    <motion.article
+      animate={active ? { boxShadow: "0 0 0 1.5px rgba(16,185,129,0.35), 0 0 60px rgba(16,185,129,0.12)" } : { boxShadow: "none" }}
+      transition={{ duration: 0.4 }}
       className={`relative flex h-full overflow-hidden rounded-2xl border border-border p-6 shadow-card backdrop-blur sm:rounded-3xl sm:p-10 md:p-12 ${
         active ? "" : "pointer-events-none"
       }`}
@@ -1499,7 +1501,7 @@ function RecommendationShowcaseCard({
           )}
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
 

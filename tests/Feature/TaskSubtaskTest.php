@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Task;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -114,6 +115,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => true,
             'status' => Task::STATUS_DONE,
         ]);
+        $this->assertNotNull($subtask->fresh()->done_at);
     }
 
     public function test_marking_parent_open_marks_subtasks_open(): void
@@ -141,6 +143,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => false,
             'status' => Task::STATUS_OPEN,
         ]);
+        $this->assertNull($subtask->fresh()->done_at);
     }
 
     public function test_subtasks_are_limited_to_one_level(): void
@@ -241,6 +244,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => true,
             'status' => Task::STATUS_DONE,
             'created_at' => now()->subDays(6),
+            'done_at' => now()->subDays(6),
             'updated_at' => now()->subDays(6),
         ]);
         $oldDoneTask = Task::factory()->for($user)->create([
@@ -248,6 +252,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => true,
             'status' => Task::STATUS_DONE,
             'created_at' => now()->subDays(8),
+            'done_at' => now()->subDays(8),
             'updated_at' => now()->subDays(8),
         ]);
 
@@ -272,6 +277,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => true,
             'status' => Task::STATUS_DONE,
             'created_at' => now()->subDays(8),
+            'done_at' => now()->subDays(8),
             'updated_at' => now()->subDays(8),
         ]);
 
@@ -298,6 +304,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => true,
             'status' => Task::STATUS_DONE,
             'created_at' => now()->subDays(8),
+            'done_at' => now()->subDays(8),
             'updated_at' => now()->subDays(8),
         ]);
         $subtask = Task::factory()->for($user)->create([
@@ -306,6 +313,7 @@ class TaskSubtaskTest extends TestCase
             'complete' => true,
             'status' => Task::STATUS_DONE,
             'created_at' => now()->subDays(8),
+            'done_at' => now()->subDay(),
             'updated_at' => now()->subDay(),
         ]);
 
@@ -360,11 +368,13 @@ class TaskSubtaskTest extends TestCase
         Task::factory()->count(9)->for($user)->create([
             'complete' => true,
             'status' => Task::STATUS_DONE,
+            'done_at' => now()->subDay(),
             'updated_at' => now()->subDay(),
         ]);
         $oldDoneTask = Task::factory()->for($user)->create([
             'complete' => true,
             'status' => Task::STATUS_DONE,
+            'done_at' => now()->subDays(31),
             'updated_at' => now()->subDays(31),
         ]);
 
@@ -375,63 +385,99 @@ class TaskSubtaskTest extends TestCase
             ->assertRedirect();
 
         $this->assertTrue($user->fresh()->task_done_cleanup_enabled);
-        $this->assertDatabaseMissing('tasks', ['id' => $oldDoneTask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $oldDoneTask->id]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Taskmanager/Index')
+                ->has('tasks', 9)
+            );
     }
 
-    public function test_prune_done_command_removes_only_month_old_inactive_top_level_done_tasks(): void
+    public function test_month_old_done_tasks_are_kept_for_archive_when_hide_preference_is_enabled(): void
     {
         $user = User::factory()->create([
             'task_done_cleanup_enabled' => true,
         ]);
-        $userWithoutCleanup = User::factory()->create();
 
         $oldDoneTask = Task::factory()->for($user)->create([
+            'title' => 'Archived done task',
             'complete' => true,
             'status' => Task::STATUS_DONE,
+            'done_at' => now()->subDays(31),
             'updated_at' => now()->subDays(31),
         ]);
         $oldDoneSubtask = Task::factory()->for($user)->create([
             'parent_id' => $oldDoneTask->id,
             'complete' => true,
             'status' => Task::STATUS_DONE,
+            'done_at' => now()->subDays(31),
             'updated_at' => now()->subDays(31),
         ]);
-        $recentDoneTask = Task::factory()->for($user)->create([
-            'complete' => true,
-            'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDays(29),
-        ]);
-        $oldDoneTaskWithFreshSubtask = Task::factory()->for($user)->create([
-            'complete' => true,
-            'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDays(31),
-        ]);
-        $freshSubtask = Task::factory()->for($user)->create([
-            'parent_id' => $oldDoneTaskWithFreshSubtask->id,
-            'complete' => true,
-            'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDay(),
-        ]);
-        $oldOpenTask = Task::factory()->for($user)->create([
+
+        $this->actingAs($user)
+            ->get('/taskmanager')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Taskmanager/Index')
+                ->has('tasks', 0)
+            );
+
+        $this->assertDatabaseHas('tasks', ['id' => $oldDoneTask->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $oldDoneSubtask->id]);
+
+        $this->actingAs($user)
+            ->get('/taskmanager/archive?q=Archived')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Taskmanager/Archive')
+                ->where('tasks.data.0.id', $oldDoneTask->id)
+            );
+    }
+
+    public function test_done_at_tracks_status_changes_without_changing_on_done_edits(): void
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->for($user)->create([
             'complete' => false,
             'status' => Task::STATUS_OPEN,
-            'updated_at' => now()->subDays(31),
-        ]);
-        $optOutDoneTask = Task::factory()->for($userWithoutCleanup)->create([
-            'complete' => true,
-            'status' => Task::STATUS_DONE,
-            'updated_at' => now()->subDays(31),
+            'done_at' => null,
         ]);
 
-        $this->artisan('tasks:prune-done')
-            ->assertExitCode(0);
+        Carbon::setTestNow(Carbon::parse('2026-07-01 09:00:00'));
 
-        $this->assertDatabaseMissing('tasks', ['id' => $oldDoneTask->id]);
-        $this->assertDatabaseMissing('tasks', ['id' => $oldDoneSubtask->id]);
-        $this->assertDatabaseHas('tasks', ['id' => $recentDoneTask->id]);
-        $this->assertDatabaseHas('tasks', ['id' => $oldDoneTaskWithFreshSubtask->id]);
-        $this->assertDatabaseHas('tasks', ['id' => $freshSubtask->id]);
-        $this->assertDatabaseHas('tasks', ['id' => $oldOpenTask->id]);
-        $this->assertDatabaseHas('tasks', ['id' => $optOutDoneTask->id]);
+        $this->actingAs($user)
+            ->patchJson("/taskmanager/{$task->id}/status", [
+                'status' => Task::STATUS_DONE,
+            ])
+            ->assertOk();
+
+        $doneAt = $task->fresh()->done_at;
+
+        $this->assertNotNull($doneAt);
+        $this->assertSame('2026-07-01 09:00:00', $doneAt->toDateTimeString());
+
+        Carbon::setTestNow(Carbon::parse('2026-07-03 09:00:00'));
+
+        $this->actingAs($user)
+            ->put("/taskmanager/{$task->id}", [
+                'title' => 'Edited completed task',
+                'complete' => true,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame('2026-07-01 09:00:00', $task->fresh()->done_at->toDateTimeString());
+
+        $this->actingAs($user)
+            ->patchJson("/taskmanager/{$task->id}/status", [
+                'status' => Task::STATUS_OPEN,
+            ])
+            ->assertOk();
+
+        $this->assertNull($task->fresh()->done_at);
+
+        Carbon::setTestNow();
     }
 }

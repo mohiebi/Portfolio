@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type CSSProperties, type DragEvent, type FormEvent, useEffect, useMemo, useState } from "react";
-import { AlarmClock, AlertTriangle, CalendarClock, Check, Circle, Clock, Eraser, ListChecks, Plus, Send, Trash2, X, type LucideIcon } from "lucide-react";
+import { AlarmClock, AlertTriangle, Archive, CalendarClock, Check, Circle, Clock, ListChecks, Plus, Send, Trash2, X, type LucideIcon } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,14 +24,12 @@ type DoneCleanupSettings = {
   available: boolean;
   doneTaskCount: number;
   hideAfterDays: number;
-  removeAfterDays: number;
 };
 
 type DoneCleanupControl = {
   enabled: boolean;
   processing: boolean;
   hideAfterDays: number;
-  removeAfterDays: number;
   onChange: (enabled: boolean) => void;
 };
 
@@ -111,7 +109,6 @@ export default function TasksIndex({ tasks, demoMode = false, telegramConnected 
         enabled: cleanupEnabled,
         processing: cleanupProcessing,
         hideAfterDays: doneCleanup.hideAfterDays,
-        removeAfterDays: doneCleanup.removeAfterDays,
         onChange: handleDoneCleanupChange,
       }
     : undefined;
@@ -314,7 +311,7 @@ export default function TasksIndex({ tasks, demoMode = false, telegramConnected 
         preserveScroll: true,
         onError: (errors) => {
           setCleanupEnabled(previousValue);
-          setActionError(errors.done_cleanup ?? "The cleanup preference could not be updated. Please try again.");
+          setActionError(errors.done_cleanup ?? "The hide preference could not be updated. Please try again.");
         },
         onFinish: () => {
           setCleanupProcessing(false);
@@ -385,7 +382,17 @@ export default function TasksIndex({ tasks, demoMode = false, telegramConnected 
           </form>
         </div>
 
-        {doneCleanupControl && <DoneCleanupBar {...doneCleanupControl} className="mt-4" />}
+        {!demoMode && (
+          <div className={`mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch ${doneCleanupControl ? "" : "sm:justify-end"}`}>
+            {doneCleanupControl && <DoneCleanupBar {...doneCleanupControl} className="flex-1" />}
+            <Button asChild variant="outline" className="h-auto min-h-12 justify-center rounded-xl px-4 py-3">
+              <Link href="/taskmanager/archive">
+                <Archive className="mr-2 h-4 w-4" />
+                Done archive
+              </Link>
+            </Button>
+          </div>
+        )}
 
         <DeadlineAlerts alerts={deadlineAlerts} className="mt-4" />
 
@@ -776,7 +783,6 @@ function DoneCleanupBar({
   enabled,
   processing,
   hideAfterDays,
-  removeAfterDays,
   onChange,
   className = "",
 }: DoneCleanupControl & { className?: string }) {
@@ -793,12 +799,12 @@ function DoneCleanupBar({
           }`}
           aria-hidden="true"
         >
-          <Eraser className="h-4 w-4" />
+          <Archive className="h-4 w-4" />
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">Auto-clean done tasks</p>
+          <p className="text-sm font-semibold text-foreground">Hide old done tasks</p>
           <p className="text-xs text-muted-foreground">
-            Hide after {hideAfterDays} days &middot; remove after {removeAfterDays} days
+            Hide completed tasks after {hideAfterDays} days. They stay searchable in your archive.
           </p>
         </div>
       </div>
@@ -807,7 +813,7 @@ function DoneCleanupBar({
         checked={enabled}
         disabled={processing}
         onCheckedChange={onChange}
-        aria-label="Automatically hide and remove old done tasks"
+        aria-label="Hide old done tasks from the board"
         className="shrink-0 self-start disabled:cursor-wait sm:self-auto"
       />
     </div>

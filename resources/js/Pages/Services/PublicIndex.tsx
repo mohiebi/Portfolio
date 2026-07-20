@@ -1,5 +1,6 @@
 import { Link } from "@inertiajs/react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
+import { useRef, type MouseEvent } from "react";
 import {
   ArrowRight,
   BrainCircuit,
@@ -90,6 +91,12 @@ const metrics = [
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0 },
+};
+
+const serviceGlow: Record<string, string> = {
+  launch: "0 0 0 1.5px rgba(16,185,129,0.35), 0 0 60px rgba(16,185,129,0.16)",
+  operations: "0 0 0 1.5px rgba(16,185,129,0.55), 0 0 80px rgba(16,185,129,0.28)",
+  ai: "0 0 0 1.5px rgba(139,92,246,0.45), 0 0 70px rgba(139,92,246,0.2)",
 };
 
 export default function PublicServicesIndex({ services }: Props) {
@@ -586,15 +593,38 @@ function SectionHeading({ eyebrow, title, description }: { eyebrow: string; titl
 
 function ServiceCard({ service, index }: { service: Service; index: number }) {
   const Icon = coverIcon[service.cover];
+  const shouldReduce = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-6, 6]), { stiffness: 280, damping: 28 });
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [6, -6]), { stiffness: 280, damping: 28 });
+  const glow = serviceGlow[service.cover] ?? serviceGlow.launch;
+
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+    if (!ref.current || shouldReduce) return;
+    const rect = ref.current.getBoundingClientRect();
+    rawX.set((e.clientX - rect.left) / rect.width - 0.5);
+    rawY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
 
   return (
     <motion.div
+      ref={ref}
       variants={fadeUp}
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.5, delay: index * 0.07 }}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card/70 shadow-card backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_-12px_rgba(0,0,0,0.3)] ${
+      transition={{ type: "spring", stiffness: 65, damping: 18, delay: index * 0.09 }}
+      style={{
+        rotateX: shouldReduce ? 0 : rotateX,
+        rotateY: shouldReduce ? 0 : rotateY,
+        transformPerspective: 1300,
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => { rawX.set(0); rawY.set(0); }}
+      whileHover={{ boxShadow: glow }}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card/70 shadow-card backdrop-blur transition-colors duration-300 ${
         service.badge ? "border-primary/50 ring-1 ring-primary/20" : "border-border hover:border-primary/40"
       }`}
     >

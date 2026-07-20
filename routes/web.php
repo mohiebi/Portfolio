@@ -8,6 +8,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\TaskArchiveController;
 use App\Http\Controllers\TaskmanagerController;
 use App\Models\Article;
 use App\Models\CaseStudy;
@@ -112,6 +113,9 @@ Route::get('google/auth', [GoogleAuth::class, 'auth'])->name('googleLogin');
 Route::get('auth/google/callback', [GoogleAuth::class, 'callback']);
 
 Route::middleware('auth')->group(function () {
+    Route::get('taskmanager/archive', TaskArchiveController::class)
+        ->name('taskmanager.archive');
+
     Route::patch('taskmanager/done-cleanup', [TaskmanagerController::class, 'updateDoneCleanup'])
         ->name('taskmanager.done-cleanup.update');
 

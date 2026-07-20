@@ -30,6 +30,7 @@ export type Task = {
   deadline_overdue_reminded_at?: string | null;
   complete: boolean;
   status?: "open" | "in_progress" | "done";
+  done_at?: string | null;
   subtasks?: Task[];
   created_at?: string;
   updated_at?: string;
@@ -172,6 +173,9 @@ export type PaginatedData<T> = {
   last_page: number;
   per_page: number;
   total: number;
+  from?: number | null;
+  to?: number | null;
+  next_page_url?: string | null;
 };
 
 export type DatabaseNotification = {
