@@ -99,6 +99,33 @@ const serviceGlow: Record<string, string> = {
   ai: "0 0 0 1.5px rgba(139,92,246,0.45), 0 0 70px rgba(139,92,246,0.2)",
 };
 
+const serviceOrbs = {
+  launch: {
+    orb1: "bg-primary/35 h-52 w-52 -top-16 -left-16",
+    orb2: "bg-teal-400/20 h-36 w-36 bottom-4 right-0",
+  },
+  operations: {
+    orb1: "bg-primary/45 h-56 w-56 -top-12 -right-16",
+    orb2: "bg-cyan-400/25 h-40 w-40 bottom-6 left-4",
+  },
+  ai: {
+    orb1: "bg-violet-500/40 h-52 w-52 -top-10 -right-10",
+    orb2: "bg-fuchsia-400/25 h-36 w-36 bottom-2 left-6",
+  },
+} as const;
+
+function Orb({ className, delay = 0 }: { className: string; delay?: number }) {
+  const shouldReduce = useReducedMotion();
+  return (
+    <motion.div
+      aria-hidden
+      className={`pointer-events-none absolute rounded-full blur-3xl ${className}`}
+      animate={shouldReduce ? {} : { y: [0, -20, 0], opacity: [0.5, 0.85, 0.5] }}
+      transition={{ duration: 5 + delay, repeat: Infinity, ease: "easeInOut", delay }}
+    />
+  );
+}
+
 export default function PublicServicesIndex({ services }: Props) {
   const { locale } = useI18n();
   services = localizedRecords(services, locale);
@@ -264,7 +291,7 @@ export default function PublicServicesIndex({ services }: Props) {
           title="Stop overpaying agencies. Get the system your business actually needs."
           description="Three focused engagements — each ships a working system at a fraction of agency rates, backed by an on-time guarantee."
         />
-        <div className="mt-14 grid gap-8 lg:grid-cols-3">
+        <div className="mt-14 flex flex-col gap-6">
           {services.map((service, index) => (
             <ServiceCard key={service.id} service={service} index={index} />
           ))}
@@ -597,9 +624,10 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
-  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-6, 6]), { stiffness: 280, damping: 28 });
-  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [6, -6]), { stiffness: 280, damping: 28 });
+  const rotateY = useSpring(useTransform(rawX, [-0.5, 0.5], [-5, 5]), { stiffness: 280, damping: 28 });
+  const rotateX = useSpring(useTransform(rawY, [-0.5, 0.5], [5, -5]), { stiffness: 280, damping: 28 });
   const glow = serviceGlow[service.cover] ?? serviceGlow.launch;
+  const orbs = serviceOrbs[service.cover as keyof typeof serviceOrbs] ?? serviceOrbs.launch;
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!ref.current || shouldReduce) return;
@@ -611,11 +639,10 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
   return (
     <motion.div
       ref={ref}
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ type: "spring", stiffness: 65, damping: 18, delay: index * 0.09 }}
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ type: "spring", stiffness: 60, damping: 18 }}
       style={{
         rotateX: shouldReduce ? 0 : rotateX,
         rotateY: shouldReduce ? 0 : rotateY,
@@ -624,15 +651,16 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
       onMouseMove={handleMouseMove}
       onMouseLeave={() => { rawX.set(0); rawY.set(0); }}
       whileHover={{ boxShadow: glow }}
-      className={`group relative flex h-full flex-col overflow-hidden rounded-3xl border bg-card/70 shadow-card backdrop-blur transition-colors duration-300 ${
-        service.badge ? "border-primary/50 ring-1 ring-primary/20" : "border-border hover:border-primary/40"
+      className={`flex flex-col overflow-hidden rounded-3xl border bg-card/70 lg:min-h-[420px] lg:flex-row ${
+        service.badge ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
       }`}
     >
-      <Link
-        href={`/services/${service.slug}`}
-        className={`group/image relative block overflow-hidden bg-gradient-to-br ${service.accent} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset`}
-        aria-label={`View ${service.name}`}
-      >
+      {/* Image panel */}
+      <div className={`relative overflow-hidden bg-gradient-to-br ${service.accent} lg:w-[42%] lg:shrink-0`}>
+        <Orb className={orbs.orb1} delay={0} />
+        <Orb className={orbs.orb2} delay={2} />
+        <div className="absolute inset-0 bg-grid opacity-15 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_80%)]" />
+
         {service.badge && (
           <div className="absolute left-1/2 top-0 z-20 -translate-x-1/2">
             <div className="flex items-center gap-1.5 rounded-b-2xl bg-primary px-5 py-2 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)]">
@@ -644,82 +672,77 @@ function ServiceCard({ service, index }: { service: Service; index: number }) {
             </div>
           </div>
         )}
-        <div className="absolute inset-0 bg-grid opacity-20" />
-        <img
-          src={coverImg[service.cover]}
-          alt={service.name}
-          loading="lazy"
-          width={768}
-          height={768}
-          className="relative w-full object-contain transition-transform duration-500 group-hover/image:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/80" />
-      </Link>
 
-      {/* Icon straddling */}
-      <div className="relative px-7">
-        <div className="absolute -top-[22px] left-7 z-10 grid h-11 w-11 place-items-center rounded-xl border-2 border-border bg-card text-primary shadow-lg">
-          <Icon className="h-5 w-5" />
+        <div className="relative flex min-h-72 items-center justify-center lg:h-full lg:min-h-0">
+          <motion.img
+            src={coverImg[service.cover]}
+            alt={service.name}
+            loading="lazy"
+            width={768}
+            height={768}
+            className="relative w-full max-w-sm object-contain drop-shadow-2xl"
+            animate={shouldReduce ? {} : { y: [0, -8, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
         </div>
+
+        <div className="absolute inset-y-0 right-0 hidden w-20 bg-gradient-to-l from-card/40 to-transparent lg:block" />
       </div>
 
-      <div className="flex flex-1 flex-col p-7 pt-8">
-        <p className="font-mono text-[11px] uppercase tracking-wider text-primary">{service.tagline}</p>
-        <h3 className="mt-1.5 font-display text-2xl font-semibold">
-          <Link
-            href={`/services/${service.slug}`}
-            className="transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          >
-            {service.name}
-          </Link>
-        </h3>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{service.benefit}</p>
+      {/* Content panel */}
+      <div className="flex flex-1 flex-col justify-center p-8 lg:p-12">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="select-none font-mono text-6xl font-black leading-none text-primary/10">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-primary">
+            <Icon className="h-3.5 w-3.5" />
+            <span className="font-mono text-xs uppercase tracking-wider">{service.tagline}</span>
+          </div>
+        </div>
 
-        {/* Price with agency anchor */}
-        <div className="mt-5 space-y-2.5">
-          <div className="flex items-center gap-1.5 rounded-md border border-border/40 bg-background/30 px-2.5 py-1.5 text-xs text-muted-foreground">
+        <h3 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-4xl">{service.name}</h3>
+        <p className="mt-3 text-base leading-relaxed text-muted-foreground/90">{service.benefit}</p>
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-border/40 bg-background/30 px-2.5 py-1.5 text-xs text-muted-foreground">
             <Building2 className="h-3 w-3 shrink-0" />
             <span>Agency rate:</span>
             <span className="font-mono line-through opacity-60">$25K–$80K+</span>
-            <span className="ml-auto font-mono font-semibold text-primary">{service.investment}</span>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="inline-flex min-h-[36px] items-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1.5 font-mono font-medium text-primary">
-              <Sparkles className="h-3 w-3" /> Your investment: {service.investment}
-            </span>
-            <span className="inline-flex min-h-[36px] items-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 py-1.5 text-muted-foreground">
-              <Clock className="h-3 w-3" /> {service.timeline}
-            </span>
+          <div className="inline-flex items-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="font-mono font-bold text-primary">{service.investment}</span>
           </div>
-          {/* Guarantee badge */}
-          <div className="inline-flex min-h-[32px] items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            On-time guarantee — or you don&apos;t pay
+          <div className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background/40 px-4 py-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4" />
+            {service.timeline}
           </div>
         </div>
 
-        <div className="mt-5">
-          <p className="text-xs font-medium text-muted-foreground">Best for</p>
-          <p className="mt-1 text-sm">{service.best_for}</p>
+        <div className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full border border-primary/25 bg-primary/8 px-3 py-1 text-xs font-medium text-primary">
+          <ShieldCheck className="h-3.5 w-3.5" />
+          On-time guarantee — or you don&apos;t pay
         </div>
 
-        <div className="mt-5">
-          <p className="text-xs font-medium text-muted-foreground">Key deliverables</p>
-          <ul className="mt-2.5 space-y-2">
-            {(service.deliverables ?? []).slice(0, 4).map((deliverable) => (
-              <li key={deliverable} className="flex items-start gap-2 text-sm">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span>{deliverable}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="mt-5 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Best for:</span> {service.best_for}
+        </p>
 
-        <div className="mt-auto pt-7">
-          <Button asChild className="min-h-[44px] w-full focus-visible:ring-2 focus-visible:ring-primary/50">
+        <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
+          {(service.deliverables ?? []).slice(0, 4).map((deliverable) => (
+            <li key={deliverable} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />
+              {deliverable}
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-8">
+          <Button asChild className="min-h-[48px] px-7 focus-visible:ring-2 focus-visible:ring-primary/50">
             <Link href={`/services/${service.slug}`}>
-            View package
-              <ArrowRight className="ml-2 h-4 w-4" />
+              View package <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>

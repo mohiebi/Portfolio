@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type FormEvent, useMemo, useState } from "react";
-import { Archive, ArrowLeft, CalendarDays, CheckCircle2, Search } from "lucide-react";
+import { Archive, ArrowLeft, Check, Circle, Clock, Search } from "lucide-react";
 import { SiteShell, PageHeader } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ export default function TaskArchive({ tasks, filters }: Props) {
         </Button>
       </PageHeader>
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <form
           onSubmit={submit}
           className="overflow-hidden rounded-[1.75rem] border border-border/80 bg-card/80 shadow-[0_24px_80px_rgba(3,10,24,0.28)]"
@@ -164,7 +164,7 @@ export default function TaskArchive({ tasks, filters }: Props) {
             <ArchiveEmptyState />
           </div>
         ) : (
-          <div className="mt-6 grid gap-4">
+          <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {tasks.data.map((task) => (
               <ArchiveTaskCard key={task.id} task={task} filters={filters} />
             ))}
@@ -258,57 +258,78 @@ function ArchiveTaskCard({ task, filters }: { task: Task; filters: ArchiveFilter
     () => (task.subtasks ?? []).filter((subtask) => taskMatchesFilters(subtask, filters)),
     [filters, task.subtasks],
   );
-  const visibleSubtasks = filters.include_subtasks ? matchingSubtasks : [];
+  const subtasks = task.subtasks ?? [];
+  const matchingSubtaskIds = new Set(matchingSubtasks.map((subtask) => subtask.id));
   const summary = task.description?.trim();
 
   return (
-    <article className="rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/40">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.2em] text-success">
-            <CheckCircle2 className="h-4 w-4" />
-            <span>{isDone(task) ? "Completed task" : "Parent card"}</span>
-          </div>
-          <Link href={`/taskmanager/${task.id}`} className="mt-2 block font-display text-xl font-semibold text-foreground hover:text-primary">
-            {task.title}
-          </Link>
-          {summary && <p className="mt-2 text-sm leading-6 text-muted-foreground">{summary}</p>}
-        </div>
-        <div className="grid shrink-0 gap-2 text-xs text-muted-foreground sm:text-right">
-          <DateMeta label="Created" value={task.created_at} />
-          <DateMeta label="Done" value={task.done_at} />
-        </div>
+    <article className="group grid min-h-52 grid-cols-[1rem_1.5rem_minmax(0,1fr)] gap-2 rounded-3xl border border-success/55 bg-[#071f2a]/85 px-3 py-4 shadow-[0_18px_50px_rgba(2,12,27,0.22)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-success hover:shadow-[0_22px_60px_rgba(16,185,129,0.14)]">
+      <div className="grid h-28 w-3 grid-cols-2 place-content-center gap-x-0.5 gap-y-1 self-center text-success/70 opacity-70 transition-opacity group-hover:opacity-100">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <span key={index} className="h-0.5 w-0.5 rounded-full bg-current" />
+        ))}
       </div>
 
-      {visibleSubtasks.length > 0 && (
-        <div className="mt-5 space-y-2 border-t border-border pt-4">
-          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Matching subtasks</p>
-          {visibleSubtasks.map((subtask) => (
-            <div key={subtask.id} className="rounded-xl border border-success/30 bg-success/5 px-4 py-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">{subtask.title}</p>
-                  {subtask.description && <p className="mt-1 text-sm text-muted-foreground">{subtask.description}</p>}
-                </div>
-                <div className="flex shrink-0 items-center gap-1 text-xs text-success">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  {formatDate(subtask.done_at)}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </article>
-  );
-}
+      <span className="grid h-6 w-6 place-items-center rounded-full border border-success/70 bg-success/10 text-success">
+        <Circle className="h-3.5 w-3.5" />
+      </span>
 
-function DateMeta({ label, value }: { label: string; value?: string | null }) {
-  return (
-    <div>
-      <span className="block uppercase tracking-[0.2em]">{label}</span>
-      <span className="mt-0.5 block text-foreground">{formatDate(value)}</span>
-    </div>
+      <div className="min-w-0 pr-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <Link href={`/taskmanager/${task.id}`} className="block">
+              <h2 className="truncate text-sm font-semibold leading-5 text-success transition-colors group-hover:text-[#5ff0b8]">
+                {task.title}
+              </h2>
+            </Link>
+            {summary && <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#9bc4dc]">{summary}</p>}
+          </div>
+          <Link
+            href={`/taskmanager/${task.id}/edit`}
+            className="shrink-0 text-xs font-semibold text-foreground transition-colors hover:text-primary"
+          >
+            Edit
+          </Link>
+        </div>
+
+        {subtasks.length > 0 && (
+          <div className="mt-2">
+            <p className="text-xs font-semibold leading-none text-[#9bb1ce]">Sub tasks</p>
+            <div className="mt-1.5 grid gap-1">
+              {subtasks.map((subtask) => {
+                const isMatching = filters.include_subtasks && matchingSubtaskIds.has(subtask.id);
+
+                return (
+                  <Link
+                    key={subtask.id}
+                    href={`/taskmanager/${task.id}`}
+                    className={`group/subtask -mx-1 grid grid-cols-[0.875rem_minmax(0,1fr)] items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-white/5 ${
+                      isMatching ? "bg-success/10 ring-1 ring-success/30" : ""
+                    }`}
+                  >
+                    <span className="grid h-3.5 w-3.5 place-items-center rounded-full border border-success bg-success text-success-foreground">
+                      <Check className="h-2.5 w-2.5" />
+                    </span>
+                    <span className="truncate text-xs leading-4 text-[#8090ad] line-through transition-colors group-hover/subtask:text-primary">
+                      {subtask.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-none text-[#9bb1ce]">
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-3 w-3" /> Done {formatDate(task.done_at)}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="h-3 w-3" /> Created {formatDate(task.created_at)}
+          </span>
+        </div>
+      </div>
+    </article>
   );
 }
 
