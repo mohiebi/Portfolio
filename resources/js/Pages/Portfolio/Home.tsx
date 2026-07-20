@@ -13,7 +13,7 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { SeoHead } from "@/components/site/SeoHead";
 import portraitUrl from "@/assets/portrait.webp";
 import { Button } from "@/components/ui/button";
-import { getFeaturedProjects, type PortfolioProject } from "@/lib/projects";
+import { getProducts, type PortfolioProduct } from "@/lib/projects";
 import type { Article, CaseStudy, Recommendation } from "@/types";
 import { localizedRecords, localeForIntl, useI18n, type Locale } from "@/i18n";
 
@@ -40,7 +40,7 @@ const skills = [
   { name: "Clean Architecture", icon: Sparkles },
 ];
 
-function BooksPreview() {
+function OldBooksPreviewRemoved() {
   return (
     <div className="space-y-3 p-4">
       <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1.5">
@@ -286,13 +286,9 @@ function RealEstatePreview() {
 }
 
 const previewMap = {
-  books: BooksPreview,
   cash: CashPilotPreview,
-  design: DesignPreview,
   tasks: TasksPreview,
   routine: RoutinePreview,
-  jobs: JobsPreview,
-  realestate: RealEstatePreview,
 };
 
 const fadeUp: Variants = {
@@ -472,8 +468,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
         </motion.div>
       </section>
 
-
-      <ServicesSection />
+      <ProductsSection />
 
       {activeRecommendation && (
         <section id="recommendations" className="relative scroll-mt-20 overflow-hidden border-t border-border/60">
@@ -583,7 +578,7 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
         </section>
       )}
 
-      <ProjectsSection />
+      <ServicesSection />
 
       <CaseStudiesSection caseStudies={caseStudies} />
 
@@ -1102,6 +1097,14 @@ function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: numb
           </div>
         </div>
 
+        {caseStudy.featured_image_url && (
+          <img
+            src={caseStudy.featured_image_url}
+            alt=""
+            className="relative mb-5 aspect-[16/9] w-full rounded-2xl border border-border object-cover"
+          />
+        )}
+
         <p className="relative mt-4 text-sm leading-6 text-muted-foreground">{caseStudy.summary}</p>
 
         <div className="relative mt-5 flex flex-wrap gap-1.5">
@@ -1125,11 +1128,11 @@ function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: numb
   );
 }
 
-function ProjectsSection() {
+function ProductsSection() {
   const { locale } = useI18n();
-  const featuredProjects = getFeaturedProjects(locale);
+  const products = getProducts(locale);
   return (
-    <section id="projects" className="scroll-mt-20 border-t border-border/60 bg-surface/30">
+    <section id="products" className="scroll-mt-20 border-t border-border/60 bg-surface/30">
       <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <motion.div
           initial="hidden"
@@ -1139,16 +1142,16 @@ function ProjectsSection() {
           className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between"
         >
           <motion.div variants={fadeUp}>
-            <p className="font-mono text-xs uppercase tracking-wider text-primary">// Projects</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Featured builds</h2>
+            <p className="font-mono text-xs uppercase tracking-wider text-primary">// My Products</p>
+            <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">Product shelf</h2>
             <p className="mt-3 max-w-xl text-sm text-muted-foreground">
-              The top projects now lead with TaskManager, CashPilot, AI Routine Coach, and Mahdieh Design. The full project archive has the rest.
+              The product side of the portfolio is focused on TaskManager, CashPilot, and AI Routine Coach. Client and learning work now lives in case studies.
             </p>
           </motion.div>
           <motion.div variants={fadeUp}>
             <Button asChild variant="outline">
-              <Link href="/projects">
-                View all projects
+              <Link href="/products">
+                View all products
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -1156,7 +1159,7 @@ function ProjectsSection() {
         </motion.div>
 
         <div className="mt-12 space-y-10">
-          {featuredProjects.map((p, idx) => (
+          {products.map((p, idx) => (
             <motion.article
               key={p.name}
               initial={{ opacity: 0, y: 40 }}
@@ -1173,7 +1176,7 @@ function ProjectsSection() {
               <div className="relative flex flex-col p-7 sm:p-9">
                 <div className="flex items-center justify-between">
                   <p className="font-mono text-xs uppercase tracking-wider text-primary">{p.tag}</p>
-                  <span className="font-mono text-xs text-muted-foreground">0{idx + 1} / 0{featuredProjects.length}</span>
+                  <span className="font-mono text-xs text-muted-foreground">0{idx + 1} / 0{products.length}</span>
                 </div>
                 <h3 className="mt-3 font-display text-2xl font-semibold sm:text-3xl">{p.name}</h3>
                 {/* Outcome-first — what this solves */}
@@ -1199,7 +1202,7 @@ function ProjectsSection() {
                     project={p}
                     className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:w-auto"
                   >
-                      View Project
+                      View product
                       {p.external ? <ExternalLink className="ml-2 h-4 w-4" /> : <ArrowRight className="ml-2 h-4 w-4" />}
                   </ProjectPrimaryLink>
                   <a
@@ -1218,9 +1221,9 @@ function ProjectsSection() {
   );
 }
 
-function ProjectPreviewLink({ project, index }: { project: PortfolioProject; index: number }) {
+function ProjectPreviewLink({ project, index }: { project: PortfolioProduct; index: number }) {
   const { locale } = useI18n();
-  const ariaLabel = locale === "de" ? `Projekt ${project.name} ansehen` : `View ${project.name} project`;
+  const ariaLabel = locale === "de" ? `Produkt ${project.name} ansehen` : `View ${project.name} product`;
   const className = `relative order-last min-h-[260px] overflow-hidden border-t border-border outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
     index % 2 === 0 ? "lg:order-last" : "lg:order-first"
   } lg:border-l lg:border-t-0`;
@@ -1241,7 +1244,7 @@ function ProjectPreviewLink({ project, index }: { project: PortfolioProject; ind
   );
 }
 
-function ProjectPreviewMockup({ project }: { project: PortfolioProject }) {
+function ProjectPreviewMockup({ project }: { project: PortfolioProduct }) {
   const Preview = previewMap[project.preview];
 
   return (
@@ -1267,7 +1270,7 @@ function ProjectPreviewMockup({ project }: { project: PortfolioProject }) {
   );
 }
 
-function ProjectPrimaryLink({ project, children, className }: { project: PortfolioProject; children: ReactNode; className: string }) {
+function ProjectPrimaryLink({ project, children, className }: { project: PortfolioProduct; children: ReactNode; className: string }) {
   if (project.external) {
     return (
       <a href={project.href} target="_blank" rel="noreferrer" className={className}>

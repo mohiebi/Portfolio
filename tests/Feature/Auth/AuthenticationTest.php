@@ -2,8 +2,6 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\Employer;
-use App\Models\Job;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,13 +30,11 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard', absolute: false));
     }
 
-    public function test_users_return_to_job_apply_page_after_authenticating(): void
+    public function test_users_return_to_task_create_page_after_authenticating(): void
     {
         $user = User::factory()->create();
-        $employer = Employer::factory()->for(User::factory())->create();
-        $job = Job::factory()->for($employer)->create();
 
-        $this->get("/jobs/{$job->id}/apply")
+        $this->get('/taskmanager/create')
             ->assertRedirect(route('login', absolute: false));
 
         $response = $this->post('/login', [
@@ -47,23 +43,23 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticatedAs($user);
-        $response->assertRedirect("/jobs/{$job->id}/apply");
+        $response->assertRedirect('/taskmanager/create');
     }
 
     public function test_login_redirect_parameter_returns_user_to_previous_page(): void
     {
         $user = User::factory()->create();
 
-        $this->get('/login?redirect=/jobs?category=IT')
+        $this->get('/login?redirect=/taskmanager?status=open')
             ->assertOk();
 
-        $response = $this->post('/login?redirect=/jobs?category=IT', [
+        $response = $this->post('/login?redirect=/taskmanager?status=open', [
             'email' => $user->email,
             'password' => 'password',
         ]);
 
         $this->assertAuthenticatedAs($user);
-        $response->assertRedirect('/jobs?category=IT');
+        $response->assertRedirect('/taskmanager?status=open');
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

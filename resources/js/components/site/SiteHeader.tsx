@@ -2,7 +2,7 @@ import { Link, usePage, router } from "@inertiajs/react";
 import { useEffect, useState } from "react";
 import { Bell, ExternalLink, Menu, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getProjects, type PortfolioProject } from "@/lib/projects";
+import { getProducts, type PortfolioProduct } from "@/lib/projects";
 import logoUrl from "@/assets/mohi-logo.svg";
 import { useI18n, type Locale } from "@/i18n";
 
@@ -10,39 +10,32 @@ type NavItem = { label: string; to?: string; href?: string; exact?: boolean; sec
 
 const portfolioNav: NavItem[] = [
   { label: "Portfolio", to: "/", exact: true, sectionId: "top" },
-  { label: "Services", href: "/#services", sectionId: "services" },
+  { label: "My Products", to: "/products", href: "/#products", sectionId: "products" },
   { label: "Recommendations", href: "/#recommendations", sectionId: "recommendations" },
-  { label: "Projects", to: "/projects", href: "/#projects", sectionId: "projects" },
+  { label: "Services", href: "/#services", sectionId: "services" },
   { label: "Case Studies", href: "/#case-studies", sectionId: "case-studies" },
   { label: "About", href: "/#about", sectionId: "about" },
   { label: "Articles", href: "/#articles", sectionId: "articles" },
   { label: "Contact", href: "/#contact", sectionId: "contact" },
 ];
 
-function isProjectContext(pathname: string) {
+function isProductContext(pathname: string) {
   return (
-    pathname.startsWith("/books") ||
-    pathname.startsWith("/projects") ||
+    pathname.startsWith("/products") ||
     pathname.startsWith("/taskmanager") ||
-    pathname.startsWith("/jobs") ||
-    pathname.startsWith("/my-jobs") ||
-    pathname.startsWith("/my-job-applications") ||
-    pathname.startsWith("/employer") ||
-    pathname.startsWith("/listing") ||
-    pathname.startsWith("/realtor") ||
     pathname.startsWith("/notification")
   );
 }
 
 export function SiteHeader() {
   const { locale, setLocale } = useI18n();
-  const projects = getProjects(locale);
+  const products = getProducts(locale);
   const [open, setOpen] = useState(false);
   const page = usePage();
   const pathname = page.url.split("?")[0];
   const auth = (page.props as any).auth;
   const onPortfolioHome = pathname === "/";
-  const onProjectContext = isProjectContext(pathname);
+  const onProductContext = isProductContext(pathname);
   const hasRecommendations = Array.isArray((page.props as any).recommendations)
     && (page.props as any).recommendations.length > 0;
   const hasCaseStudies = Array.isArray((page.props as any).caseStudies)
@@ -63,7 +56,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     if (!onPortfolioHome) return;
-    const ids = ["services", "recommendations", "projects", "case-studies", "about", "articles", "contact"];
+    const ids = ["products", "recommendations", "services", "case-studies", "about", "articles", "contact"];
     const handler = () => {
       const scrollY = window.scrollY;
       let current = "top";
@@ -90,8 +83,8 @@ export function SiteHeader() {
     if (!item.to) return false;
     if (item.exact) return pathname === item.to;
 
-    if (item.to === "/projects") {
-      return onProjectContext;
+    if (item.to === "/products") {
+      return onProductContext;
     }
 
     if (item.to === "/case-studies") {
@@ -104,16 +97,6 @@ export function SiteHeader() {
 
     if (item.to === "/services") {
       return pathname.startsWith("/services");
-    }
-
-    if (item.to === "/jobs") {
-      return (
-        pathname.startsWith("/jobs") ||
-        pathname.startsWith("/job/") ||
-        pathname.startsWith("/my-jobs") ||
-        pathname.startsWith("/my-job-applications") ||
-        pathname.startsWith("/employer")
-      );
     }
 
     return pathname === item.to || pathname.startsWith(`${item.to}/`);
@@ -154,30 +137,14 @@ export function SiteHeader() {
     );
   };
 
-  const isProjectActive = (project: PortfolioProject) => {
+  const isProductActive = (project: PortfolioProduct) => {
     if (project.preview === "tasks") return pathname.startsWith("/taskmanager");
-    if (project.preview === "books") return pathname.startsWith("/books");
-    if (project.preview === "jobs") {
-      return (
-        pathname.startsWith("/jobs") ||
-        pathname.startsWith("/my-jobs") ||
-        pathname.startsWith("/my-job-applications") ||
-        pathname.startsWith("/employer")
-      );
-    }
-    if (project.preview === "realestate") {
-      return (
-        pathname.startsWith("/listing") ||
-        pathname.startsWith("/realtor") ||
-        pathname.startsWith("/notification")
-      );
-    }
 
     return false;
   };
 
-  const renderProjectPill = (project: PortfolioProject) => {
-    const isActive = isProjectActive(project);
+  const renderProductPill = (project: PortfolioProduct) => {
+    const isActive = isProductActive(project);
     const baseCls =
       "group inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium transition-all";
     const toneCls = isActive
@@ -219,7 +186,7 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-3 md:flex">
           <LanguageSwitcher locale={locale} onChange={setLocale} />
-        {onProjectContext ? (
+        {onProductContext ? (
           <div className="hidden items-center gap-2 md:flex">
             {auth?.user ? (
               <div className="flex items-center gap-3">
@@ -267,7 +234,7 @@ export function SiteHeader() {
               <LanguageSwitcher locale={locale} onChange={setLocale} />
             </div>
             {nav.map((item) => renderItem(item, () => setOpen(false)))}
-            {onProjectContext && (
+            {onProductContext && (
               <div className="mt-2">
                 {auth?.user ? (
                   <div className="flex flex-col gap-2">
@@ -294,24 +261,24 @@ export function SiteHeader() {
         </div>
       )}
 
-      {onProjectContext && (
+      {onProductContext && (
         <div className="border-t border-border/60 bg-surface/55">
           <div className="mx-auto flex max-w-7xl items-center gap-3 overflow-x-auto overscroll-x-contain px-4 py-2.5 [scrollbar-width:none] sm:px-6 lg:px-8 [&::-webkit-scrollbar]:hidden">
             <div className="sticky left-0 z-10 hidden shrink-0 items-center gap-2 rounded-full border border-primary/30 bg-background/90 px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-primary shadow-card backdrop-blur sm:inline-flex">
               <Sparkles className="h-3.5 w-3.5" />
-              Project shelf
+              Product shelf
             </div>
             <Link
-              href="/projects"
+              href="/products"
               className={`inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-3 text-xs font-medium transition-all ${
-                pathname.startsWith("/projects")
+                pathname.startsWith("/products")
                   ? "border-primary/60 bg-primary/15 text-primary shadow-card"
                   : "border-border bg-background/45 text-muted-foreground hover:border-primary/45 hover:bg-accent/70 hover:text-foreground"
               }`}
             >
-              All Projects
+              All Products
             </Link>
-            {projects.map((project) => renderProjectPill(project))}
+            {products.map((project) => renderProductPill(project))}
           </div>
         </div>
       )}
@@ -352,9 +319,8 @@ function LanguageSwitcher({
   );
 }
 
-function projectNavLabel(project: PortfolioProject) {
+function projectNavLabel(project: PortfolioProduct) {
   if (project.name === "AI Routine Coach") return "AI Coach";
-  if (project.name === "Mahdieh Design") return "Mahdieh";
 
   return project.name;
 }

@@ -23,11 +23,14 @@ const german: Record<string, string> = {
   "Services": "Leistungen",
   "Recommendations": "Empfehlungen",
   "Projects": "Projekte",
+  "My Products": "Meine Produkte",
   "Case Studies": "Fallstudien",
   "About": "Über mich",
   "Articles": "Artikel",
   "Contact": "Kontakt",
   "All Projects": "Alle Projekte",
+  "All Products": "Alle Produkte",
+  "Product shelf": "Produktubersicht",
   "Project shelf": "Projektübersicht",
   "Log in": "Anmelden",
   "Sign up": "Registrieren",
@@ -47,6 +50,7 @@ const german: Record<string, string> = {
     "Back-End-/Full-Stack-Entwickler mit Schwerpunkt auf Laravel, Symfony und NestJS — inklusive KI-Integration und Web3-Erfahrung. Verfügbar für Freelance- und Festanstellungen.",
   "Download CV": "Lebenslauf herunterladen",
   "All projects": "Alle Projekte",
+  "All products": "Alle Produkte",
   "Email": "E-Mail",
   "All rights reserved.": "Alle Rechte vorbehalten.",
   "Back-End / Full-Stack Engineer": "Back-End-/Full-Stack-Entwickler",
@@ -195,10 +199,14 @@ const german: Record<string, string> = {
   "All case studies": "Alle Fallstudien",
   "Read case study": "Fallstudie lesen",
   "Featured builds": "Ausgewählte Projekte",
+  "The product side of the portfolio is focused on TaskManager, CashPilot, and AI Routine Coach. Client and learning work now lives in case studies.":
+    "Die Produktseite des Portfolios konzentriert sich auf TaskManager, CashPilot und AI Routine Coach. Kunden- und Lernprojekte befinden sich jetzt in den Fallstudien.",
   "The top projects now lead with TaskManager, CashPilot, AI Routine Coach, and Mahdieh Design. The full project archive has the rest.":
     "Im Mittelpunkt stehen TaskManager, CashPilot, AI Routine Coach und Mahdieh Design. Weitere Projekte finden Sie im vollständigen Archiv.",
   "View all projects": "Alle Projekte ansehen",
   "View Project": "Projekt ansehen",
+  "View all products": "Alle Produkte ansehen",
+  "View product": "Produkt ansehen",
   "View project": "Projekt ansehen",
   "Discuss this project": "Dieses Projekt besprechen",
   "Technical notes and build logs": "Technische Notizen und Entwicklungsberichte",
@@ -210,10 +218,14 @@ const german: Record<string, string> = {
   "min": "Min.",
 
   "Production-minded builds,": "Produktionsreife Projekte —",
+  "Products I own, shape, and keep improving.": "Produkte, die ich selbst entwickle, forme und laufend verbessere.",
+  "A focused shelf of active products: TaskManager, CashPilot, and AI Routine Coach.":
+    "Eine fokussierte Auswahl aktiver Produkte: TaskManager, CashPilot und AI Routine Coach.",
   "from tools to client sites": "von Tools bis zu Kundenwebsites",
   "The first four are the current highlights: TaskManager, CashPilot, AI Routine Coach, and Mahdieh Design. Older Laravel demos are still here for browsing.":
     "Die ersten vier sind die aktuellen Highlights: TaskManager, CashPilot, AI Routine Coach und Mahdieh Design. Ältere Laravel-Demos können weiterhin erkundet werden.",
   "Want a similar build?": "Sie möchten ein ähnliches Projekt?",
+  "Want to build something similar?": "Mochten Sie etwas Ahnliches bauen?",
   "I work best on practical backend-heavy products with clear business workflows.":
     "Am stärksten bin ich bei praxisnahen, backendlastigen Produkten mit klaren Geschäftsabläufen.",
   "Get in touch": "Kontakt aufnehmen",
@@ -256,6 +268,8 @@ const german: Record<string, string> = {
   "Want to dig deeper?": "Möchten Sie tiefer einsteigen?",
   "Happy to walk you through the architecture, trade-offs, and outcomes.":
     "Gerne führe ich Sie durch Architektur, Abwägungen und Ergebnisse.",
+  "Visit live site": "Live-Website ansehen",
+  "View source": "Quellcode ansehen",
   "Next case study": "Nächste Fallstudie",
 
   "Full LinkedIn recommendations": "Vollständige LinkedIn-Empfehlungen",

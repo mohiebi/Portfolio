@@ -91,8 +91,13 @@ function CaseCard({ caseStudy, index }: { caseStudy: CaseStudy; index: number })
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="group relative flex flex-col overflow-hidden rounded-3xl border border-border bg-card/70 shadow-card backdrop-blur transition-colors hover:border-primary/60"
     >
-      <div className={`relative h-40 overflow-hidden bg-gradient-to-br ${caseStudy.accent}`}>
-        <div className="absolute inset-0 bg-grid opacity-30" />
+      <div className={`relative h-48 overflow-hidden bg-gradient-to-br ${caseStudy.accent}`}>
+        {caseStudy.featured_image_url ? (
+          <img src={caseStudy.featured_image_url} alt="" className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <div className="absolute inset-0 bg-grid opacity-30" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-br from-background/85 via-background/35 to-background/75" />
         <motion.div
           aria-hidden
           className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl"

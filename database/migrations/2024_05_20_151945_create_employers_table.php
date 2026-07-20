@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Employer;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -23,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
         Schema::table('jobs', function (Blueprint $table) {
-            $table->foreignIdFor(Employer::class)->constrained();
+            $table->foreignId('employer_id')->constrained();
         });
     }
 

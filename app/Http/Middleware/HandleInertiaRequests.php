@@ -31,9 +31,6 @@ class HandleInertiaRequests extends Middleware
                     'email' => $user->email,
                     'is_admin' => (int) $user->role === 7,
                     'unread_notifications_count' => $user->unreadNotifications()->count(),
-                    'employer' => $user->relationLoaded('employer')
-                        ? $user->employer
-                        : $user->employer()->first(),
                 ] : null,
             ],
             'flash' => [

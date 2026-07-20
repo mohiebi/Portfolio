@@ -61,7 +61,7 @@ class ServiceRequest extends FormRequest
             'sample_projects.*.tag' => ['nullable', 'string', 'max:120'],
             'sample_projects.*.summary' => ['required_with:sample_projects', 'string', 'max:1200'],
             'sample_projects.*.outcome' => ['nullable', 'string', 'max:220'],
-            'sample_projects.*.preview' => ['nullable', Rule::in(['web', 'design', 'cash', 'tasks', 'routine', 'jobs', 'books', 'realestate'])],
+            'sample_projects.*.preview' => ['nullable', Rule::in(['web', 'design', 'cash', 'tasks', 'routine'])],
             'sample_projects.*.accent' => ['nullable', 'string', 'max:120'],
             'sample_projects.*.is_published' => ['boolean'],
             'sample_projects.*.sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],

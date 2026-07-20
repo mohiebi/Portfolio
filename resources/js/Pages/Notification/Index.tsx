@@ -68,27 +68,6 @@ export default function NotificationIndex({ notifications }: Props) {
 }
 
 function notificationContent(notification: DatabaseNotification) {
-  if (notification.type === "App\\Notifications\\OfferMade") {
-    const data = notification.data as { amount?: number; listing_id?: number };
-
-    return {
-      icon: Bell,
-      iconClass: "bg-primary/15 text-primary",
-      content: (
-        <span>
-          Offer of{" "}
-          <strong>
-            {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(data.amount ?? 0)}
-          </strong>{" "}
-          was made for{" "}
-          <Link href={route("realtor.listing.show", { listing: data.listing_id })} className="text-primary hover:underline">
-            listing
-          </Link>
-        </span>
-      ),
-    };
-  }
-
   if (notification.type === "App\\Notifications\\TaskDeadlineReminder") {
     const data = notification.data as {
       title?: string;

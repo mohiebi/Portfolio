@@ -27,13 +27,10 @@ export function titleFromInertiaPage(page: PageLike, locale: Locale) {
   const article = localizedRecord(propRecord(props, "article"), locale);
   const caseStudy = localizedRecord(propRecord(props, "caseStudy"), locale);
   const service = localizedRecord(propRecord(props, "service"), locale);
-  const job = propRecord(props, "job");
-  const book = propRecord(props, "book");
-  const listing = propRecord(props, "listing");
   const task = propRecord(props, "task");
 
   if (component === "Portfolio/Home") return "Back-End / Full-Stack Engineer";
-  if (component === "Projects/Index") return "Portfolio Projects";
+  if (component === "Products/Index") return "My Products";
 
   if (component === "Articles/PublicIndex") return "Technical Articles";
   if (component === "Articles/PublicShow") return suffix(text(article, "title"), locale === "de" ? "Artikel" : "Article");
@@ -62,33 +59,6 @@ export function titleFromInertiaPage(page: PageLike, locale: Locale) {
   if (component === "Taskmanager/Show") return text(task, "title");
   if (component === "Taskmanager/Create") return "New Task";
   if (component === "Taskmanager/Edit") return "Edit Task";
-
-  if (component === "Books/Index") return "BookReview Project";
-  if (component === "Books/Show") return text(book, "title");
-  if (component === "Books/Reviews/Create") {
-    const title = text(book, "title");
-    return title ? `${locale === "de" ? "Rezension" : "Review"}: ${title}` : locale === "de" ? "Rezension" : "Review";
-  }
-
-  if (component === "Jobs/Index") return "Job Board Project";
-  if (component === "Jobs/Show") return text(job, "title");
-  if (component === "Jobs/Apply") {
-    const title = text(job, "title");
-    return title ? (locale === "de" ? `Bewerbung: ${title}` : `Apply to ${title}`) : locale === "de" ? "Bewerbung" : "Apply";
-  }
-  if (component === "Employer/Create") return "Create employer account";
-  if (component === "MyJobs/Index") return "My Job Posts";
-  if (component === "MyJobs/Create") return "Post a Job";
-  if (component === "MyJobs/Edit") return "Edit Job Post";
-  if (component === "MyJobApplications/Index") return "My Job Applications";
-
-  if (component === "Listing/Index") return "Real Estate Listings";
-  if (component === "Listing/Show") return [text(listing, "street"), text(listing, "city")].filter(Boolean).join(", ");
-  if (component === "Realtor/Index") return "My Real Estate Listings";
-  if (component === "Realtor/Create") return "Create Real Estate Listing";
-  if (component === "Realtor/Edit") return "Edit Real Estate Listing";
-  if (component === "Realtor/Image/Create") return "Listing Images";
-  if (component === "Realtor/Show") return "Listing Offers";
 
   if (component === "Dashboard") return "Account Dashboard";
   if (component === "Profile/Edit") return "User Profile";
@@ -135,6 +105,7 @@ function titleFromUrl(url?: string) {
 
   const firstSegment = pathname.split("/")[0];
   if (firstSegment === "taskmanager") return "taskmanager";
+  if (firstSegment === "products") return "My Products";
 
   return humanize(firstSegment);
 }

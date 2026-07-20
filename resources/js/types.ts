@@ -6,7 +6,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
       email: string;
       is_admin: boolean;
       unread_notifications_count?: number;
-      employer?: Employer | null;
     } | null;
   };
   flash: {
@@ -17,44 +16,6 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
   app: {
     name: string;
   };
-};
-
-export type Employer = {
-  id: number;
-  company_name: string;
-  user_id?: number;
-};
-
-export type Review = {
-  id: number;
-  review: string;
-  rating: number;
-  created_at?: string;
-};
-
-export type Book = {
-  id: number;
-  title: string;
-  author: string;
-  reviews_count?: number;
-  reviews_avg_rating?: number | string | null;
-  reviews?: Review[];
-  created_at?: string;
-};
-
-export type Job = {
-  id: number;
-  title: string;
-  description: string;
-  salary: number;
-  location: string;
-  category: string;
-  experience: string;
-  created_at?: string;
-  employer?: Employer;
-  job_applications_count?: number;
-  job_applications_avg_expected_salary?: number | string | null;
-  has_applied?: boolean;
 };
 
 export type Task = {
@@ -110,6 +71,10 @@ export type CaseStudy = {
   summary: string;
   accent: string;
   cover: "web3" | "modernize" | "ai" | "web";
+  featured_image_path?: string | null;
+  featured_image_url?: string | null;
+  project_url?: string | null;
+  repository_url?: string | null;
   problem?: string | null;
   approach?: string[] | null;
   impact?: CaseStudyImpact[] | null;
@@ -159,7 +124,7 @@ export type ServiceProject = {
   tag?: string | null;
   summary: string;
   outcome?: string | null;
-  preview?: "web" | "design" | "cash" | "tasks" | "routine" | "jobs" | "books" | "realestate";
+  preview?: "web" | "design" | "cash" | "tasks" | "routine";
   accent?: string | null;
   is_published?: boolean;
   sort_order?: number;
@@ -198,51 +163,6 @@ export type Service = {
   created_at?: string;
   updated_at?: string;
   translations?: Record<string, Partial<Service>> | null;
-};
-
-export type JobApplication = {
-  id: number;
-  expected_salary: number;
-  created_at?: string;
-  job: Job;
-};
-
-export type ListingImage = {
-  id: number;
-  filename: string;
-  src: string;
-  listing_id: number;
-};
-
-export type Listing = {
-  id: number;
-  beds: number;
-  baths: number;
-  area: number;
-  city: string;
-  code: string;
-  street: string;
-  price: number;
-  sold_at?: string | null;
-  deleted_at?: string | null;
-  by_user_id?: number;
-  images?: ListingImage[];
-  images_count?: number;
-  offers_count?: number;
-  offers?: Offer[];
-  created_at?: string;
-};
-
-export type Offer = {
-  id: number;
-  amount: number;
-  accepted_at?: string | null;
-  rejected_at?: string | null;
-  listing_id: number;
-  bidder_id: number;
-  bidder?: { id: number; name: string };
-  listing?: Listing;
-  created_at?: string;
 };
 
 export type PaginatedData<T> = {

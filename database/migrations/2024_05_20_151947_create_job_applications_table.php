@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignIdFor(\App\Models\User::class)->constrained();
-            $table->foreignIdFor(\App\Models\Job::class)->constrained();
+            $table->foreignId('job_id')->constrained();
 
             $table->unsignedInteger('expected_salary');
             $table->string('cv_path')->nullable();
