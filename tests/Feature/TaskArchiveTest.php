@@ -203,7 +203,7 @@ class TaskArchiveTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Task::factory()->count(11)->for($user)->create([
+        Task::factory()->count(13)->for($user)->create([
             'title' => 'Archive keep item',
             'complete' => true,
             'status' => Task::STATUS_DONE,
@@ -214,7 +214,7 @@ class TaskArchiveTest extends TestCase
             ->get('/taskmanager/archive?q=Archive&include_subtasks=1')
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('tasks.total', 11)
+                ->where('tasks.total', 13)
                 ->where('tasks.next_page_url', fn ($url) => is_string($url)
                     && str_contains($url, 'q=Archive')
                     && str_contains($url, 'include_subtasks=1'))

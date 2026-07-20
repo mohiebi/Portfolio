@@ -55,7 +55,7 @@ class TaskArchiveController extends Controller
         $tasks = $tasksQuery
             ->latest('done_at')
             ->latest()
-            ->paginate(10)
+            ->paginate(12)
             ->withQueryString();
 
         return Inertia::render('Taskmanager/Archive', [

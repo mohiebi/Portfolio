@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { type FormEvent, useMemo, useState } from "react";
-import { Archive, ArrowLeft, Check, Circle, Clock, Search } from "lucide-react";
+import { Archive, ArrowLeft, CalendarDays, Check, Circle, Clock, Search } from "lucide-react";
 import { SiteShell, PageHeader } from "@/components/site/SiteShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -207,33 +207,44 @@ function DateRange({
   return (
     <fieldset className="rounded-2xl border border-border/70 bg-card/60 p-3">
       <legend className="px-1 text-xs font-semibold text-muted-foreground">{title}</legend>
-      <div className="mt-2 grid grid-cols-2 gap-3">
+      <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
         <div className="grid gap-1.5">
           <Label htmlFor={fromId} className="text-xs text-muted-foreground">
             {fromLabel}
           </Label>
-          <Input
+          <ArchiveDateInput
             id={fromId}
-            type="date"
             value={fromValue}
-            onChange={(event) => onFromChange(event.target.value)}
-            className="h-10 rounded-xl bg-background/70 text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:opacity-80 [&::-webkit-calendar-picker-indicator]:filter"
+            onChange={onFromChange}
           />
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={toId} className="text-xs text-muted-foreground">
             {toLabel}
           </Label>
-          <Input
+          <ArchiveDateInput
             id={toId}
-            type="date"
             value={toValue}
-            onChange={(event) => onToChange(event.target.value)}
-            className="h-10 rounded-xl bg-background/70 text-sm [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:brightness-0 [&::-webkit-calendar-picker-indicator]:opacity-80 [&::-webkit-calendar-picker-indicator]:filter"
+            onChange={onToChange}
           />
         </div>
       </div>
     </fieldset>
+  );
+}
+
+function ArchiveDateInput({ id, value, onChange }: { id: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 w-full rounded-xl bg-background/70 pr-11 text-sm [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-3 [&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:w-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+      />
+      <CalendarDays className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    </div>
   );
 }
 

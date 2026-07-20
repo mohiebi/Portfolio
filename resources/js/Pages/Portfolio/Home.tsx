@@ -1089,7 +1089,7 @@ function CaseStudyCard({ caseStudy, index }: { caseStudy: CaseStudy; index: numb
               <Icon className="h-5 w-5" />
             </div>
             {(caseStudy.impact ?? [])[0] && (
-              <div className="rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1.5 text-right">
+              <div className="rounded-lg border border-primary/30 bg-primary/10 px-2.5 py-1 my-1 text-right">
                 <p className="font-display text-lg font-bold leading-none text-primary">{(caseStudy.impact ?? [])[0].value}</p>
                 <p className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-primary/70">{(caseStudy.impact ?? [])[0].label}</p>
               </div>
