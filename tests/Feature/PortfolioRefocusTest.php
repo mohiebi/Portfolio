@@ -45,6 +45,25 @@ class PortfolioRefocusTest extends TestCase
             );
     }
 
+    public function test_case_study_detail_next_link_cycles_through_all_published_case_studies(): void
+    {
+        $caseStudies = CaseStudy::published()->ordered()->get()->values();
+
+        $this->assertGreaterThan(1, $caseStudies->count());
+
+        foreach ($caseStudies as $index => $caseStudy) {
+            $expectedNext = $caseStudies->get($index + 1) ?? $caseStudies->first();
+
+            $this->get("/case-studies/{$caseStudy->slug}")
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->component('CaseStudies/PublicShow')
+                    ->where('caseStudy.slug', $caseStudy->slug)
+                    ->where('nextCaseStudy.slug', $expectedNext->slug)
+                );
+        }
+    }
+
     public function test_products_page_replaces_projects_page(): void
     {
         $this->get('/products')

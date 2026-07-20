@@ -26,11 +26,7 @@ class CaseStudyController extends Controller
 
         return Inertia::render('CaseStudies/PublicShow', [
             'caseStudy' => $caseStudy,
-            'nextCaseStudy' => CaseStudy::published()
-                ->ordered()
-                ->where('id', '!=', $caseStudy->id)
-                ->get()
-                ->first(),
+            'nextCaseStudy' => $this->nextPublishedCaseStudy($caseStudy),
         ]);
     }
 
@@ -126,5 +122,22 @@ class CaseStudyController extends Controller
         if (File::exists($path)) {
             File::delete($path);
         }
+    }
+
+    private function nextPublishedCaseStudy(CaseStudy $caseStudy): ?CaseStudy
+    {
+        $caseStudies = CaseStudy::published()->ordered()->get()->values();
+
+        if ($caseStudies->count() <= 1) {
+            return null;
+        }
+
+        $currentIndex = $caseStudies->search(fn (CaseStudy $publishedCaseStudy): bool => $publishedCaseStudy->is($caseStudy));
+
+        if ($currentIndex === false) {
+            return $caseStudies->first();
+        }
+
+        return $caseStudies->get($currentIndex + 1) ?? $caseStudies->first();
     }
 }
