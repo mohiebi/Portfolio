@@ -241,6 +241,13 @@ function ArchiveDateInput({ id, value, onChange }: { id: string; value: string; 
         type="date"
         value={value}
         onChange={(event) => onChange(event.target.value)}
+        onClick={(event) => event.currentTarget.showPicker?.()}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.currentTarget.showPicker?.();
+          }
+        }}
         className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0 [color-scheme:dark]"
       />
       <span className="pointer-events-none flex h-full items-center px-3 pr-11 text-foreground">
