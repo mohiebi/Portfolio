@@ -62,6 +62,10 @@ RUN mkdir -p \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
+# Public uploads live in the persistent storage volume and are exposed through this link.
+RUN rm -rf public/storage \
+    && php artisan storage:link --no-interaction
+
 # Remove dev/Azure artefacts
 RUN rm -f public/hot public/hostingstart.html
 

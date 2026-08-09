@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -101,6 +102,8 @@ class PortfolioRefocusTest extends TestCase
 
     public function test_admin_can_upload_replace_and_remove_a_case_study_featured_image(): void
     {
+        Storage::fake('public');
+
         $admin = User::factory()->create(['role' => 7]);
 
         $this->actingAs($admin)
@@ -115,8 +118,10 @@ class PortfolioRefocusTest extends TestCase
             ->assertRedirect('/dashboard/case-studies');
 
         $caseStudy = CaseStudy::where('slug', 'media-case-study')->firstOrFail();
-        $firstPath = public_path($caseStudy->featured_image_path);
-        $this->assertFileExists($firstPath);
+        $firstPath = $caseStudy->featured_image_path;
+        $this->assertStringStartsWith('uploads/case-studies/', $firstPath);
+        Storage::disk('public')->assertExists($firstPath);
+        $this->assertSame(Storage::disk('public')->url($firstPath), $caseStudy->featured_image_url);
 
         $this->actingAs($admin)
             ->post("/dashboard/case-studies/{$caseStudy->id}", [
@@ -131,9 +136,9 @@ class PortfolioRefocusTest extends TestCase
             ->assertRedirect('/dashboard/case-studies');
 
         $caseStudy->refresh();
-        $replacementPath = public_path($caseStudy->featured_image_path);
-        $this->assertFileDoesNotExist($firstPath);
-        $this->assertFileExists($replacementPath);
+        $replacementPath = $caseStudy->featured_image_path;
+        Storage::disk('public')->assertMissing($firstPath);
+        Storage::disk('public')->assertExists($replacementPath);
 
         $this->actingAs($admin)
             ->post("/dashboard/case-studies/{$caseStudy->id}", [
@@ -149,7 +154,7 @@ class PortfolioRefocusTest extends TestCase
 
         $caseStudy->refresh();
         $this->assertNull($caseStudy->featured_image_path);
-        $this->assertFileDoesNotExist($replacementPath);
+        Storage::disk('public')->assertMissing($replacementPath);
     }
 
     private function caseStudyPayload(array $overrides = []): array

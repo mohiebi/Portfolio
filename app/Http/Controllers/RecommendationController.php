@@ -7,12 +7,15 @@ use App\Models\Recommendation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RecommendationController extends Controller
 {
+    private const IMAGE_DIRECTORY = 'uploads/recommendations';
+
     public function index(): Response
     {
         return Inertia::render('Recommendations/Index', [
@@ -83,15 +86,10 @@ class RecommendationController extends Controller
     private function storeImage(Request $request): string
     {
         $image = $request->file('image');
-        $directory = public_path('img/recommendations');
-        File::ensureDirectoryExists($directory);
-
         $filename = Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
         $filename = ($filename ?: 'recommendation').'-'.Str::random(8).'.'.$image->getClientOriginalExtension();
 
-        $image->move($directory, $filename);
-
-        return 'img/recommendations/'.$filename;
+        return $image->storeAs(self::IMAGE_DIRECTORY, $filename, 'public');
     }
 
     private function storeImageData(Request $request): string
@@ -101,16 +99,14 @@ class RecommendationController extends Controller
 
         preg_match('/^data:image\/(?<type>jpe?g|png|webp);base64,(?<data>.+)$/', $imageData, $matches);
 
-        $directory = public_path('img/recommendations');
-        File::ensureDirectoryExists($directory);
-
         $extension = $matches['type'] === 'jpeg' ? 'jpg' : $matches['type'];
         $filename = Str::slug(pathinfo($imageFilename, PATHINFO_FILENAME));
         $filename = ($filename ?: 'recommendation').'-'.Str::random(8).'.'.$extension;
+        $path = self::IMAGE_DIRECTORY.'/'.$filename;
 
-        File::put($directory.DIRECTORY_SEPARATOR.$filename, base64_decode($matches['data'], true));
+        Storage::disk('public')->put($path, base64_decode($matches['data'], true));
 
-        return 'img/recommendations/'.$filename;
+        return $path;
     }
 
     private function deleteImage(Recommendation $recommendation): void
@@ -119,10 +115,14 @@ class RecommendationController extends Controller
             return;
         }
 
-        $path = public_path($recommendation->image_path);
+        if (Str::startsWith($recommendation->image_path, self::IMAGE_DIRECTORY.'/')) {
+            Storage::disk('public')->delete($recommendation->image_path);
 
-        if (File::exists($path)) {
-            File::delete($path);
+            return;
+        }
+
+        if (Str::startsWith($recommendation->image_path, 'img/recommendations/')) {
+            File::delete(public_path($recommendation->image_path));
         }
     }
 }

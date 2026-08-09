@@ -7,12 +7,15 @@ use App\Models\CaseStudy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CaseStudyController extends Controller
 {
+    private const FEATURED_IMAGE_DIRECTORY = 'uploads/case-studies';
+
     public function publicIndex(): Response
     {
         return Inertia::render('CaseStudies/PublicIndex', [
@@ -100,27 +103,26 @@ class CaseStudyController extends Controller
     private function storeFeaturedImage(Request $request): string
     {
         $image = $request->file('featured_image');
-        $directory = public_path('img/case-studies/uploads');
-        File::ensureDirectoryExists($directory);
-
         $filename = Str::slug(pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME));
         $filename = ($filename ?: 'case-study').'-'.Str::random(8).'.'.$image->getClientOriginalExtension();
 
-        $image->move($directory, $filename);
-
-        return 'img/case-studies/uploads/'.$filename;
+        return $image->storeAs(self::FEATURED_IMAGE_DIRECTORY, $filename, 'public');
     }
 
     private function deleteFeaturedImage(CaseStudy $caseStudy): void
     {
-        if (! $caseStudy->featured_image_path || ! str_starts_with($caseStudy->featured_image_path, 'img/case-studies/uploads/')) {
+        if (! $caseStudy->featured_image_path) {
             return;
         }
 
-        $path = public_path($caseStudy->featured_image_path);
+        if (Str::startsWith($caseStudy->featured_image_path, self::FEATURED_IMAGE_DIRECTORY.'/')) {
+            Storage::disk('public')->delete($caseStudy->featured_image_path);
 
-        if (File::exists($path)) {
-            File::delete($path);
+            return;
+        }
+
+        if (Str::startsWith($caseStudy->featured_image_path, 'img/case-studies/uploads/')) {
+            File::delete(public_path($caseStudy->featured_image_path));
         }
     }
 

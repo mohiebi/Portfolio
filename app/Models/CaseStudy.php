@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class CaseStudy extends Model
 {
@@ -62,6 +64,14 @@ class CaseStudy extends Model
 
     public function getFeaturedImageUrlAttribute(): ?string
     {
-        return $this->featured_image_path ? '/'.ltrim($this->featured_image_path, '/') : null;
+        if (! $this->featured_image_path) {
+            return null;
+        }
+
+        if (Str::startsWith($this->featured_image_path, 'uploads/')) {
+            return Storage::disk('public')->url($this->featured_image_path);
+        }
+
+        return '/'.ltrim($this->featured_image_path, '/');
     }
 }

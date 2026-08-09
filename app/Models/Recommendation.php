@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Recommendation extends Model
 {
@@ -51,6 +53,14 @@ class Recommendation extends Model
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? '/'.ltrim($this->image_path, '/') : null;
+        if (! $this->image_path) {
+            return null;
+        }
+
+        if (Str::startsWith($this->image_path, 'uploads/')) {
+            return Storage::disk('public')->url($this->image_path);
+        }
+
+        return '/'.ltrim($this->image_path, '/');
     }
 }

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Article extends Model
 {
@@ -57,6 +59,14 @@ class Article extends Model
 
     public function getCoverUrlAttribute(): ?string
     {
-        return $this->cover_path ? '/'.ltrim($this->cover_path, '/') : null;
+        if (! $this->cover_path) {
+            return null;
+        }
+
+        if (Str::startsWith($this->cover_path, 'uploads/')) {
+            return Storage::disk('public')->url($this->cover_path);
+        }
+
+        return '/'.ltrim($this->cover_path, '/');
     }
 }

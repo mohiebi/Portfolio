@@ -7,12 +7,15 @@ use App\Models\Article;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ArticleController extends Controller
 {
+    private const COVER_DIRECTORY = 'uploads/articles';
+
     public function publicIndex(): Response
     {
         return Inertia::render('Articles/PublicIndex', [
@@ -106,15 +109,10 @@ class ArticleController extends Controller
     private function storeCover(Request $request): string
     {
         $cover = $request->file('cover');
-        $directory = public_path('img/articles');
-        File::ensureDirectoryExists($directory);
-
         $filename = Str::slug(pathinfo($cover->getClientOriginalName(), PATHINFO_FILENAME));
         $filename = ($filename ?: 'article-cover').'-'.Str::random(8).'.'.$cover->getClientOriginalExtension();
 
-        $cover->move($directory, $filename);
-
-        return 'img/articles/'.$filename;
+        return $cover->storeAs(self::COVER_DIRECTORY, $filename, 'public');
     }
 
     private function storeCoverData(Request $request): string
@@ -124,16 +122,14 @@ class ArticleController extends Controller
 
         preg_match('/^data:image\/(?<type>jpe?g|png|webp);base64,(?<data>.+)$/', $coverData, $matches);
 
-        $directory = public_path('img/articles');
-        File::ensureDirectoryExists($directory);
-
         $extension = $matches['type'] === 'jpeg' ? 'jpg' : $matches['type'];
         $filename = Str::slug(pathinfo($coverFilename, PATHINFO_FILENAME));
         $filename = ($filename ?: 'article-cover').'-'.Str::random(8).'.'.$extension;
+        $path = self::COVER_DIRECTORY.'/'.$filename;
 
-        File::put($directory.DIRECTORY_SEPARATOR.$filename, base64_decode($matches['data'], true));
+        Storage::disk('public')->put($path, base64_decode($matches['data'], true));
 
-        return 'img/articles/'.$filename;
+        return $path;
     }
 
     private function deleteCover(Article $article): void
@@ -142,10 +138,14 @@ class ArticleController extends Controller
             return;
         }
 
-        $path = public_path($article->cover_path);
+        if (Str::startsWith($article->cover_path, self::COVER_DIRECTORY.'/')) {
+            Storage::disk('public')->delete($article->cover_path);
 
-        if (File::exists($path)) {
-            File::delete($path);
+            return;
+        }
+
+        if (Str::startsWith($article->cover_path, 'img/articles/')) {
+            File::delete(public_path($article->cover_path));
         }
     }
 }

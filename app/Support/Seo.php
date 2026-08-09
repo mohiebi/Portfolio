@@ -385,12 +385,15 @@ class Seo
 
     private static function url(string $path, array $query = []): string
     {
-        $base = rtrim((string) config('app.url'), '/') ?: rtrim(request()->getSchemeAndHttpHost(), '/');
-        $url = $base.'/'.ltrim($path, '/');
-        $url = rtrim($url, '/') ?: $base;
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            $url = rtrim($path, '/');
+        } else {
+            $base = rtrim((string) config('app.url'), '/') ?: rtrim(request()->getSchemeAndHttpHost(), '/');
+            $url = rtrim($base.'/'.ltrim($path, '/'), '/') ?: $base;
 
-        if ($path === '/') {
-            $url = $base;
+            if ($path === '/') {
+                $url = $base;
+            }
         }
 
         return $query ? $url.'?'.http_build_query($query) : $url;
