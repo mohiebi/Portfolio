@@ -192,6 +192,7 @@ class Seo
             'verify-email*',
             'confirm-password',
             'notification*',
+            'oauth*',
         ];
 
         if (Str::is($private, $path)) {

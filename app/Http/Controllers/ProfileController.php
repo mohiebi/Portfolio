@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Passport\Token;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class ProfileController extends Controller
@@ -35,6 +36,10 @@ class ProfileController extends Controller
                 'time' => $request->user()->taskReminderTime(),
                 'timezone' => $request->user()->taskReminderTimezone(),
                 'timezone_options' => $this->taskReminderTimezoneOptions(),
+            ],
+            'mcp' => [
+                'server_url' => route('mcp.tasks'),
+                'connections' => $this->mcpConnections($request),
             ],
         ]);
     }
@@ -138,6 +143,52 @@ class ProfileController extends Controller
 
         return Redirect::route('profile.edit')
             ->with('success', 'Task reminder schedule updated.');
+    }
+
+    /**
+     * Revoke every MCP access the given AI client holds on the user's account.
+     */
+    public function disconnectMcpClient(Request $request, string $client): RedirectResponse
+    {
+        $request->user()->tokens()
+            ->where('client_id', $client)
+            ->with('refreshToken')
+            ->get()
+            ->each(function (Token $token): void {
+                $token->revoke();
+                $token->refreshToken?->revoke();
+            });
+
+        return Redirect::route('profile.edit')
+            ->with('success', 'The AI assistant has been disconnected.');
+    }
+
+    /**
+     * AI clients that can currently use the user's account, newest first.
+     *
+     * @return array<int, array{client_id: string, name: string, connected_at: string|null}>
+     */
+    private function mcpConnections(Request $request): array
+    {
+        return $request->user()->tokens()
+            ->with('client')
+            ->where('revoked', false)
+            ->where(function ($query): void {
+                $query->where('expires_at', '>', now())
+                    ->orWhereHas('refreshToken', fn ($refreshToken) => $refreshToken
+                        ->where('revoked', false)
+                        ->where('expires_at', '>', now()));
+            })
+            ->latest()
+            ->get()
+            ->groupBy('client_id')
+            ->map(fn ($tokens, string $clientId): array => [
+                'client_id' => $clientId,
+                'name' => $tokens->first()->client?->name ?? 'AI assistant',
+                'connected_at' => $tokens->first()->created_at?->toJSON(),
+            ])
+            ->values()
+            ->all();
     }
 
     private function taskReminderTimezoneOptions(): array

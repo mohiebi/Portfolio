@@ -10,6 +10,8 @@
         "fakerphp/faker": "^1.24",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^13.0",
+        "laravel/mcp": "^0.8.2",
+        "laravel/passport": "^13.7",
         "laravel/socialite": "^5.25",
         "laravel/tinker": "^3.0",
         "resend/resend-laravel": "^1.4",

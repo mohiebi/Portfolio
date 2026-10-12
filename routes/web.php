@@ -91,6 +91,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile/telegram', [ProfileController::class, 'disconnectTelegram'])->name('profile.telegram.disconnect');
     Route::patch('/profile/telegram/reminders', [ProfileController::class, 'updateTelegramReminders'])->name('profile.telegram.reminders');
     Route::patch('/profile/task-reminder-schedule', [ProfileController::class, 'updateTaskReminderSchedule'])->name('profile.task-reminders.schedule');
+    Route::delete('/profile/mcp/{client}', [ProfileController::class, 'disconnectMcpClient'])->name('profile.mcp.disconnect');
 });
 
 Route::redirect('/recommendations/create', '/dashboard/recommendations/create');
