@@ -5,8 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusMessage } from "@/components/site/StatusMessage";
 import type { PageProps } from "@/types";
-import { Bell, BellOff, ChevronDown, Link, MessageCircle, Unlink } from "lucide-react";
+import { Bell, BellOff, Bot, Check, ChevronDown, Copy, Link, MessageCircle, Unlink } from "lucide-react";
 import { useState } from "react";
+
+type McpProfile = {
+  server_url: string;
+  connections: Array<{ client_id: string; name: string; connected_at: string | null }>;
+};
 
 type TelegramProfile = {
   bot_username?: string | null;
@@ -23,8 +28,20 @@ type TaskReminderSchedule = {
 };
 
 export default function ProfilePage() {
-  const { auth, telegram, taskReminderSchedule } = usePage<PageProps<{ telegram: TelegramProfile; taskReminderSchedule: TaskReminderSchedule }>>().props;
+  const { auth, telegram, taskReminderSchedule, mcp } = usePage<PageProps<{ telegram: TelegramProfile; taskReminderSchedule: TaskReminderSchedule; mcp: McpProfile }>>().props;
   const user = auth.user!;
+  const [mcpUrlCopied, setMcpUrlCopied] = useState(false);
+  const mcpDisconnect = useForm({});
+
+  const copyMcpUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(mcp.server_url);
+      setMcpUrlCopied(true);
+      window.setTimeout(() => setMcpUrlCopied(false), 2000);
+    } catch {
+      setMcpUrlCopied(false);
+    }
+  };
   const profile = useForm({ name: user.name, email: user.email });
   const password = useForm({ current_password: "", password: "", password_confirmation: "" });
   const destroy = useForm({ password: "" });
@@ -166,6 +183,58 @@ export default function ProfilePage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </Card>
+        <Card title="AI assistant" description="Let Claude, ChatGPT, Cursor or any MCP-compatible assistant read and manage your tasks while you chat.">
+          <div className="grid gap-5">
+            <div className="grid gap-3 rounded-lg border border-border bg-muted/20 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
+                  <Bot className="size-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">MCP server address</p>
+                  <p className="text-sm text-muted-foreground">Add this URL as a custom connector, then sign in and approve access when asked.</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Input readOnly value={mcp.server_url} aria-label="MCP server URL" className="font-mono text-xs" onFocus={(event) => event.currentTarget.select()} />
+                <Button type="button" variant="outline" onClick={copyMcpUrl}>
+                  {mcpUrlCopied ? <Check className="mr-2 size-4" aria-hidden="true" /> : <Copy className="mr-2 size-4" aria-hidden="true" />}
+                  {mcpUrlCopied ? "Copied" : "Copy"}
+                </Button>
+              </div>
+              <ul className="grid gap-1.5 text-sm text-muted-foreground">
+                <li><span className="font-medium text-foreground">Claude:</span> Settings → Connectors → Add custom connector.</li>
+                <li><span className="font-medium text-foreground">ChatGPT:</span> Settings → Connectors → add a custom MCP connector.</li>
+                <li><span className="font-medium text-foreground">Claude Code:</span> <code className="rounded bg-muted px-1 py-0.5 text-xs">claude mcp add --transport http tasks {mcp.server_url}</code></li>
+                <li><span className="font-medium text-foreground">Cursor / VS Code:</span> add an HTTP MCP server with this URL.</li>
+              </ul>
+            </div>
+
+            <div className="grid gap-3">
+              <p className="text-sm font-semibold">Connected assistants</p>
+              {mcp.connections.length === 0 ? (
+                <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">No AI assistants are connected yet.</p>
+              ) : (
+                mcp.connections.map((connection) => (
+                  <div key={connection.client_id} className="flex flex-col gap-3 rounded-lg border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold">{connection.name}</p>
+                      {connection.connected_at && (
+                        <p className="text-sm text-muted-foreground">Connected {new Date(connection.connected_at).toLocaleDateString()}</p>
+                      )}
+                    </div>
+                    <form onSubmit={(event) => { event.preventDefault(); mcpDisconnect.delete(`/profile/mcp/${connection.client_id}`, { preserveScroll: true }); }}>
+                      <Button type="submit" variant="outline" disabled={mcpDisconnect.processing}>
+                        <Unlink className="mr-2 size-4" aria-hidden="true" />
+                        Disconnect
+                      </Button>
+                    </form>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </Card>
         <Card title="Delete account" description="This action is permanent and cannot be undone." tone="danger">
