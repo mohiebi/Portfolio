@@ -4,7 +4,7 @@ import {
   Layers, Server, Shield, Zap, Search, Star, Filter, Check, Plus, MapPin,
   Building2, Phone, Globe, Copy, MessageCircle, GraduationCap, Briefcase,
   Cpu, GitBranch, Github, Quote, ChevronLeft, ChevronRight,
-  CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit, ExternalLink,
+  CalendarDays, Clock, Newspaper, Rocket, Settings2, BrainCircuit, ExternalLink, ClipboardList,
 } from "lucide-react";
 import servicesCoverImg from "@/assets/services cover on main.webp";
 import { motion, useScroll, useTransform, useReducedMotion, type Variants } from "framer-motion";
@@ -799,6 +799,35 @@ export default function HomePage({ articles = [], caseStudies = [], recommendati
                 </Button>
               </div>
             </div>
+          </motion.div>
+
+          {/* ── BRIEF — write it down instead of a call ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="mt-6"
+          >
+            <Link
+              href="/brief"
+              className="group flex flex-col gap-4 rounded-3xl border border-border bg-card/65 p-6 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/45 hover:bg-card/85 focus-visible:ring-2 focus-visible:ring-primary/40 sm:flex-row sm:items-center sm:justify-between sm:p-7"
+            >
+              <div className="flex items-start gap-4">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-primary/30 bg-primary/10 text-primary transition-colors group-hover:border-primary/50">
+                  <ClipboardList className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-display text-xl font-semibold">Prefer to write it down?</h3>
+                  <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                    Fill out a short project brief about your goals, audience and the look you want. It takes about 8 minutes and lets us skip the basics on the call.
+                  </p>
+                </div>
+              </div>
+              <span className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-primary">
+                Start the project brief <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            </Link>
           </motion.div>
 
           {/* ── SECONDARY — other channels ── */}

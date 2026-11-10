@@ -33,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(DatabaseNotification::class, NotificationPolicy::class);
 
         $this->configureMcpAuthentication();
+
+        RateLimiter::for('briefs', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
     }
 
     /**

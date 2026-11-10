@@ -1,5 +1,5 @@
 import { Link } from "@inertiajs/react";
-import { Mail, Linkedin, FileDown, Github } from "lucide-react";
+import { Mail, Linkedin, FileDown, Github, ClipboardList } from "lucide-react";
 import { getProducts, type PortfolioProduct } from "@/lib/projects";
 import { useI18n } from "@/i18n";
 
@@ -40,6 +40,7 @@ export function SiteFooter() {
             <li><a href="mailto:e.mohamadhosein@gmail.com" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Mail className="h-4 w-4" />Email</a></li>
             <li><a href="https://www.linkedin.com/in/mohiebi" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Linkedin className="h-4 w-4" />LinkedIn</a></li>
             <li><a href="https://github.com/mohiebi" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><Github className="h-4 w-4" />GitHub</a></li>
+            <li><Link href="/brief" className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground lg:justify-start"><ClipboardList className="h-4 w-4" />Project brief</Link></li>
           </ul>
         </div>
       </div>

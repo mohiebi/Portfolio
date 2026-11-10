@@ -3,6 +3,7 @@ import {
   ArrowRight,
   BrainCircuit,
   CheckCircle2,
+  ClipboardList,
   FileText,
   LayoutDashboard,
   MessageSquareQuote,
@@ -82,6 +83,15 @@ const adminLinks: DashboardLink[] = [
     meta: "Admin",
     tone: "violet",
   },
+  {
+    href: "/dashboard/briefs",
+    icon: ClipboardList,
+    title: "Project Briefs",
+    description: "Review what prospective clients want and the design direction they chose.",
+    label: "Client intake",
+    meta: "Admin",
+    tone: "emerald",
+  },
 ];
 
 const coverIcon = {
@@ -155,7 +165,7 @@ export default function Dashboard({ services = [] }: DashboardProps) {
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 <Metric label="Packages" value={isAdmin ? String(services.length) : "0"} detail="service offers" icon={PackagePlus} />
                 <Metric label="Projects" value={isAdmin ? String(totalPackageProjects) : "0"} detail="attached samples" icon={CheckCircle2} />
-                <Metric label="Admin" value={isAdmin ? "4" : "0"} detail="content tools" icon={ShieldCheck} />
+                <Metric label="Admin" value={isAdmin ? String(adminLinks.length) : "0"} detail="content tools" icon={ShieldCheck} />
               </div>
             </div>
 

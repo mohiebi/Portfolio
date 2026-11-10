@@ -185,3 +185,55 @@ export type DatabaseNotification = {
   read_at: string | null;
   created_at: string;
 };
+
+export type ProjectBriefSummary = {
+  id: number;
+  name: string;
+  email: string;
+  company: string | null;
+  project_type: string;
+  budget: string;
+  timeline: string;
+  reviewed_at: string | null;
+  created_at: string;
+};
+
+export type ProjectBriefAttachment = {
+  name: string;
+  size: number;
+  mime: string;
+  url: string;
+};
+
+export type ProjectBrief = ProjectBriefSummary & {
+  website_url: string | null;
+  business_description: string;
+  goals: string[];
+  audience: string;
+  primary_action: string | null;
+  competitors: string | null;
+  pages: string[];
+  features: string[];
+  extra_requirements: string | null;
+  languages: string[];
+  other_language: string | null;
+  content_readiness: string | null;
+  domain_status: string | null;
+  brand_assets: string[];
+  attachments: ProjectBriefAttachment[];
+  styles: string[];
+  brand_words: string | null;
+  colour_preferences: string | null;
+  colour_mode: string | null;
+  typography: string | null;
+  liked_sites: Array<{ url: string; note: string | null }>;
+  disliked_sites: string | null;
+  deadline_note: string | null;
+  support: string | null;
+  preferred_contact: string;
+  phone: string | null;
+  notes: string | null;
+  locale: string;
+  consented_at: string;
+  updated_at: string;
+};
