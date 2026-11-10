@@ -1,4 +1,5 @@
 import { translateText, type Locale } from "@/i18n";
+import { briefCopy, isBriefLocale } from "@/lib/briefCopy";
 
 type PageLike = {
   component?: string;
@@ -49,7 +50,11 @@ export function titleFromInertiaPage(page: PageLike, locale: Locale) {
   if (component === "Recommendations/Create") return "New Recommendation";
   if (component === "Recommendations/Edit") return "Edit Recommendation";
 
-  if (component === "Brief/Create") return "Project Brief";
+  if (component === "Brief/Create") {
+    const briefLocale = props.locale;
+
+    return briefCopy(isBriefLocale(briefLocale) ? briefLocale : "en").seo.title;
+  }
   if (component === "Brief/Index") return "Project Briefs";
   if (component === "Brief/Show") return suffix(text(propRecord(props, "brief"), "name"), "Project Brief");
 

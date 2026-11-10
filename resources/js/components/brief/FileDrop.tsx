@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { FileText, ImagePlus, X } from "lucide-react";
+import { useBrief } from "@/components/brief/BriefProvider";
 
 type FileDropProps = {
   id: string;
@@ -15,9 +16,12 @@ type FileDropProps = {
 };
 
 export function FileDrop({ id, files, onChange, max, maxMb, accept, extensions, error, describedBy }: FileDropProps) {
+  const { copy, n } = useBrief();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+
+  const typeList = extensions.join(", ").toUpperCase();
 
   const addFiles = (incoming: File[]) => {
     const problems: string[] = [];
@@ -27,11 +31,11 @@ export function FileDrop({ id, files, onChange, max, maxMb, accept, extensions, 
       const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
 
       if (!extensions.includes(extension)) {
-        problems.push(`${file.name}: only ${extensions.join(", ").toUpperCase()} files are accepted.`);
+        problems.push(copy.files.wrongType(file.name, typeList));
       } else if (file.size > maxMb * 1024 * 1024) {
-        problems.push(`${file.name}: files must be ${maxMb} MB or smaller.`);
+        problems.push(copy.files.tooLarge(file.name, n(maxMb)));
       } else if (files.length + accepted.length >= max) {
-        problems.push(`${file.name}: you can upload up to ${max} files.`);
+        problems.push(copy.files.tooMany(file.name, n(max)));
       } else {
         accepted.push(file);
       }
@@ -79,10 +83,8 @@ export function FileDrop({ id, files, onChange, max, maxMb, accept, extensions, 
         <span className="grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary">
           <ImagePlus className="h-5 w-5" aria-hidden="true" />
         </span>
-        <span className="font-medium">Drop files here or click to browse</span>
-        <span className="text-xs text-muted-foreground">
-          Logo, brand guide or inspiration. {extensions.join(", ").toUpperCase()} up to {maxMb} MB each, max {max} files.
-        </span>
+        <span className="font-medium">{copy.files.dropTitle}</span>
+        <span className="text-xs text-muted-foreground">{copy.files.dropHelp(typeList, n(maxMb), n(max))}</span>
         <input
           ref={inputRef}
           id={id}
@@ -102,7 +104,7 @@ export function FileDrop({ id, files, onChange, max, maxMb, accept, extensions, 
       )}
 
       {files.length > 0 && (
-        <ul className="grid gap-2" aria-label="Selected files">
+        <ul className="grid gap-2" aria-label={copy.files.selected}>
           {files.map((file, index) => (
             <li
               key={`${file.name}-${file.size}-${index}`}
@@ -110,13 +112,13 @@ export function FileDrop({ id, files, onChange, max, maxMb, accept, extensions, 
             >
               <span className="flex min-w-0 items-center gap-2">
                 <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                <span className="truncate">{file.name}</span>
-                <span className="shrink-0 text-xs text-muted-foreground">{formatSize(file.size)}</span>
+                <bdi className="truncate">{file.name}</bdi>
+                <bdi className="shrink-0 text-xs text-muted-foreground">{formatSize(file.size)}</bdi>
               </span>
               <button
                 type="button"
                 onClick={() => remove(index)}
-                aria-label={`Remove ${file.name}`}
+                aria-label={copy.files.remove(file.name)}
                 className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 <X className="h-4 w-4" aria-hidden="true" />

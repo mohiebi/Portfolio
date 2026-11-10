@@ -4,7 +4,7 @@ import { EmptyState, PageHeader, SiteShell } from "@/components/site/SiteShell";
 import { PaginationNav } from "@/components/site/PaginationNav";
 import { StatusMessage } from "@/components/site/StatusMessage";
 import { Button } from "@/components/ui/button";
-import { budgets, optionLabel, projectTypes, timelines } from "@/lib/brief";
+import { localeNames, optionLabel } from "@/lib/brief";
 import type { PaginatedData, ProjectBriefSummary } from "@/types";
 
 type Props = {
@@ -72,13 +72,16 @@ export default function BriefIndex({ briefs, unreviewedCount }: Props) {
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
                     <span className="rounded-md border border-border px-2 py-1">
-                      {optionLabel(projectTypes, brief.project_type)}
+                      {optionLabel("projectTypes", brief.project_type)}
                     </span>
                     <span className="rounded-md border border-border px-2 py-1">
-                      Budget: {optionLabel(budgets, brief.budget)}
+                      Budget: {optionLabel("budgets", brief.budget)}
                     </span>
                     <span className="rounded-md border border-border px-2 py-1">
-                      Timeline: {optionLabel(timelines, brief.timeline)}
+                      Timeline: {optionLabel("timelines", brief.timeline)}
+                    </span>
+                    <span className="rounded-md border border-border px-2 py-1">
+                      {localeNames[brief.locale] ?? brief.locale}
                     </span>
                     <span className="rounded-md border border-border px-2 py-1">{formatDate(brief.created_at)}</span>
                   </div>

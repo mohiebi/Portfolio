@@ -2,22 +2,30 @@ import { Link, useForm } from "@inertiajs/react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Layers, Loader2, Save, Send } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { SiteShell } from "@/components/site/SiteShell";
-import { SeoHead } from "@/components/site/SeoHead";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { BriefProvider, useBrief } from "@/components/brief/BriefProvider";
+import { LanguageSwitch } from "@/components/brief/LanguageSwitch";
 import { StepProgress } from "@/components/brief/StepProgress";
 import { AboutStep, BudgetStep, DesignStep, ProjectStep, ScopeStep, type StepProps } from "@/components/brief/steps";
+import { SeoHead } from "@/components/site/SeoHead";
+import { SiteShell } from "@/components/site/SiteShell";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import {
   BRIEF_LIMITS,
   DRAFT_STORAGE_KEY,
   briefSteps,
   emptyBrief,
+  normalizeDigits,
   stepIndexForField,
   validateBriefStep,
   type BriefFormData,
   type BriefLikedSite,
 } from "@/lib/brief";
+import { BRIEF_LOCALES, briefLocaleMeta, isBriefLocale, type BriefLocale } from "@/lib/briefCopy";
+
+type Props = {
+  locale: BriefLocale;
+};
 
 type Draft = { step: number; data: BriefFormData };
 
@@ -25,6 +33,12 @@ const stepComponents = [AboutStep, ProjectStep, ScopeStep, DesignStep, BudgetSte
 
 /** Files, consent and the honeypot are never kept in the saved draft. */
 const TRANSIENT_FIELDS: Array<keyof BriefFormData> = ["attachments", "consent", "nickname"];
+
+/** The public address of every language version, for search engines. */
+const ALTERNATES: Record<string, string> = {
+  ...Object.fromEntries(BRIEF_LOCALES.map((code) => [code, briefLocaleMeta[code].path])),
+  "x-default": briefLocaleMeta.en.path,
+};
 
 function blankBrief(): BriefFormData {
   return { ...emptyBrief, liked_sites: [{ url: "", note: "" }] };
@@ -94,7 +108,16 @@ function clearDraft() {
   }
 }
 
-export default function BriefCreate() {
+export default function BriefCreate({ locale }: Props) {
+  return (
+    <BriefProvider locale={isBriefLocale(locale) ? locale : "en"}>
+      <BriefPage />
+    </BriefProvider>
+  );
+}
+
+function BriefPage() {
+  const { locale, copy, meta, n } = useBrief();
   const reduceMotion = useReducedMotion();
   const [initial] = useState(loadDraft);
   const [step, setStep] = useState(initial.step);
@@ -109,6 +132,7 @@ export default function BriefCreate() {
 
   const isLastStep = step === briefSteps.length - 1;
   const StepComponent = stepComponents[step];
+  const stepCopy = copy.steps[briefSteps[step].id];
   const scrollBehavior: ScrollBehavior = reduceMotion ? "auto" : "smooth";
 
   const set: StepProps["set"] = (key, value) => {
@@ -156,7 +180,7 @@ export default function BriefCreate() {
   };
 
   const goNext = () => {
-    const errors = validateBriefStep(step, form.data);
+    const errors = validateBriefStep(step, form.data, copy.errors);
 
     if (Object.keys(errors).length > 0) {
       showErrors(errors);
@@ -183,7 +207,7 @@ export default function BriefCreate() {
     }
 
     for (let index = 0; index < briefSteps.length; index++) {
-      const errors = validateBriefStep(index, form.data);
+      const errors = validateBriefStep(index, form.data, copy.errors);
 
       if (Object.keys(errors).length > 0) {
         setStep(index);
@@ -195,6 +219,9 @@ export default function BriefCreate() {
 
     const answer = { name: form.data.name.trim(), email: form.data.email.trim() };
 
+    // The language travels with the answers so the owner knows what the client read,
+    // and Persian digits in the phone number are sent as plain digits.
+    form.transform((data) => ({ ...data, locale, phone: normalizeDigits(data.phone) }));
     form.post(route("brief.store"), {
       forceFormData: true,
       preserveScroll: true,
@@ -222,11 +249,14 @@ export default function BriefCreate() {
   return (
     <SiteShell>
       <SeoHead
-        title="Project Brief"
-        description="Tell me about your website or UI/UX project in a few short steps: goals, audience, content, design direction, budget and timeline."
+        title={copy.seo.title}
+        description={copy.seo.description}
+        canonical={meta.path}
+        alternates={ALTERNATES}
+        ogLocale={meta.og}
       />
 
-      <main className="relative overflow-hidden border-t border-border/60">
+      <main dir={meta.dir} lang={meta.lang} className="relative overflow-hidden border-t border-border/60">
         <motion.div
           aria-hidden
           className="absolute -top-24 left-1/3 h-72 w-72 rounded-full bg-primary/15 blur-3xl"
@@ -239,25 +269,31 @@ export default function BriefCreate() {
         />
 
         <div className="relative mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" /> Back to portfolio
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4 rtl:rotate-180" aria-hidden="true" /> {copy.page.backToPortfolio}
+            </Link>
+            <LanguageSwitch />
+          </div>
 
           <header className="mt-8">
-            <p className="font-mono text-xs uppercase tracking-wider text-primary">// Project brief</p>
-            <h1 className="mt-2 font-display text-3xl font-semibold sm:text-5xl">Tell me about your project</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              A few short questions about your goals, your audience and the look you have in mind. Everything marked
-              with a star is required. The rest helps me prepare, so skip whatever you do not know yet.
+            <p className="font-mono text-xs uppercase tracking-wider text-primary rtl:font-sans rtl:tracking-normal">
+              {copy.page.eyebrow}
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold sm:text-5xl rtl:leading-[1.4]">
+              {copy.page.title}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base rtl:leading-8">
+              {copy.page.intro}
             </p>
             <ul className="mt-5 flex flex-wrap gap-2">
               {[
-                { icon: Clock, text: "About 8 minutes" },
-                { icon: Layers, text: "5 short steps" },
-                { icon: Save, text: "Saved while you type" },
+                { icon: Clock, text: copy.page.badgeTime },
+                { icon: Layers, text: copy.page.badgeSteps },
+                { icon: Save, text: copy.page.badgeSaved },
               ].map(({ icon: Icon, text }) => (
                 <li
                   key={text}
@@ -282,18 +318,18 @@ export default function BriefCreate() {
                 <h2
                   ref={headingRef}
                   tabIndex={-1}
-                  className="font-display text-2xl font-semibold outline-none"
+                  className="font-display text-2xl font-semibold outline-none rtl:leading-[1.5]"
                 >
-                  {briefSteps[step].title}
+                  {stepCopy.title}
                 </h2>
-                <p className="mb-6 mt-1 text-sm text-muted-foreground">{briefSteps[step].description}</p>
+                <p className="mb-6 mt-1 text-sm text-muted-foreground">{stepCopy.description}</p>
 
                 <StepComponent data={form.data} errors={form.errors} set={set} />
 
                 {/* Honeypot: invisible to people, tempting to bots. */}
                 <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
                   <label>
-                    Leave this field empty
+                    {copy.page.honeypot}
                     <input
                       type="text"
                       name="nickname"
@@ -307,15 +343,19 @@ export default function BriefCreate() {
 
                 {form.progress && (
                   <div className="mt-6 grid gap-1.5" role="status">
-                    <Progress value={form.progress.percentage ?? 0} aria-label="Upload progress" />
-                    <p className="text-xs text-muted-foreground">Uploading files... {form.progress.percentage ?? 0}%</p>
+                    <Progress
+                      value={form.progress.percentage ?? 0}
+                      className="rtl:-scale-x-100"
+                      aria-label={copy.nav.uploadProgress}
+                    />
+                    <p className="text-xs text-muted-foreground">{copy.nav.uploading(n(form.progress.percentage ?? 0))}</p>
                   </div>
                 )}
 
                 <div className="mt-8 flex items-center justify-between gap-3 border-t border-border pt-6">
                   {step > 0 ? (
                     <Button key="back" type="button" variant="ghost" onClick={goBack}>
-                      <ArrowLeft className="me-2 h-4 w-4 rtl:rotate-180" aria-hidden="true" /> Back
+                      <ArrowLeft className="me-2 h-4 w-4 rtl:rotate-180" aria-hidden="true" /> {copy.nav.back}
                     </Button>
                   ) : (
                     <span />
@@ -326,13 +366,13 @@ export default function BriefCreate() {
                       {form.processing ? (
                         <Loader2 className="me-2 h-4 w-4 animate-spin" aria-hidden="true" />
                       ) : (
-                        <Send className="me-2 h-4 w-4" aria-hidden="true" />
+                        <Send className="me-2 h-4 w-4 rtl:-scale-x-100" aria-hidden="true" />
                       )}
-                      {form.processing ? "Sending..." : "Send my brief"}
+                      {form.processing ? copy.nav.sending : copy.nav.send}
                     </Button>
                   ) : (
                     <Button key="next" type="button" size="lg" onClick={goNext}>
-                      Next <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" aria-hidden="true" />
+                      {copy.nav.next} <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" aria-hidden="true" />
                     </Button>
                   )}
                 </div>
@@ -341,10 +381,7 @@ export default function BriefCreate() {
           )}
 
           {!submitted && (
-            <p className="mt-6 text-center text-xs text-muted-foreground">
-              Your answers are only used to reply to your brief. A draft is kept in this browser while you type and is
-              removed when you send it.
-            </p>
+            <p className="mt-6 text-center text-xs text-muted-foreground rtl:leading-6">{copy.page.privacyNote}</p>
           )}
         </div>
       </main>
@@ -353,7 +390,8 @@ export default function BriefCreate() {
 }
 
 function ThankYou({ name, email, onStartAnother }: { name: string; email: string; onStartAnother: () => void }) {
-  const firstName = name.split(/\s+/)[0] || "there";
+  const { copy } = useBrief();
+  const firstName = name.split(/\s+/)[0] ?? "";
 
   return (
     <div
@@ -363,17 +401,20 @@ function ThankYou({ name, email, onStartAnother }: { name: string; email: string
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-primary/40 bg-primary/15 text-primary">
         <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
       </div>
-      <h2 className="mt-5 font-display text-3xl font-semibold">Thank you, {firstName}.</h2>
-      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-        Your brief is in. I will read it carefully and reply to <span className="text-foreground">{email}</span> within
-        24 hours with questions or a first idea of the direction.
+      <h2 className="mt-5 font-display text-3xl font-semibold rtl:leading-[1.5]">{copy.thanks.title(firstName)}</h2>
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground rtl:leading-7">
+        {copy.thanks.bodyBefore}
+        <bdi dir="ltr" className="text-foreground">
+          {email}
+        </bdi>
+        {copy.thanks.bodyAfter}
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild>
-          <Link href="/">Back to portfolio</Link>
+          <Link href="/">{copy.thanks.backToPortfolio}</Link>
         </Button>
         <Button type="button" variant="outline" onClick={onStartAnother}>
-          Send another brief
+          {copy.thanks.sendAnother}
         </Button>
       </div>
     </div>

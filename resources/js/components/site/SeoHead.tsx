@@ -8,6 +8,12 @@ type SeoHeadProps = {
   image?: string | null;
   type?: "website" | "article";
   robots?: string;
+  /** Overrides the canonical URL derived from the current path. */
+  canonical?: string;
+  /** hreflang to URL pairs. Replaces the default en/de pair when a page has real language versions. */
+  alternates?: Record<string, string>;
+  /** Open Graph locale, for example fa_IR. */
+  ogLocale?: string;
   children?: ReactNode;
 };
 
@@ -20,11 +26,24 @@ export function SeoHead({
   image = DEFAULT_IMAGE,
   type = "website",
   robots = "index,follow",
+  canonical: canonicalOverride,
+  alternates: alternatesOverride,
+  ogLocale,
   children,
 }: SeoHeadProps) {
   const page = usePage();
   const { locale } = useI18n();
-  const { canonical, alternates } = useMemo(() => seoUrls(page.url, locale), [page.url, locale]);
+  const urls = useMemo(() => seoUrls(page.url, locale), [page.url, locale]);
+  const canonical = canonicalOverride ? absoluteUrl(canonicalOverride) : urls.canonical;
+  const alternateLinks = alternatesOverride
+    ? Object.entries(alternatesOverride).map(([hrefLang, href]) => (
+        <link key={`alternate-${hrefLang}`} rel="alternate" hrefLang={hrefLang} href={absoluteUrl(href)} />
+      ))
+    : [
+        <link key="alternate-en" rel="alternate" hrefLang="en" href={urls.alternates.en} />,
+        <link key="alternate-de" rel="alternate" hrefLang="de" href={urls.alternates.de} />,
+        <link key="alternate-default" rel="alternate" hrefLang="x-default" href={urls.alternates.default} />,
+      ];
   const fullTitle = title.startsWith(`${SITE_NAME} -`) ? title : `${SITE_NAME} - ${title}`;
   const imageUrl = absoluteUrl(image || DEFAULT_IMAGE);
 
@@ -33,12 +52,10 @@ export function SeoHead({
       <meta key="description" name="description" content={description} />
       <meta key="robots" name="robots" content={robots} />
       <link key="canonical" rel="canonical" href={canonical} />
-      <link key="alternate-en" rel="alternate" hrefLang="en" href={alternates.en} />
-      <link key="alternate-de" rel="alternate" hrefLang="de" href={alternates.de} />
-      <link key="alternate-default" rel="alternate" hrefLang="x-default" href={alternates.default} />
+      {alternateLinks}
       <meta key="og:type" property="og:type" content={type} />
       <meta key="og:site_name" property="og:site_name" content={SITE_NAME} />
-      <meta key="og:locale" property="og:locale" content={locale === "de" ? "de_DE" : "en_US"} />
+      <meta key="og:locale" property="og:locale" content={ogLocale ?? (locale === "de" ? "de_DE" : "en_US")} />
       <meta key="og:url" property="og:url" content={canonical} />
       <meta key="og:title" property="og:title" content={fullTitle} />
       <meta key="og:description" property="og:description" content={description} />

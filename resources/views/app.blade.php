@@ -10,9 +10,9 @@
     <meta name="author" content="Mohi">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="canonical" href="{{ $seo['canonical'] }}">
-    <link rel="alternate" hreflang="en" href="{{ $seo['alternates']['en'] }}">
-    <link rel="alternate" hreflang="de" href="{{ $seo['alternates']['de'] }}">
-    <link rel="alternate" hreflang="x-default" href="{{ $seo['alternates']['x-default'] }}">
+    @foreach ($seo['alternates'] as $hreflang => $href)
+    <link rel="alternate" hreflang="{{ $hreflang }}" href="{{ $href }}">
+    @endforeach
     <link rel="icon" type="image/svg+xml" href="/img/mohi-logo.svg">
     <meta property="og:type" content="{{ $seo['type'] }}">
     <meta property="og:site_name" content="{{ $seo['siteName'] }}">

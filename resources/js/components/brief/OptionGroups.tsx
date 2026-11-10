@@ -1,5 +1,6 @@
-import type { BriefOption } from "@/lib/brief";
+import { useBrief } from "@/components/brief/BriefProvider";
 import { OptionTile, type OptionVariant } from "@/components/brief/OptionTile";
+import type { BriefOption } from "@/lib/brief";
 
 const layouts = {
   card: "grid gap-2 sm:grid-cols-2 lg:grid-cols-3",
@@ -45,6 +46,7 @@ type ChipGroupProps = {
 
 /** Multiple choice. */
 export function ChipGroup({ name, options, values, onChange, max, variant = "pill" }: ChipGroupProps) {
+  const { copy, n } = useBrief();
   const limitReached = max !== undefined && values.length >= max;
 
   const toggle = (value: string) => {
@@ -73,7 +75,7 @@ export function ChipGroup({ name, options, values, onChange, max, variant = "pil
       </div>
       {max !== undefined && (
         <p className="text-xs text-muted-foreground" aria-live="polite">
-          {values.length} of {max} selected
+          {copy.common.selectedCount(n(values.length), n(max))}
         </p>
       )}
     </div>

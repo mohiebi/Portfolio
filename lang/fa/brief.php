@@ -1,0 +1,67 @@
+<?php
+
+return [
+    'thank_you' => 'ممنون! بریف شما ارسال شد.',
+
+    /*
+     * Field names used inside validation messages. Keys mirror the rules of
+     * StoreProjectBriefRequest; every language must cover the same keys.
+     */
+    'attributes' => [
+        'name' => 'نام',
+        'email' => 'ایمیل',
+        'company' => 'نام شرکت یا برند',
+        'website_url' => 'وب‌سایت',
+        'business_description' => 'توضیح کسب‌وکار',
+        'project_type' => 'نوع پروژه',
+        'goals' => 'هدف‌ها',
+        'goals.*' => 'هدف',
+        'audience' => 'مشتریان ایده‌آل',
+        'primary_action' => 'اقدام اصلی بازدیدکننده',
+        'competitors' => 'رقبا',
+        'pages' => 'صفحه‌ها',
+        'pages.*' => 'صفحه',
+        'features' => 'امکانات',
+        'features.*' => 'امکان',
+        'extra_requirements' => 'نیازمندی‌های دیگر',
+        'languages' => 'زبان‌ها',
+        'languages.*' => 'زبان',
+        'other_language' => 'زبان دیگر',
+        'content_readiness' => 'آمادگی محتوا',
+        'domain_status' => 'دامنه و هاستینگ',
+        'brand_assets' => 'دارایی‌های برند',
+        'brand_assets.*' => 'دارایی برند',
+        'attachments' => 'فایل‌های برند',
+        'attachments.*' => 'فایل برند',
+        'styles' => 'سبک‌ها',
+        'styles.*' => 'سبک',
+        'brand_words' => 'واژه‌های برند',
+        'colour_preferences' => 'ترجیح‌های رنگی',
+        'colour_mode' => 'حالت رابط',
+        'typography' => 'تایپوگرافی',
+        'liked_sites' => 'سایت‌های موردعلاقه',
+        'liked_sites.*.url' => 'نشانی سایت نمونه',
+        'liked_sites.*.note' => 'توضیح سایت نمونه',
+        'disliked_sites' => 'سایت‌های نامطلوب',
+        'budget' => 'بودجه',
+        'timeline' => 'زمان‌بندی',
+        'deadline_note' => 'توضیح ضرب‌الاجل',
+        'support' => 'پشتیبانی',
+        'preferred_contact' => 'راه ارتباطی',
+        'phone' => 'شماره‌ی تلفن',
+        'notes' => 'توضیحات',
+        'consent' => 'رضایت برای ذخیره‌ی پاسخ‌ها',
+        'locale' => 'زبان',
+    ],
+
+    'messages' => [
+        'goals.required' => 'دست‌کم یک هدف انتخاب کنید.',
+        'goals.min' => 'دست‌کم یک هدف انتخاب کنید.',
+        'goals.max' => 'حداکثر :max_goals هدف انتخاب کنید.',
+        'styles.required' => 'دست‌کم یک سبک انتخاب کنید.',
+        'styles.min' => 'دست‌کم یک سبک انتخاب کنید.',
+        'styles.max' => 'حداکثر :max_styles سبک انتخاب کنید.',
+        'phone.required_if' => 'برای تماس، یک شماره‌ی تلفن بنویسید.',
+        'consent.accepted' => 'لطفاً تأیید کنید که می‌توانم پاسخ‌هایتان را برای پاسخ‌گویی به شما ذخیره کنم.',
+    ],
+];

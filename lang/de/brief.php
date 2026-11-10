@@ -1,0 +1,67 @@
+<?php
+
+return [
+    'thank_you' => 'Vielen Dank! Ihr Briefing wurde gesendet.',
+
+    /*
+     * Field names used inside validation messages. Keys mirror the rules of
+     * StoreProjectBriefRequest; every language must cover the same keys.
+     */
+    'attributes' => [
+        'name' => 'Name',
+        'email' => 'E-Mail',
+        'company' => 'Firmen- oder Markenname',
+        'website_url' => 'Website',
+        'business_description' => 'Beschreibung des Unternehmens',
+        'project_type' => 'Projektart',
+        'goals' => 'Ziele',
+        'goals.*' => 'Ziel',
+        'audience' => 'Ideale Kunden',
+        'primary_action' => 'Hauptaktion der Besucher',
+        'competitors' => 'Wettbewerber',
+        'pages' => 'Seiten',
+        'pages.*' => 'Seite',
+        'features' => 'Funktionen',
+        'features.*' => 'Funktion',
+        'extra_requirements' => 'Weitere Anforderungen',
+        'languages' => 'Sprachen',
+        'languages.*' => 'Sprache',
+        'other_language' => 'Andere Sprache',
+        'content_readiness' => 'Stand der Inhalte',
+        'domain_status' => 'Domain und Hosting',
+        'brand_assets' => 'Markenmaterial',
+        'brand_assets.*' => 'Markenmaterial',
+        'attachments' => 'Markendateien',
+        'attachments.*' => 'Markendatei',
+        'styles' => 'Stile',
+        'styles.*' => 'Stil',
+        'brand_words' => 'Markenwörter',
+        'colour_preferences' => 'Farbwünsche',
+        'colour_mode' => 'Oberflächenmodus',
+        'typography' => 'Typografie',
+        'liked_sites' => 'Websites, die Ihnen gefallen',
+        'liked_sites.*.url' => 'Adresse der Beispielseite',
+        'liked_sites.*.note' => 'Notiz zur Beispielseite',
+        'disliked_sites' => 'Websites, die Ihnen nicht gefallen',
+        'budget' => 'Budget',
+        'timeline' => 'Zeitplan',
+        'deadline_note' => 'Hinweis zum Termin',
+        'support' => 'Support',
+        'preferred_contact' => 'Kontaktweg',
+        'phone' => 'Telefonnummer',
+        'notes' => 'Anmerkungen',
+        'consent' => 'Einwilligung zur Speicherung',
+        'locale' => 'Sprache',
+    ],
+
+    'messages' => [
+        'goals.required' => 'Wählen Sie mindestens ein Ziel aus.',
+        'goals.min' => 'Wählen Sie mindestens ein Ziel aus.',
+        'goals.max' => 'Wählen Sie höchstens :max_goals Ziele aus.',
+        'styles.required' => 'Wählen Sie mindestens einen Stil aus.',
+        'styles.min' => 'Wählen Sie mindestens einen Stil aus.',
+        'styles.max' => 'Wählen Sie höchstens :max_styles Stile aus.',
+        'phone.required_if' => 'Bitte geben Sie eine Telefonnummer an, damit ich Sie erreichen kann.',
+        'consent.accepted' => 'Bitte bestätigen Sie, dass ich Ihre Antworten speichern darf, um Ihnen zu antworten.',
+    ],
+];

@@ -79,6 +79,11 @@ class ProjectBrief extends Model
         return BriefOptions::PROJECT_TYPES[$this->project_type] ?? $this->project_type;
     }
 
+    public function localeLabel(): string
+    {
+        return BriefOptions::LOCALES[$this->locale] ?? $this->locale;
+    }
+
     public function budgetLabel(): string
     {
         return BriefOptions::BUDGETS[$this->budget] ?? $this->budget;

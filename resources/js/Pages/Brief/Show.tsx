@@ -5,25 +5,7 @@ import { formatSize } from "@/components/brief/FileDrop";
 import { SiteShell } from "@/components/site/SiteShell";
 import { StatusMessage } from "@/components/site/StatusMessage";
 import { Button } from "@/components/ui/button";
-import {
-  brandAssets,
-  budgets,
-  colourModes,
-  contactMethods,
-  contentReadiness,
-  domainStatus,
-  features,
-  goals,
-  languages,
-  optionLabel,
-  optionLabels,
-  pages,
-  projectTypes,
-  styles,
-  supportOptions,
-  timelines,
-  typography,
-} from "@/lib/brief";
+import { localeNames, optionLabel, optionLabels } from "@/lib/brief";
 import type { ProjectBrief } from "@/types";
 
 type Props = {
@@ -43,7 +25,7 @@ export default function BriefShow({ brief }: Props) {
     router.delete(route("dashboard.briefs.destroy", { projectBrief: brief.id }));
   };
 
-  const languageLabels = optionLabels(languages, brief.languages);
+  const languageLabels = optionLabels("languages", brief.languages);
   if (brief.other_language) languageLabels.push(brief.other_language);
 
   const subject = encodeURIComponent(`Your project brief`);
@@ -80,7 +62,9 @@ export default function BriefShow({ brief }: Props) {
                 <p className="mt-1 text-sm text-muted-foreground">
                   {[brief.company, brief.email].filter(Boolean).join(" · ")}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">Submitted {formatDateTime(brief.created_at)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Submitted {formatDateTime(brief.created_at)} · Form language: {localeNames[brief.locale] ?? brief.locale}
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -112,12 +96,12 @@ export default function BriefShow({ brief }: Props) {
             </div>
 
             <dl className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Fact label="Project" value={optionLabel(projectTypes, brief.project_type)} />
-              <Fact label="Budget" value={optionLabel(budgets, brief.budget)} />
-              <Fact label="Timeline" value={optionLabel(timelines, brief.timeline)} />
+              <Fact label="Project" value={optionLabel("projectTypes", brief.project_type)} />
+              <Fact label="Budget" value={optionLabel("budgets", brief.budget)} />
+              <Fact label="Timeline" value={optionLabel("timelines", brief.timeline)} />
               <Fact
                 label="Reach via"
-                value={`${optionLabel(contactMethods, brief.preferred_contact)}${brief.phone ? ` · ${brief.phone}` : ""}`}
+                value={`${optionLabel("contactMethods", brief.preferred_contact)}${brief.phone ? ` · ${brief.phone}` : ""}`}
               />
             </dl>
           </header>
@@ -128,28 +112,28 @@ export default function BriefShow({ brief }: Props) {
           </Section>
 
           <Section title="Project and goals">
-            <ChipsRow label="Goals" values={optionLabels(goals, brief.goals)} />
+            <ChipsRow label="Goals" values={optionLabels("goals", brief.goals)} />
             <Row label="Ideal customers" value={brief.audience} />
             <Row label="Main visitor action" value={brief.primary_action} />
             <Row label="Competitors" value={brief.competitors} />
           </Section>
 
           <Section title="Scope and content">
-            <ChipsRow label="Pages" values={optionLabels(pages, brief.pages)} />
-            <ChipsRow label="Features" values={optionLabels(features, brief.features)} />
+            <ChipsRow label="Pages" values={optionLabels("pages", brief.pages)} />
+            <ChipsRow label="Features" values={optionLabels("features", brief.features)} />
             <Row label="Extra requirements" value={brief.extra_requirements} />
             <ChipsRow label="Languages" values={languageLabels} />
-            <Row label="Content readiness" value={optionLabel(contentReadiness, brief.content_readiness)} />
-            <Row label="Domain and hosting" value={optionLabel(domainStatus, brief.domain_status)} />
+            <Row label="Content readiness" value={optionLabel("contentReadiness", brief.content_readiness)} />
+            <Row label="Domain and hosting" value={optionLabel("domainStatus", brief.domain_status)} />
           </Section>
 
           <Section title="Brand and design direction">
-            <ChipsRow label="Style and mood" values={optionLabels(styles, brief.styles)} />
+            <ChipsRow label="Style and mood" values={optionLabels("styles", brief.styles)} />
             <Row label="Brand words" value={brief.brand_words} />
             <Row label="Colours" value={brief.colour_preferences} />
-            <Row label="Interface" value={optionLabel(colourModes, brief.colour_mode)} />
-            <Row label="Typography" value={optionLabel(typography, brief.typography)} />
-            <ChipsRow label="Brand assets they have" values={optionLabels(brandAssets, brief.brand_assets)} />
+            <Row label="Interface" value={optionLabel("colourModes", brief.colour_mode)} />
+            <Row label="Typography" value={optionLabel("typography", brief.typography)} />
+            <ChipsRow label="Brand assets they have" values={optionLabels("brandAssets", brief.brand_assets)} />
             <Row label="Uploaded files">
               {brief.attachments.length > 0 && (
                 <ul className="grid gap-2">
@@ -175,7 +159,11 @@ export default function BriefShow({ brief }: Props) {
                   {brief.liked_sites.map((site) => (
                     <li key={site.url} className="text-sm">
                       <SafeLink url={site.url} />
-                      {site.note && <p className="mt-0.5 text-muted-foreground">{site.note}</p>}
+                      {site.note && (
+                        <p dir="auto" className="mt-0.5 text-muted-foreground">
+                          {site.note}
+                        </p>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -186,7 +174,7 @@ export default function BriefShow({ brief }: Props) {
 
           <Section title="Budget, timing and notes">
             <Row label="Deadline or reason" value={brief.deadline_note} />
-            <Row label="Support after launch" value={optionLabel(supportOptions, brief.support)} />
+            <Row label="Support after launch" value={optionLabel("support", brief.support)} />
             <Row label="Anything else" value={brief.notes} />
             <Row label="Consent given" value={formatDateTime(brief.consented_at)} />
           </Section>
@@ -216,7 +204,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 /** A labelled answer. Rows without an answer are hidden so the page stays short. */
 function Row({ label, value, children }: { label: string; value?: string | null; children?: ReactNode }) {
-  const content = children ?? (value ? <p className="whitespace-pre-line text-sm leading-relaxed">{value}</p> : null);
+  const content = children ?? (value ? <p dir="auto" className="whitespace-pre-line text-sm leading-relaxed">{value}</p> : null);
 
   if (!content) return null;
 
