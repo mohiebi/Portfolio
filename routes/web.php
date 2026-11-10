@@ -60,7 +60,9 @@ Route::get('/recommendations', function () {
 })->name('recommendations.public');
 Route::redirect('/recommendations/all', '/recommendations', 301);
 
-Route::get('/brief', [ProjectBriefController::class, 'create'])
+Route::redirect('/brief/en', '/brief', 301);
+Route::get('/brief/{locale?}', [ProjectBriefController::class, 'create'])
+    ->whereIn('locale', ['fa', 'tr', 'de'])
     ->name('brief.create');
 Route::post('/brief', [ProjectBriefController::class, 'store'])
     ->middleware('throttle:briefs')

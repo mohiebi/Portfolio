@@ -1,0 +1,67 @@
+<?php
+
+return [
+    'thank_you' => 'Thank you! Your brief has been sent.',
+
+    /*
+     * Field names used inside validation messages. Keys mirror the rules of
+     * StoreProjectBriefRequest; every language must cover the same keys.
+     */
+    'attributes' => [
+        'name' => 'name',
+        'email' => 'email',
+        'company' => 'company or brand name',
+        'website_url' => 'website',
+        'business_description' => 'business description',
+        'project_type' => 'project type',
+        'goals' => 'goals',
+        'goals.*' => 'goal',
+        'audience' => 'ideal customers',
+        'primary_action' => 'main visitor action',
+        'competitors' => 'competitors',
+        'pages' => 'pages',
+        'pages.*' => 'page',
+        'features' => 'features',
+        'features.*' => 'feature',
+        'extra_requirements' => 'other requirements',
+        'languages' => 'languages',
+        'languages.*' => 'language',
+        'other_language' => 'other language',
+        'content_readiness' => 'content readiness',
+        'domain_status' => 'domain and hosting',
+        'brand_assets' => 'brand assets',
+        'brand_assets.*' => 'brand asset',
+        'attachments' => 'brand files',
+        'attachments.*' => 'brand file',
+        'styles' => 'styles',
+        'styles.*' => 'style',
+        'brand_words' => 'brand words',
+        'colour_preferences' => 'colour preferences',
+        'colour_mode' => 'interface mode',
+        'typography' => 'typography',
+        'liked_sites' => 'sites you like',
+        'liked_sites.*.url' => 'reference site URL',
+        'liked_sites.*.note' => 'reference site note',
+        'disliked_sites' => 'sites you dislike',
+        'budget' => 'budget',
+        'timeline' => 'timeline',
+        'deadline_note' => 'deadline note',
+        'support' => 'support',
+        'preferred_contact' => 'preferred contact method',
+        'phone' => 'phone number',
+        'notes' => 'notes',
+        'consent' => 'privacy consent',
+        'locale' => 'language',
+    ],
+
+    'messages' => [
+        'goals.required' => 'Pick at least one goal.',
+        'goals.min' => 'Pick at least one goal.',
+        'goals.max' => 'Pick up to :max_goals goals.',
+        'styles.required' => 'Pick at least one style.',
+        'styles.min' => 'Pick at least one style.',
+        'styles.max' => 'Pick up to :max_styles styles.',
+        'phone.required_if' => 'Add a phone number so I can reach you.',
+        'consent.accepted' => 'Please confirm that I may store your answers to reply to you.',
+    ],
+];

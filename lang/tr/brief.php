@@ -1,0 +1,67 @@
+<?php
+
+return [
+    'thank_you' => "Teşekkürler! Brief'iniz gönderildi.",
+
+    /*
+     * Field names used inside validation messages. Keys mirror the rules of
+     * StoreProjectBriefRequest; every language must cover the same keys.
+     */
+    'attributes' => [
+        'name' => 'Ad',
+        'email' => 'E-posta',
+        'company' => 'Şirket veya marka adı',
+        'website_url' => 'Web sitesi',
+        'business_description' => 'İşletme açıklaması',
+        'project_type' => 'Proje türü',
+        'goals' => 'Hedefler',
+        'goals.*' => 'Hedef',
+        'audience' => 'İdeal müşteriler',
+        'primary_action' => 'Ana ziyaretçi eylemi',
+        'competitors' => 'Rakipler',
+        'pages' => 'Sayfalar',
+        'pages.*' => 'Sayfa',
+        'features' => 'Özellikler',
+        'features.*' => 'Özellik',
+        'extra_requirements' => 'Diğer gereksinimler',
+        'languages' => 'Diller',
+        'languages.*' => 'Dil',
+        'other_language' => 'Diğer dil',
+        'content_readiness' => 'İçerik hazırlığı',
+        'domain_status' => 'Alan adı ve barındırma',
+        'brand_assets' => 'Marka varlıkları',
+        'brand_assets.*' => 'Marka varlığı',
+        'attachments' => 'Marka dosyaları',
+        'attachments.*' => 'Marka dosyası',
+        'styles' => 'Stiller',
+        'styles.*' => 'Stil',
+        'brand_words' => 'Marka kelimeleri',
+        'colour_preferences' => 'Renk tercihleri',
+        'colour_mode' => 'Arayüz modu',
+        'typography' => 'Tipografi',
+        'liked_sites' => 'Beğenilen siteler',
+        'liked_sites.*.url' => 'Örnek site adresi',
+        'liked_sites.*.note' => 'Örnek site notu',
+        'disliked_sites' => 'Beğenilmeyen siteler',
+        'budget' => 'Bütçe',
+        'timeline' => 'Takvim',
+        'deadline_note' => 'Teslim tarihi notu',
+        'support' => 'Destek',
+        'preferred_contact' => 'İletişim yöntemi',
+        'phone' => 'Telefon numarası',
+        'notes' => 'Notlar',
+        'consent' => 'Saklama onayı',
+        'locale' => 'Dil',
+    ],
+
+    'messages' => [
+        'goals.required' => 'En az bir hedef seçin.',
+        'goals.min' => 'En az bir hedef seçin.',
+        'goals.max' => 'En fazla :max_goals hedef seçin.',
+        'styles.required' => 'En az bir stil seçin.',
+        'styles.min' => 'En az bir stil seçin.',
+        'styles.max' => 'En fazla :max_styles stil seçin.',
+        'phone.required_if' => 'Size ulaşabilmem için bir telefon numarası ekleyin.',
+        'consent.accepted' => 'Lütfen yanıtlarınızı size dönüş yapmak için saklayabileceğimi onaylayın.',
+    ],
+];

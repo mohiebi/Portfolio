@@ -21,9 +21,11 @@ class ProjectBriefController extends Controller
     /** Private disk: brand files are never served from a public URL. */
     private const DISK = 'local';
 
-    public function create(): Response
+    public function create(?string $locale = null): Response
     {
-        return Inertia::render('Brief/Create');
+        return Inertia::render('Brief/Create', [
+            'locale' => $locale ?? BriefOptions::DEFAULT_LOCALE,
+        ]);
     }
 
     public function store(StoreProjectBriefRequest $request): RedirectResponse
@@ -35,7 +37,6 @@ class ProjectBriefController extends Controller
         $brief = ProjectBrief::create([
             ...$request->safe()->except([BriefOptions::SPAM_FIELD, 'consent', 'attachments']),
             'attachments' => [],
-            'locale' => app()->getLocale(),
             'consented_at' => now(),
         ]);
 
@@ -50,7 +51,7 @@ class ProjectBriefController extends Controller
     {
         return Inertia::render('Brief/Index', [
             'briefs' => ProjectBrief::query()
-                ->select(['id', 'name', 'email', 'company', 'project_type', 'budget', 'timeline', 'reviewed_at', 'created_at'])
+                ->select(['id', 'name', 'email', 'company', 'project_type', 'budget', 'timeline', 'locale', 'reviewed_at', 'created_at'])
                 ->latest()
                 ->latest('id')
                 ->paginate(15)
@@ -140,6 +141,6 @@ class ProjectBriefController extends Controller
 
     private function thankYou(): RedirectResponse
     {
-        return back()->with('success', 'Thank you! Your brief has been sent.');
+        return back()->with('success', __('brief.thank_you'));
     }
 }

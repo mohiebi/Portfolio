@@ -1,18 +1,12 @@
 /**
- * Everything the project brief shows to people: steps, questions, option labels,
- * placeholders and examples. The wizard and the admin detail page both read from
- * here, so adding a language later means adding a dictionary, not touching layouts.
+ * The language-independent part of the project brief: the shape of the form, the allowed
+ * answer keys, limits, the step layout and client-side validation.
  *
+ * Everything people read lives in resources/js/lib/briefCopy, one file per language.
  * Option values must match App\Support\BriefOptions on the server.
  */
-
-export type BriefOption = {
-  value: string;
-  label: string;
-  hint?: string;
-  /** Three colours shown as a small preview on style cards. */
-  swatch?: [string, string, string];
-};
+import { briefCopy } from "@/lib/briefCopy";
+import type { BriefCopy, OptionText } from "@/lib/briefCopy/types";
 
 export type BriefLikedSite = { url: string; note: string };
 
@@ -111,143 +105,63 @@ export const emptyBrief: BriefFormData = {
   nickname: "",
 };
 
-export const projectTypes: BriefOption[] = [
-  { value: "new_site", label: "New website", hint: "Starting from scratch" },
-  { value: "redesign", label: "Redesign", hint: "My current site feels outdated" },
-  { value: "landing_page", label: "Landing page", hint: "One focused page for a campaign" },
-  { value: "web_app", label: "Web app / dashboard", hint: "Logins, data, internal tools" },
-  { value: "design_only", label: "UI/UX design only", hint: "Designs, no development" },
-  { value: "unsure", label: "Not sure yet", hint: "Let's figure it out together" },
-];
+/** The answer keys of every choice question, in the order they are shown. */
+export const optionValues = {
+  projectTypes: ["new_site", "redesign", "landing_page", "web_app", "design_only", "unsure"],
+  goals: ["leads", "sell_online", "bookings", "credibility", "explain", "recruit", "replace_outdated", "internal_tool"],
+  pages: ["home", "about", "services", "portfolio", "pricing", "blog", "shop", "booking", "faq", "careers", "contact", "legal"],
+  features: ["forms", "booking", "payments", "accounts", "cms", "newsletter", "search", "analytics_seo", "crm", "chat_ai", "maps"],
+  languages: ["en", "de", "fa", "tr", "other"],
+  contentReadiness: ["ready", "partial", "need_help", "unsure"],
+  domainStatus: ["both", "domain_only", "neither", "unsure"],
+  brandAssets: ["logo", "palette", "fonts", "guidelines", "imagery", "none"],
+  styles: ["minimal", "bold", "premium", "friendly", "corporate", "tech", "editorial", "warm"],
+  colourModes: ["light", "dark", "either"],
+  typography: ["sans", "serif", "mix", "none"],
+  budgets: ["under_3k", "3k_6k", "6k_10k", "10k_20k", "20k_50k", "50k_plus", "unsure"],
+  timelines: ["asap", "1_2_months", "3_6_months", "flexible"],
+  support: ["yes", "maybe", "no"],
+  contactMethods: ["email", "phone", "video"],
+} as const;
 
-export const goals: BriefOption[] = [
-  { value: "leads", label: "More leads / enquiries" },
-  { value: "sell_online", label: "Sell online" },
-  { value: "bookings", label: "Bookings / appointments" },
-  { value: "credibility", label: "Build credibility" },
-  { value: "explain", label: "Explain a product or service" },
-  { value: "recruit", label: "Recruit people" },
-  { value: "replace_outdated", label: "Replace an outdated site" },
-  { value: "internal_tool", label: "Internal tool / automation" },
-];
+export type OptionGroup = keyof typeof optionValues;
+export type OptionValue<G extends OptionGroup> = (typeof optionValues)[G][number];
 
-export const pages: BriefOption[] = [
-  { value: "home", label: "Home" },
-  { value: "about", label: "About" },
-  { value: "services", label: "Services" },
-  { value: "portfolio", label: "Portfolio / case studies" },
-  { value: "pricing", label: "Pricing" },
-  { value: "blog", label: "Blog / news" },
-  { value: "shop", label: "Shop" },
-  { value: "booking", label: "Booking" },
-  { value: "faq", label: "FAQ" },
-  { value: "careers", label: "Careers" },
-  { value: "contact", label: "Contact" },
-  { value: "legal", label: "Legal (Impressum / Privacy)" },
-];
+/** A rough colour hint shown on each style card. */
+export const styleSwatches: Record<string, [string, string, string]> = {
+  minimal: ["#ffffff", "#e5e7eb", "#111827"],
+  bold: ["#ef4444", "#f59e0b", "#3b82f6"],
+  premium: ["#0f0f10", "#8a6d3b", "#e8d9b5"],
+  friendly: ["#fde68a", "#fb7185", "#60a5fa"],
+  corporate: ["#1e3a8a", "#e0e7ff", "#64748b"],
+  tech: ["#0b1220", "#22d3ee", "#34d399"],
+  editorial: ["#faf7f2", "#1f1f1f", "#b45309"],
+  warm: ["#f5ebe0", "#a3b18a", "#bc6c25"],
+};
 
-export const features: BriefOption[] = [
-  { value: "forms", label: "Contact / lead forms" },
-  { value: "booking", label: "Online booking" },
-  { value: "payments", label: "Payments / e-commerce" },
-  { value: "accounts", label: "Customer accounts" },
-  { value: "cms", label: "Blog / CMS editing" },
-  { value: "newsletter", label: "Newsletter" },
-  { value: "search", label: "Search" },
-  { value: "analytics_seo", label: "Analytics & SEO" },
-  { value: "crm", label: "CRM (HubSpot, Pipedrive...)" },
-  { value: "chat_ai", label: "Live chat / AI assistant" },
-  { value: "maps", label: "Maps / locations" },
-];
+export type BriefOption = {
+  value: string;
+  label: string;
+  hint?: string;
+  /** Three colours shown as a small preview on style cards. */
+  swatch?: [string, string, string];
+};
 
-export const languages: BriefOption[] = [
-  { value: "en", label: "English" },
-  { value: "de", label: "German" },
-  { value: "fa", label: "Persian" },
-  { value: "tr", label: "Turkish" },
-  { value: "other", label: "Other" },
-];
+export function buildOptions(group: OptionGroup, copy: BriefCopy): BriefOption[] {
+  const texts = copy.options[group] as Record<string, OptionText>;
 
-export const contentReadiness: BriefOption[] = [
-  { value: "ready", label: "All texts & photos are ready" },
-  { value: "partial", label: "Some are ready, I need help with the rest" },
-  { value: "need_help", label: "I need copywriting and visuals" },
-  { value: "unsure", label: "Not sure" },
-];
+  return (optionValues[group] as readonly string[]).map((value) => ({
+    value,
+    label: texts[value].label,
+    hint: texts[value].hint,
+    swatch: group === "styles" ? styleSwatches[value] : undefined,
+  }));
+}
 
-export const domainStatus: BriefOption[] = [
-  { value: "both", label: "I have both" },
-  { value: "domain_only", label: "Domain only" },
-  { value: "neither", label: "Neither yet" },
-  { value: "unsure", label: "Not sure" },
-];
-
-export const brandAssets: BriefOption[] = [
-  { value: "logo", label: "Logo" },
-  { value: "palette", label: "Colour palette" },
-  { value: "fonts", label: "Fonts" },
-  { value: "guidelines", label: "Brand guidelines" },
-  { value: "imagery", label: "Photos / illustrations" },
-  { value: "none", label: "Nothing yet, I need a brand identity" },
-];
-
-export const styles: BriefOption[] = [
-  { value: "minimal", label: "Minimal & clean", hint: "Whitespace, few elements", swatch: ["#ffffff", "#e5e7eb", "#111827"] },
-  { value: "bold", label: "Bold & colourful", hint: "Strong colour, big type", swatch: ["#ef4444", "#f59e0b", "#3b82f6"] },
-  { value: "premium", label: "Premium / luxury", hint: "Dark, refined, gold accents", swatch: ["#0f0f10", "#8a6d3b", "#e8d9b5"] },
-  { value: "friendly", label: "Friendly & playful", hint: "Rounded, warm, illustrated", swatch: ["#fde68a", "#fb7185", "#60a5fa"] },
-  { value: "corporate", label: "Corporate & trustworthy", hint: "Structured, calm blues", swatch: ["#1e3a8a", "#e0e7ff", "#64748b"] },
-  { value: "tech", label: "Tech / futuristic", hint: "Dark UI, glow, gradients", swatch: ["#0b1220", "#22d3ee", "#34d399"] },
-  { value: "editorial", label: "Editorial / magazine", hint: "Serif headlines, grid", swatch: ["#faf7f2", "#1f1f1f", "#b45309"] },
-  { value: "warm", label: "Warm & organic", hint: "Earth tones, soft shapes", swatch: ["#f5ebe0", "#a3b18a", "#bc6c25"] },
-];
-
-export const colourModes: BriefOption[] = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "either", label: "Either" },
-];
-
-export const typography: BriefOption[] = [
-  { value: "sans", label: "Modern sans-serif", hint: "Clean and neutral" },
-  { value: "serif", label: "Classic serif", hint: "Elegant and editorial" },
-  { value: "mix", label: "A mix of both", hint: "Serif headings, sans text" },
-  { value: "none", label: "No preference" },
-];
-
-export const budgets: BriefOption[] = [
-  { value: "under_3k", label: "Under $3K" },
-  { value: "3k_6k", label: "$3K - $6K" },
-  { value: "6k_10k", label: "$6K - $10K" },
-  { value: "10k_20k", label: "$10K - $20K" },
-  { value: "20k_50k", label: "$20K - $50K" },
-  { value: "50k_plus", label: "$50K+" },
-  { value: "unsure", label: "Not sure yet" },
-];
-
-export const timelines: BriefOption[] = [
-  { value: "asap", label: "As soon as possible", hint: "Less than 1 month" },
-  { value: "1_2_months", label: "1 - 2 months" },
-  { value: "3_6_months", label: "3 - 6 months" },
-  { value: "flexible", label: "Flexible" },
-];
-
-export const supportOptions: BriefOption[] = [
-  { value: "yes", label: "Yes, ongoing care" },
-  { value: "maybe", label: "Maybe" },
-  { value: "no", label: "No" },
-];
-
-export const contactMethods: BriefOption[] = [
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone / WhatsApp" },
-  { value: "video", label: "Video call" },
-];
+export type StepId = "about" | "project" | "scope" | "design" | "budget";
 
 export type BriefStep = {
-  id: string;
-  title: string;
-  description: string;
+  id: StepId;
   /** Form fields (and server error keys) that live on this step. */
   fields: Array<keyof BriefFormData>;
 };
@@ -255,20 +169,14 @@ export type BriefStep = {
 export const briefSteps: BriefStep[] = [
   {
     id: "about",
-    title: "About you",
-    description: "Who you are and what your business does.",
     fields: ["name", "email", "company", "website_url", "business_description"],
   },
   {
     id: "project",
-    title: "Project & goals",
-    description: "What you need and what success looks like.",
     fields: ["project_type", "goals", "audience", "primary_action", "competitors"],
   },
   {
     id: "scope",
-    title: "Scope & content",
-    description: "Pages, features, languages and what you already have.",
     fields: [
       "pages",
       "features",
@@ -281,8 +189,6 @@ export const briefSteps: BriefStep[] = [
   },
   {
     id: "design",
-    title: "Brand & design",
-    description: "The look and feel you are aiming for.",
     fields: [
       "brand_assets",
       "attachments",
@@ -297,8 +203,6 @@ export const briefSteps: BriefStep[] = [
   },
   {
     id: "budget",
-    title: "Budget & contact",
-    description: "Budget, timing and how to reach you.",
     fields: [
       "budget",
       "timeline",
@@ -320,14 +224,32 @@ export function stepIndexForField(key: string): number {
   return index === -1 ? 0 : index;
 }
 
-export function optionLabel(options: BriefOption[], value: string | null | undefined): string {
+// The owner reads briefs in English, whatever language the client used.
+const ownerCopy = briefCopy("en");
+
+export function optionLabel(group: OptionGroup, value: string | null | undefined): string {
   if (!value) return "";
 
-  return options.find((option) => option.value === value)?.label ?? value;
+  return (ownerCopy.options[group] as Record<string, OptionText>)[value]?.label ?? value;
 }
 
-export function optionLabels(options: BriefOption[], values: string[] | null | undefined): string[] {
-  return (values ?? []).map((value) => optionLabel(options, value));
+export function optionLabels(group: OptionGroup, values: string[] | null | undefined): string[] {
+  return (values ?? []).map((value) => optionLabel(group, value));
+}
+
+/** English names of the brief languages, for the admin pages. */
+export const localeNames: Record<string, string> = {
+  en: "English",
+  fa: "Persian",
+  tr: "Turkish",
+  de: "German",
+};
+
+/** Persian and Arabic-Indic digits to ASCII, so a phone number typed on a Persian keyboard is valid. */
+export function normalizeDigits(value: string): string {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0))
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660));
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -336,37 +258,35 @@ const PHONE_PATTERN = /^[0-9+().\-\s]{6,40}$/;
 export type BriefErrors = Partial<Record<keyof BriefFormData | string, string>>;
 
 /** Client-side check of one step, mirroring the required rules of StoreProjectBriefRequest. */
-export function validateBriefStep(stepIndex: number, data: BriefFormData): BriefErrors {
+export function validateBriefStep(stepIndex: number, data: BriefFormData, messages: BriefCopy["errors"]): BriefErrors {
   const errors: BriefErrors = {};
 
   switch (briefSteps[stepIndex]?.id) {
     case "about":
-      if (!data.name.trim()) errors.name = "Please tell me your name.";
-      if (!data.email.trim()) errors.email = "Please add your email address.";
-      else if (!EMAIL_PATTERN.test(data.email.trim())) errors.email = "That email address does not look right.";
-      if (data.business_description.trim().length < 10) {
-        errors.business_description = "A sentence or two about your business helps a lot (at least 10 characters).";
-      }
+      if (!data.name.trim()) errors.name = messages.nameRequired;
+      if (!data.email.trim()) errors.email = messages.emailRequired;
+      else if (!EMAIL_PATTERN.test(data.email.trim())) errors.email = messages.emailInvalid;
+      if (data.business_description.trim().length < 10) errors.business_description = messages.descriptionShort;
       break;
     case "project":
-      if (!data.project_type) errors.project_type = "Pick the option that fits best.";
-      if (data.goals.length === 0) errors.goals = "Pick at least one goal.";
-      if (data.audience.trim().length < 10) {
-        errors.audience = "Describe your ideal customers in a sentence or two (at least 10 characters).";
-      }
+      if (!data.project_type) errors.project_type = messages.projectType;
+      if (data.goals.length === 0) errors.goals = messages.goals;
+      if (data.audience.trim().length < 10) errors.audience = messages.audienceShort;
       break;
     case "design":
-      if (data.styles.length === 0) errors.styles = "Pick at least one style.";
+      if (data.styles.length === 0) errors.styles = messages.styles;
       break;
     case "budget":
-      if (!data.budget) errors.budget = "Pick a budget range, or choose \"Not sure yet\".";
-      if (!data.timeline) errors.timeline = "Pick a timeline.";
-      if (!data.preferred_contact) errors.preferred_contact = "Pick how you would like me to reach you.";
+      if (!data.budget) errors.budget = messages.budget;
+      if (!data.timeline) errors.timeline = messages.timeline;
+      if (!data.preferred_contact) errors.preferred_contact = messages.contact;
       if (data.preferred_contact === "phone") {
-        if (!data.phone.trim()) errors.phone = "Add a phone number so I can reach you.";
-        else if (!PHONE_PATTERN.test(data.phone.trim())) errors.phone = "Use digits, spaces and + ( ) - only.";
+        const phone = normalizeDigits(data.phone.trim());
+
+        if (!phone) errors.phone = messages.phoneRequired;
+        else if (!PHONE_PATTERN.test(phone)) errors.phone = messages.phoneInvalid;
       }
-      if (!data.consent) errors.consent = "Please confirm that I may store your answers to reply to you.";
+      if (!data.consent) errors.consent = messages.consent;
       break;
     default:
       break;

@@ -196,6 +196,7 @@ export type ProjectBriefSummary = {
   timeline: string;
   reviewed_at: string | null;
   created_at: string;
+  locale: string;
 };
 
 export type ProjectBriefAttachment = {

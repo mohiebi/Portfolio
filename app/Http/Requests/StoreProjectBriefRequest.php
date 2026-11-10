@@ -96,28 +96,21 @@ class StoreProjectBriefRequest extends FormRequest
             'notes' => ['nullable', 'string', 'max:3000'],
             'consent' => ['accepted'],
 
+            'locale' => ['required', Rule::in(BriefOptions::locales())],
+
             // Honeypot: real visitors never see or fill this field.
             BriefOptions::SPAM_FIELD => ['nullable', 'string'],
         ];
     }
 
     /**
+     * Field names used in error messages, in the language of the form being filled out.
+     *
      * @return array<string, string>
      */
     public function attributes(): array
     {
-        return [
-            'business_description' => 'business description',
-            'project_type' => 'project type',
-            'website_url' => 'website',
-            'audience' => 'ideal customers',
-            'primary_action' => 'main visitor action',
-            'liked_sites.*.url' => 'reference site URL',
-            'liked_sites.*.note' => 'reference site note',
-            'preferred_contact' => 'preferred contact method',
-            'consent' => 'privacy consent',
-            'attachments.*' => 'brand file',
-        ];
+        return (array) trans('brief.attributes');
     }
 
     /**
@@ -125,20 +118,27 @@ class StoreProjectBriefRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'goals.required' => 'Pick at least one goal.',
-            'goals.min' => 'Pick at least one goal.',
-            'goals.max' => 'Pick up to '.BriefOptions::MAX_GOALS.' goals.',
-            'styles.required' => 'Pick at least one style.',
-            'styles.min' => 'Pick at least one style.',
-            'styles.max' => 'Pick up to '.BriefOptions::MAX_STYLES.' styles.',
-            'phone.required_if' => 'Add a phone number so I can reach you.',
-            'consent.accepted' => 'Please confirm that I may store your answers to reply to you.',
+        $limits = [
+            ':max_goals' => (string) BriefOptions::MAX_GOALS,
+            ':max_styles' => (string) BriefOptions::MAX_STYLES,
         ];
+
+        return array_map(
+            fn (string $message): string => strtr($message, $limits),
+            (array) trans('brief.messages'),
+        );
     }
 
     protected function prepareForValidation(): void
     {
+        $locale = $this->input('locale');
+        $locale = is_string($locale) && in_array($locale, BriefOptions::locales(), true)
+            ? $locale
+            : BriefOptions::DEFAULT_LOCALE;
+
+        // Validation errors come back in the language the visitor is reading.
+        app()->setLocale($locale);
+
         $lists = [];
 
         foreach (self::LIST_FIELDS as $field) {
@@ -147,8 +147,27 @@ class StoreProjectBriefRequest extends FormRequest
 
         $this->merge([
             ...$lists,
+            'locale' => $locale,
+            'phone' => $this->withAsciiDigits($this->input('phone')),
             'website_url' => $this->withScheme($this->input('website_url')),
             'liked_sites' => $this->normalisedLikedSites(),
+        ]);
+    }
+
+    /**
+     * Persian keyboards type Persian and Arabic-Indic digits, which the phone rule would reject.
+     */
+    private function withAsciiDigits(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return strtr($value, [
+            '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
+            '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
         ]);
     }
 

@@ -16,13 +16,21 @@ class Seo
 
     private const DEFAULT_DESCRIPTION = 'Backend-focused Full-Stack Engineer with 3+ years delivering production systems across fintech, blockchain, and AI-integrated platforms.';
 
+    private const OG_LOCALES = [
+        'en' => 'en_US',
+        'de' => 'de_DE',
+        'fa' => 'fa_IR',
+        'tr' => 'tr_TR',
+    ];
+
     public static function page(?Request $request = null): array
     {
         $request ??= request();
         $locale = self::locale($request);
         $path = trim($request->path(), '/');
         $canonicalPath = self::canonicalPath($path);
-        $canonical = self::url($canonicalPath, $locale === 'de' ? ['lang' => 'de'] : []);
+        $isBrief = $request->routeIs('brief.create');
+        $canonical = self::url($canonicalPath, ! $isBrief && $locale === 'de' ? ['lang' => 'de'] : []);
         $plainTitle = self::plainTitle($request, $locale);
         $description = self::description($request, $locale);
         $image = self::image($request);
@@ -34,14 +42,14 @@ class Seo
             'plainTitle' => $plainTitle,
             'description' => $description,
             'canonical' => $canonical,
-            'alternates' => [
+            'alternates' => $isBrief ? self::briefAlternates() : [
                 'en' => self::url($canonicalPath),
                 'de' => self::url($canonicalPath, ['lang' => 'de']),
                 'x-default' => self::url($canonicalPath),
             ],
             'robots' => $robots,
             'locale' => $locale,
-            'ogLocale' => $locale === 'de' ? 'de_DE' : 'en_US',
+            'ogLocale' => self::OG_LOCALES[$locale] ?? 'en_US',
             'type' => $request->routeIs('articles.public.show') ? 'article' : 'website',
             'image' => $image,
             'imageAlt' => $plainTitle,
@@ -59,6 +67,9 @@ class Seo
             self::sitemapEntry('/articles', 'weekly', '0.8'),
             self::sitemapEntry('/recommendations', 'monthly', '0.7'),
             self::sitemapEntry('/brief', 'monthly', '0.7'),
+            self::sitemapEntry('/brief/fa', 'monthly', '0.6'),
+            self::sitemapEntry('/brief/tr', 'monthly', '0.6'),
+            self::sitemapEntry('/brief/de', 'monthly', '0.6'),
             self::sitemapEntry('/taskmanager', 'monthly', '0.5'),
         ]);
 
@@ -132,6 +143,9 @@ class Seo
             'case-studies' => 'Case Study Library',
             'recommendations', 'recommendations/all' => 'LinkedIn Recommendations',
             'brief' => 'Project Brief',
+            'brief/fa' => 'فرم بریف پروژه',
+            'brief/tr' => 'Proje Brief Formu',
+            'brief/de' => 'Projekt-Briefing',
             'taskmanager' => 'TaskManager Project',
             default => self::fallbackTitle($request),
         };
@@ -162,6 +176,9 @@ class Seo
             'case-studies' => 'Selected engineering case studies across backend architecture, Laravel, Symfony, Vue, Node.js, Web3, AI integrations, and production modernization.',
             'recommendations', 'recommendations/all' => 'Full LinkedIn recommendations from people who have worked with Mohi across engineering, product, and delivery.',
             'brief' => 'Tell me about your website or UI/UX project in a few short steps: goals, audience, content, design direction, budget and timeline.',
+            'brief/fa' => 'پروژه‌ی وب‌سایت یا طراحی رابط و تجربه‌ی کاربری‌تان را در چند مرحله‌ی کوتاه شرح دهید: هدف‌ها، مخاطبان، محتوا، سبک طراحی، بودجه و زمان‌بندی.',
+            'brief/tr' => 'Web siteniz veya UI/UX projenizi birkaç kısa adımda anlatın: hedefler, hedef kitle, içerik, tasarım yönü, bütçe ve takvim.',
+            'brief/de' => 'Beschreiben Sie Ihr Website- oder UI/UX-Projekt in wenigen kurzen Schritten: Ziele, Zielgruppe, Inhalte, Designrichtung, Budget und Zeitplan.',
             'taskmanager' => 'A focused Laravel and Inertia task manager demo with authenticated user workflows, subtasks, and status tracking.',
             default => self::DEFAULT_DESCRIPTION,
         };
@@ -384,7 +401,26 @@ class Seo
 
     private static function locale(Request $request): string
     {
+        // The brief has a real page per language, so the route decides, not ?lang=.
+        if ($request->routeIs('brief.create')) {
+            return $request->route('locale') ?? BriefOptions::DEFAULT_LOCALE;
+        }
+
         return $request->query('lang') === 'de' ? 'de' : 'en';
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function briefAlternates(): array
+    {
+        return [
+            'en' => self::url('/brief'),
+            'fa' => self::url('/brief/fa'),
+            'tr' => self::url('/brief/tr'),
+            'de' => self::url('/brief/de'),
+            'x-default' => self::url('/brief'),
+        ];
     }
 
     private static function url(string $path, array $query = []): string

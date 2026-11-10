@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useBrief } from "@/components/brief/BriefProvider";
 import { Label } from "@/components/ui/label";
 
 type FieldProps = {
@@ -14,6 +15,7 @@ type FieldProps = {
 };
 
 export function Field({ id, label, required = false, hint, error, group = false, children }: FieldProps) {
+  const { copy } = useBrief();
   const labelContent = (
     <>
       {label}
@@ -22,7 +24,7 @@ export function Field({ id, label, required = false, hint, error, group = false,
           *
         </span>
       )}
-      {required && <span className="sr-only"> (required)</span>}
+      {required && <span className="sr-only">{copy.common.required}</span>}
     </>
   );
 

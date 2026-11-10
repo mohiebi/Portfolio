@@ -24,6 +24,20 @@ final class BriefOptions
 
     public const ATTACHMENT_TYPES = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'pdf'];
 
+    public const DEFAULT_LOCALE = 'en';
+
+    /**
+     * Languages the brief form is available in, with the English name shown to the owner.
+     *
+     * @var array<string, string>
+     */
+    public const LOCALES = [
+        'en' => 'English',
+        'fa' => 'Persian',
+        'tr' => 'Turkish',
+        'de' => 'German',
+    ];
+
     /** @var array<string, string> */
     public const PROJECT_TYPES = [
         'new_site' => 'New website',
@@ -126,6 +140,14 @@ final class BriefOptions
 
     /** @var list<string> */
     public const CONTACT_METHODS = ['email', 'phone', 'video'];
+
+    /**
+     * @return list<string>
+     */
+    public static function locales(): array
+    {
+        return array_keys(self::LOCALES);
+    }
 
     /**
      * @return list<string>

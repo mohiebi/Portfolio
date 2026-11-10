@@ -1,4 +1,5 @@
 import { Plus, X } from "lucide-react";
+import { useBrief } from "@/components/brief/BriefProvider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { BriefLikedSite } from "@/lib/brief";
@@ -13,6 +14,8 @@ type LikedSitesProps = {
 };
 
 export function LikedSites({ baseId, rows, max, errors, onChange }: LikedSitesProps) {
+  const { copy, n } = useBrief();
+
   const update = (index: number, patch: Partial<BriefLikedSite>) => {
     onChange(rows.map((row, current) => (current === index ? { ...row, ...patch } : row)));
   };
@@ -28,6 +31,7 @@ export function LikedSites({ baseId, rows, max, errors, onChange }: LikedSitesPr
         const urlError = errors[`liked_sites.${index}.url`];
         const noteError = errors[`liked_sites.${index}.note`];
         const canRemove = rows.length > 1 || row.url !== "" || row.note !== "";
+        const position = n(index + 1);
 
         return (
           <div key={index} className="grid gap-2 rounded-xl border border-border bg-background/40 p-3 sm:grid-cols-[1fr_1.4fr_auto] sm:items-start">
@@ -36,9 +40,10 @@ export function LikedSites({ baseId, rows, max, errors, onChange }: LikedSitesPr
                 id={`${baseId}-${index}-url`}
                 type="text"
                 inputMode="url"
-                aria-label={`Site ${index + 1} address`}
+                dir="ltr"
+                aria-label={copy.likedSites.addressLabel(position)}
                 aria-invalid={urlError ? true : undefined}
-                placeholder="https://linear.app"
+                placeholder={copy.likedSites.urlPlaceholder}
                 value={row.url}
                 onChange={(event) => update(index, { url: event.target.value })}
               />
@@ -51,9 +56,9 @@ export function LikedSites({ baseId, rows, max, errors, onChange }: LikedSitesPr
             <div className="grid gap-1">
               <Input
                 id={`${baseId}-${index}-note`}
-                aria-label={`What you like about site ${index + 1}`}
+                aria-label={copy.likedSites.noteLabel(position)}
                 aria-invalid={noteError ? true : undefined}
-                placeholder="Clean layout, smooth animations"
+                placeholder={copy.likedSites.notePlaceholder}
                 value={row.note}
                 onChange={(event) => update(index, { note: event.target.value })}
               />
@@ -67,7 +72,7 @@ export function LikedSites({ baseId, rows, max, errors, onChange }: LikedSitesPr
               type="button"
               onClick={() => remove(index)}
               disabled={!canRemove}
-              aria-label={`Remove site ${index + 1}`}
+              aria-label={copy.likedSites.remove(position)}
               className="grid h-10 w-10 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-30"
             >
               <X className="h-4 w-4" aria-hidden="true" />
@@ -84,7 +89,7 @@ export function LikedSites({ baseId, rows, max, errors, onChange }: LikedSitesPr
           className="justify-self-start"
           onClick={() => onChange([...rows, { url: "", note: "" }])}
         >
-          <Plus className="me-2 h-4 w-4" aria-hidden="true" /> Add another site
+          <Plus className="me-2 h-4 w-4" aria-hidden="true" /> {copy.likedSites.add}
         </Button>
       )}
     </div>

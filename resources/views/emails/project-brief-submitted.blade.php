@@ -6,6 +6,7 @@
         'Budget' => $brief->budgetLabel(),
         'Timeline' => str_replace('_', ' ', $brief->timeline),
         'Contact via' => $brief->preferred_contact.($brief->phone ? ' ('.$brief->phone.')' : ''),
+        'Language' => $brief->localeLabel(),
     ]);
 @endphp
 <x-email.layout product="Project Brief" footer="You're receiving this because someone submitted the project brief on your portfolio.">
