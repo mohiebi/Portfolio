@@ -58,6 +58,7 @@ class Seo
             self::sitemapEntry('/case-studies', 'weekly', '0.8'),
             self::sitemapEntry('/articles', 'weekly', '0.8'),
             self::sitemapEntry('/recommendations', 'monthly', '0.7'),
+            self::sitemapEntry('/brief', 'monthly', '0.7'),
             self::sitemapEntry('/taskmanager', 'monthly', '0.5'),
         ]);
 
@@ -130,6 +131,7 @@ class Seo
             'articles' => 'Technical Articles',
             'case-studies' => 'Case Study Library',
             'recommendations', 'recommendations/all' => 'LinkedIn Recommendations',
+            'brief' => 'Project Brief',
             'taskmanager' => 'TaskManager Project',
             default => self::fallbackTitle($request),
         };
@@ -159,6 +161,7 @@ class Seo
             'articles' => 'Practical writing about backend systems, Laravel, architecture, production debugging, and full-stack delivery.',
             'case-studies' => 'Selected engineering case studies across backend architecture, Laravel, Symfony, Vue, Node.js, Web3, AI integrations, and production modernization.',
             'recommendations', 'recommendations/all' => 'Full LinkedIn recommendations from people who have worked with Mohi across engineering, product, and delivery.',
+            'brief' => 'Tell me about your website or UI/UX project in a few short steps: goals, audience, content, design direction, budget and timeline.',
             'taskmanager' => 'A focused Laravel and Inertia task manager demo with authenticated user workflows, subtasks, and status tracking.',
             default => self::DEFAULT_DESCRIPTION,
         };

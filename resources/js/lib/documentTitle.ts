@@ -49,6 +49,10 @@ export function titleFromInertiaPage(page: PageLike, locale: Locale) {
   if (component === "Recommendations/Create") return "New Recommendation";
   if (component === "Recommendations/Edit") return "Edit Recommendation";
 
+  if (component === "Brief/Create") return "Project Brief";
+  if (component === "Brief/Index") return "Project Briefs";
+  if (component === "Brief/Show") return suffix(text(propRecord(props, "brief"), "name"), "Project Brief");
+
   if (component === "Services/PublicIndex") return "Service Packages";
   if (component === "Services/PublicShow") return suffix(text(service, "name"), locale === "de" ? "Leistungen" : "Services");
   if (component === "Services/Index") return "Manage Services";

@@ -17,6 +17,7 @@ const portfolioNav: NavItem[] = [
   { label: "About", href: "/#about", sectionId: "about" },
   { label: "Articles", href: "/#articles", sectionId: "articles" },
   { label: "Contact", href: "/#contact", sectionId: "contact" },
+  { label: "Project Brief", to: "/brief" },
 ];
 
 function isProductContext(pathname: string) {

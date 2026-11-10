@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from "@inertiajs/react";
-import { AlarmClock, AlertTriangle, Bell, CalendarClock } from "lucide-react";
+import { AlarmClock, AlertTriangle, Bell, CalendarClock, ClipboardList } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
 import type { DatabaseNotification, PageProps, PaginatedData } from "@/types";
 
@@ -107,6 +107,23 @@ function notificationContent(notification: DatabaseNotification) {
           {label}:{" "}
           <Link href={href} className="font-semibold text-primary hover:underline">
             {data.title ?? "Untitled task"}
+          </Link>
+        </span>
+      ),
+    };
+  }
+
+  if (notification.type === "App\\Notifications\\ProjectBriefSubmitted") {
+    const data = notification.data as { name?: string; url?: string };
+
+    return {
+      icon: ClipboardList,
+      iconClass: "bg-primary/15 text-primary",
+      content: (
+        <span>
+          New project brief from{" "}
+          <Link href={data.url ?? "/dashboard/briefs"} className="font-semibold text-primary hover:underline">
+            {data.name ?? "a visitor"}
           </Link>
         </span>
       ),

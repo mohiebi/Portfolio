@@ -6,6 +6,7 @@ use App\Http\Controllers\CaseStudyController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProjectBriefController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\TaskArchiveController;
@@ -59,6 +60,12 @@ Route::get('/recommendations', function () {
 })->name('recommendations.public');
 Route::redirect('/recommendations/all', '/recommendations', 301);
 
+Route::get('/brief', [ProjectBriefController::class, 'create'])
+    ->name('brief.create');
+Route::post('/brief', [ProjectBriefController::class, 'store'])
+    ->middleware('throttle:briefs')
+    ->name('brief.store');
+
 Route::get('/dashboard', function () {
     $packageSlugs = [
         'launch-sprint',
@@ -106,6 +113,15 @@ Route::middleware(['auth', 'admin'])->prefix('dashboard')->name('dashboard.')->g
         ->except(['show']);
     Route::resource('services', ServiceController::class)
         ->except(['show']);
+
+    Route::resource('briefs', ProjectBriefController::class)
+        ->only(['index', 'show', 'destroy'])
+        ->parameters(['briefs' => 'projectBrief']);
+    Route::patch('briefs/{projectBrief}/reviewed', [ProjectBriefController::class, 'toggleReviewed'])
+        ->name('briefs.reviewed');
+    Route::get('briefs/{projectBrief}/attachments/{index}', [ProjectBriefController::class, 'downloadAttachment'])
+        ->whereNumber('index')
+        ->name('briefs.attachments.show');
 });
 
 require __DIR__.'/auth.php';
