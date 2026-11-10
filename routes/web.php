@@ -132,6 +132,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('notification', [NotificationController::class, 'index'])
         ->name('notification.index');
+    Route::put('notification/seen-all', [NotificationController::class, 'markAllAsRead'])
+        ->name('notification.seen-all');
     Route::put('notification/{notification}/seen', [NotificationController::class, 'markAsRead'])
         ->name('notification.seen');
 });

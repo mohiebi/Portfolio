@@ -1,19 +1,35 @@
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import { AlarmClock, AlertTriangle, Bell, CalendarClock } from "lucide-react";
 import { SiteShell, PageHeader, EmptyState } from "@/components/site/SiteShell";
-import type { DatabaseNotification, PaginatedData } from "@/types";
+import type { DatabaseNotification, PageProps, PaginatedData } from "@/types";
 
 interface Props {
   notifications: PaginatedData<DatabaseNotification>;
 }
 
 export default function NotificationIndex({ notifications }: Props) {
+  const { auth } = usePage<PageProps>().props;
+  const unreadCount = auth.user?.unread_notifications_count ?? 0;
+
   return (
     <SiteShell>
       <Head title="Notifications" />
       <PageHeader eyebrow="Activity" title="Your notifications" />
 
       <section className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+        {unreadCount > 0 && (
+          <div className="mb-3 flex justify-end">
+            <Link
+              href={route("notification.seen-all")}
+              method="put" as="button"
+              preserveScroll
+              className="rounded-md border border-border px-3 py-1 text-xs font-medium uppercase hover:bg-accent"
+            >
+              Mark all as read
+            </Link>
+          </div>
+        )}
+
         {notifications.data.length === 0 ? (
           <EmptyState icon={Bell} title="No notifications" description="Task reminders and project activity will appear here." />
         ) : (
