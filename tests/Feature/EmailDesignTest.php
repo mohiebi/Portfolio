@@ -28,9 +28,18 @@ class EmailDesignTest extends TestCase
             ])->render(),
             view('emails.task-deadline-reminder', [
                 'deadlineDate' => 'July 18, 2026',
-                'isSubtask' => false,
-                'taskTitle' => 'Finish the email design',
-                'taskUrl' => 'https://example.com/task',
+                'tasks' => [
+                    ['title' => 'Finish the email design', 'url' => 'https://example.com/task', 'isSubtask' => false, 'parentTitle' => null],
+                ],
+                'indexUrl' => 'https://example.com/taskmanager',
+            ])->render(),
+            view('emails.task-deadline-reminder', [
+                'deadlineDate' => 'July 18, 2026',
+                'tasks' => [
+                    ['title' => 'Finish the email design', 'url' => 'https://example.com/task', 'isSubtask' => false, 'parentTitle' => null],
+                    ['title' => 'Review the copy', 'url' => 'https://example.com/task/2', 'isSubtask' => true, 'parentTitle' => 'Launch'],
+                ],
+                'indexUrl' => 'https://example.com/taskmanager',
             ])->render(),
         ];
 

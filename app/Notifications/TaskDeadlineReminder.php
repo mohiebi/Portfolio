@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\Task;
-use App\Notifications\Channels\ResendChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
@@ -12,43 +11,23 @@ class TaskDeadlineReminder extends Notification
     use Queueable;
 
     public const STAGE_WARNING = 'warning';
+
     public const STAGE_DUE = 'due';
+
     public const STAGE_OVERDUE = 'overdue';
 
     public function __construct(
         private Task $task,
         private string $stage,
-    ) {}
-
-    public function via(object $notifiable): array
-    {
-        $channels = ['database'];
-
-        if ($this->stage === self::STAGE_DUE) {
-            $channels[] = ResendChannel::class;
-        }
-
-        return $channels;
+    ) {
     }
 
     /**
-     * @return array<string, mixed>
+     * Emails for tasks due today are grouped per user by TaskDueDigest.
      */
-    public function toResend(object $notifiable): array
+    public function via(object $notifiable): array
     {
-        $payload = $this->reminderPayload();
-
-        return [
-            'from' => 'Mohi Portfolio <info@mohiebi.com>',
-            'to' => [$notifiable->email],
-            'subject' => "Task due today: {$this->task->title}",
-            'html' => view('emails.task-deadline-reminder', [
-                'taskTitle' => $this->task->title,
-                'deadlineDate' => $payload['deadline_date'],
-                'taskUrl' => url($payload['url']),
-                'isSubtask' => $this->task->parent_id !== null,
-            ])->render(),
-        ];
+        return ['database'];
     }
 
     /**

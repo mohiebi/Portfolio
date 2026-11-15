@@ -5,15 +5,22 @@ namespace Tests\Feature;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskDeadlineReminder;
+use App\Services\TaskDeadlineReminderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Mockery;
 use Resend\Laravel\Facades\Resend;
+use RuntimeException;
 use Tests\TestCase;
 
 class TaskDeadlineReminderTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * @var list<array<string, mixed>>
+     */
+    private array $sentEmails = [];
 
     protected function tearDown(): void
     {
@@ -66,6 +73,124 @@ class TaskDeadlineReminderTest extends TestCase
         $this->assertNotNull($warningTask->fresh()->deadline_warning_reminded_at);
         $this->assertNotNull($dueTask->fresh()->deadline_due_reminded_at);
         $this->assertNotNull($overdueTask->fresh()->deadline_overdue_reminded_at);
+
+        $this->assertCount(1, $this->sentEmails);
+        $this->assertSame('Task due today: Today task', $this->sentEmails[0]['subject']);
+        $this->assertStringContainsString('Today task', $this->sentEmails[0]['html']);
+        $this->assertStringNotContainsString('Tomorrow task', $this->sentEmails[0]['html']);
+        $this->assertStringNotContainsString('Expired task', $this->sentEmails[0]['html']);
+    }
+
+    public function test_all_tasks_due_today_are_grouped_into_a_single_email(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(1);
+
+        $user = $this->reminderUser();
+        $parent = Task::factory()->for($user)->create([
+            'title' => 'Record GTA V',
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+            'deadline' => null,
+        ]);
+        $dueTasks = collect([
+            Task::factory()->for($user)->create([
+                'title' => 'Fix <b>escaping</b>',
+                'complete' => false,
+                'status' => Task::STATUS_OPEN,
+                'deadline' => now(),
+            ]),
+            Task::factory()->for($user)->create([
+                'title' => 'Studio checks',
+                'complete' => false,
+                'status' => Task::STATUS_OPEN,
+                'deadline' => now(),
+            ]),
+            Task::factory()->for($user)->create([
+                'parent_id' => $parent->id,
+                'title' => 'Swamp scene',
+                'complete' => false,
+                'status' => Task::STATUS_OPEN,
+                'deadline' => now(),
+            ]),
+        ]);
+
+        $this->artisan('tasks:send-deadline-reminders')
+            ->expectsOutputToContain('Sent 3 task deadline reminder(s).')
+            ->assertExitCode(0);
+
+        $this->assertCount(1, $this->sentEmails);
+
+        $email = $this->sentEmails[0];
+
+        $this->assertSame([$user->email], $email['to']);
+        $this->assertSame('3 tasks due today', $email['subject']);
+        $this->assertStringContainsString('3 tasks are due today', $email['html']);
+        $this->assertStringContainsString('Fix &lt;b&gt;escaping&lt;/b&gt;', $email['html']);
+        $this->assertStringContainsString('Studio checks', $email['html']);
+        $this->assertStringContainsString('Swamp scene', $email['html']);
+        $this->assertStringContainsString('Subtask of Record GTA V', $email['html']);
+        $this->assertStringContainsString(route('taskmanager.show', ['taskmanager' => $parent->id]), $email['html']);
+        $this->assertStringContainsString(route('taskmanager.index'), $email['html']);
+
+        $this->assertSame(3, $user->notifications()->count());
+        $dueTasks->each(fn (Task $task) => $this->assertNotNull($task->fresh()->deadline_due_reminded_at));
+    }
+
+    public function test_each_user_receives_their_own_grouped_email(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+        $this->expectResendEmails(2);
+
+        $firstUser = $this->reminderUser();
+        $secondUser = $this->reminderUser();
+
+        foreach ([[$firstUser, 'First A'], [$firstUser, 'First B'], [$secondUser, 'Second A'], [$secondUser, 'Second B']] as [$user, $title]) {
+            Task::factory()->for($user)->create([
+                'title' => $title,
+                'complete' => false,
+                'status' => Task::STATUS_OPEN,
+                'deadline' => now(),
+            ]);
+        }
+
+        $this->artisan('tasks:send-deadline-reminders')->assertExitCode(0);
+
+        $emailsByRecipient = collect($this->sentEmails)->keyBy(fn (array $email) => $email['to'][0]);
+
+        $this->assertCount(2, $emailsByRecipient);
+        $this->assertStringContainsString('First A', $emailsByRecipient[$firstUser->email]['html']);
+        $this->assertStringContainsString('First B', $emailsByRecipient[$firstUser->email]['html']);
+        $this->assertStringNotContainsString('Second', $emailsByRecipient[$firstUser->email]['html']);
+        $this->assertStringContainsString('Second A', $emailsByRecipient[$secondUser->email]['html']);
+        $this->assertStringContainsString('Second B', $emailsByRecipient[$secondUser->email]['html']);
+        $this->assertStringNotContainsString('First', $emailsByRecipient[$secondUser->email]['html']);
+    }
+
+    public function test_tasks_stay_unreminded_when_the_grouped_email_fails_to_send(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-07-12 09:00:00'));
+
+        $emails = Mockery::mock();
+        $emails->shouldReceive('send')->once()->andThrow(new RuntimeException('Resend is down'));
+        Resend::shouldReceive('emails')->once()->andReturn($emails);
+
+        $user = $this->reminderUser();
+        $task = Task::factory()->for($user)->create([
+            'complete' => false,
+            'status' => Task::STATUS_OPEN,
+            'deadline' => now(),
+        ]);
+
+        try {
+            app(TaskDeadlineReminderService::class)->sendDueReminders();
+            $this->fail('The failed email should have surfaced.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Resend is down', $exception->getMessage());
+        }
+
+        $this->assertNull($task->fresh()->deadline_due_reminded_at);
+        $this->assertSame(0, $user->notifications()->count());
     }
 
     public function test_deadline_reminders_ignore_completed_null_and_future_tasks(): void
@@ -222,7 +347,9 @@ class TaskDeadlineReminderTest extends TestCase
         $emails = Mockery::mock();
         $emails->shouldReceive('send')
             ->times($times)
-            ->with(Mockery::on(fn (array $payload) => str_starts_with($payload['subject'] ?? '', 'Task due today:')));
+            ->andReturnUsing(function (array $payload): void {
+                $this->sentEmails[] = $payload;
+            });
 
         Resend::shouldReceive('emails')
             ->times($times)

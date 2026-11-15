@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskDeadlineReminder;
+use App\Notifications\TaskDueDigest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
@@ -55,31 +56,36 @@ class TaskDeadlineReminderService
      */
     private function sendStage(User $user, string $stage, string $remindedAtColumn, callable $deadlineConstraint): int
     {
-        $sent = 0;
+        $tasks = $deadlineConstraint($this->applyActiveDeadlineTaskConstraints($user->tasks()))
+            ->whereNull($remindedAtColumn)
+            ->with('parent')
+            ->orderBy('id')
+            ->get();
+
+        if ($tasks->isEmpty()) {
+            return 0;
+        }
+
+        // One email per user listing every task due today. It goes out before the
+        // tasks are marked as reminded, so a failed send is retried on the next run.
+        if ($stage === TaskDeadlineReminder::STAGE_DUE) {
+            $user->notify(new TaskDueDigest($tasks));
+        }
+
         $now = now();
 
-        $deadlineConstraint($this->applyActiveDeadlineTaskConstraints($user->tasks()))
-            ->whereNull($remindedAtColumn)
-            ->with(['parent', 'user'])
-            ->orderBy('id')
-            ->chunkById(100, function ($tasks) use ($stage, $remindedAtColumn, $now, &$sent) {
-                foreach ($tasks as $task) {
-                    if (! $task->user) {
-                        continue;
-                    }
+        foreach ($tasks as $task) {
+            $user->notify(new TaskDeadlineReminder($task, $stage));
 
-                    $task->user->notify(new TaskDeadlineReminder($task, $stage));
-                    try {
-                        $task->timestamps = false;
-                        $task->forceFill([$remindedAtColumn => $now])->saveQuietly();
-                    } finally {
-                        $task->timestamps = true;
-                    }
-                    $sent++;
-                }
-            });
+            try {
+                $task->timestamps = false;
+                $task->forceFill([$remindedAtColumn => $now])->saveQuietly();
+            } finally {
+                $task->timestamps = true;
+            }
+        }
 
-        return $sent;
+        return $tasks->count();
     }
 
     private function applyActiveDeadlineTaskConstraints($query)
